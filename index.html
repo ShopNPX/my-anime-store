@@ -3,54 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NPX Store | متجر الملابس</title>
+    <title>NPX Store | متجر ملابس أنمي</title>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <style>
-        :root { --main: #111; --accent: #4f46e5; --card: #1e1e1e; --text: #eee; }
+        :root { --main: #0f172a; --accent: #6366f1; --card: #1e293b; --text: #f8fafc; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--main); color: var(--text); margin: 0; }
-        header { background: #000; padding: 20px 5%; position: sticky; top: 0; z-index: 1000; border-bottom: 2px solid var(--accent); }
-        .search-bar { width: 100%; padding: 12px; border-radius: 25px; border: none; background: #222; color: white; margin-top: 10px; }
+        header { background: #000; padding: 20px 5%; position: sticky; top: 0; z-index: 1000; border-bottom: 3px solid var(--accent); }
+        .search-bar { width: 100%; padding: 12px 20px; border-radius: 25px; border: none; background: #334155; color: white; margin-top: 10px; }
         .container { display: flex; flex-wrap: wrap; padding: 20px 5%; gap: 20px; }
-        .products-grid { flex: 2; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
-        .card { background: var(--card); border-radius: 15px; overflow: hidden; border: 1px solid #333; text-align: center; padding-bottom: 15px; }
-        .card img { width: 100%; height: 200px; object-fit: cover; }
-        .sidebar { flex: 1; min-width: 320px; background: #161616; padding: 20px; border-radius: 15px; border: 1px solid #333; height: fit-content; }
-        .cart-item { display: flex; justify-content: space-between; align-items: center; background: #222; padding: 10px; border-radius: 8px; margin-bottom: 10px; }
-        .btn-add { background: var(--accent); color: white; border: none; padding: 10px; width: 90%; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .btn-del { background: #ef4444; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; }
-        .size-btns { display: flex; justify-content: center; gap: 5px; margin: 10px 0; }
-        .s-btn { background: #333; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
+        .products-grid { flex: 2; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+        .card { background: var(--card); border-radius: 15px; overflow: hidden; border: 1px solid #334155; text-align: center; transition: 0.3s; }
+        .card:hover { transform: translateY(-5px); border-color: var(--accent); }
+        .card img { width: 100%; height: 230px; object-fit: cover; }
+        .sidebar { flex: 1; min-width: 320px; background: #1e293b; padding: 20px; border-radius: 15px; border: 1px solid #334155; height: fit-content; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 12px; border-radius: 10px; margin-bottom: 10px; border-right: 4px solid var(--accent); }
+        .btn-add { background: var(--accent); color: white; border: none; padding: 12px; width: 90%; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 10px; }
+        .btn-del { background: #ef4444; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; font-weight: bold; }
+        .size-btns { display: flex; justify-content: center; gap: 8px; margin: 12px 0; }
+        .s-btn { background: #334155; color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; }
         .s-btn.active { background: var(--accent); }
-        input, textarea { width: 100%; padding: 10px; margin: 5px 0; border-radius: 8px; border: 1px solid #333; background: #222; color: white; box-sizing: border-box; }
-        .whatsapp-btn { background: #25d366; color: white; border: none; padding: 15px; width: 100%; border-radius: 30px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; }
+        .track-box { margin-top: 25px; background: #0f172a; padding: 15px; border-radius: 12px; border: 1px dashed #475569; }
+        .whatsapp-btn { background: #22c55e; color: white; border: none; padding: 15px; width: 100%; border-radius: 30px; cursor: pointer; font-weight: bold; font-size: 1.1rem; margin-top: 15px; }
     </style>
 </head>
 <body>
 
 <header>
     <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h1 style="color:var(--accent); margin:0;">NPX STORE</h1>
-        <div id="cart-counter">🛒 0 قِطع</div>
+        <h1 style="color:var(--accent); margin:0; letter-spacing: 2px;">NPX STORE</h1>
+        <div id="cart-counter" style="background:var(--accent); padding:5px 15px; border-radius:20px;">🛒 0</div>
     </div>
-    <input type="text" id="searchInp" class="search-bar" placeholder="ابحث عن ملابس..." onkeyup="search()">
+    <input type="text" id="searchInp" class="search-bar" placeholder="ابحث عن تيشيرت، هودي، أو قطعة ملابس..." onkeyup="search()">
 </header>
 
 <div class="container">
     <div class="products-grid" id="products-list"></div>
 
     <div class="sidebar">
-        <h3>🛒 السلة</h3>
-        <div id="cart-list">السلة فارغة</div>
-        <hr style="border:0.1px solid #333;">
+        <h3>🛒 سلة المشتريات</h3>
+        <div id="cart-list">السلة فارغة حالياً</div>
+        <hr style="border:0.1px solid #334155; margin:15px 0;">
         <h2 style="text-align:center;">المجموع: $<span id="total-price">0.00</span></h2>
         
         <input type="text" id="uName" placeholder="الاسم بالكامل">
         <input type="tel" id="uPhone" placeholder="رقم الواتساب">
-        <button onclick="getLocation()" style="width:100%; padding:10px; margin:5px 0; cursor:pointer; background:#3b82f6; color:white; border:none; border-radius:8px;">📍 تحديد موقعي</button>
-        <textarea id="uAddress" rows="2" placeholder="العنوان بالتفصيل..."></textarea>
+        <button onclick="getLocation()" style="width:100%; padding:10px; margin:5px 0; cursor:pointer; background:#3b82f6; color:white; border:none; border-radius:8px; font-weight:bold;">📍 مشاركة موقعي الحالي</button>
+        <textarea id="uAddress" rows="2" placeholder="العنوان بالتفصيل (شارع، مبنى، دور)..."></textarea>
         
-        <button class="whatsapp-btn" onclick="checkout()">إرسال الطلب عبر واتساب 🚀</button>
+        <button class="whatsapp-btn" onclick="checkout()">تأكيد الطلب عبر واتساب 🚀</button>
+
+        <div class="track-box">
+            <h4 style="margin:0 0 10px 0; color:var(--accent);">🔍 تتبع حالة شحنتك</h4>
+            <input type="tel" id="trackPhone" placeholder="أدخل رقم هاتفك">
+            <button onclick="trackOrder()" style="width:100%; padding:8px; background:#475569; border:none; color:white; border-radius:5px; cursor:pointer;">تتبع الطلب</button>
+            <div id="statusResult" style="margin-top:10px; font-size:0.9rem; text-align:center;"></div>
+        </div>
     </div>
 </div>
 
@@ -63,7 +72,6 @@
     let cart = [];
     let userLoc = "";
 
-    // جلب الملابس من الأدمن
     db.ref('inventory').on('value', snap => {
         const data = snap.val();
         allItems = [];
@@ -76,14 +84,16 @@
         list.innerHTML = data.map(p => `
             <div class="card">
                 <img src="${p.img}">
-                <h3>${p.name}</h3>
-                <div style="color:var(--accent); font-weight:bold;">$${p.price}</div>
-                <div class="size-btns" id="size-${p.id}">
-                    <button class="s-btn" onclick="selectSize(this)">S</button>
-                    <button class="s-btn active" onclick="selectSize(this)">M</button>
-                    <button class="s-btn" onclick="selectSize(this)">L</button>
+                <div style="padding:15px;">
+                    <h3 style="margin:0;">${p.name}</h3>
+                    <div style="color:var(--accent); font-weight:bold; font-size:1.2rem; margin:10px 0;">$${p.price}</div>
+                    <div class="size-btns" id="size-${p.id}">
+                        <button class="s-btn" onclick="selectSize(this)">S</button>
+                        <button class="s-btn active" onclick="selectSize(this)">M</button>
+                        <button class="s-btn" onclick="selectSize(this)">L</button>
+                    </div>
+                    <button class="btn-add" onclick="addToCart('${p.id}')">أضف إلى السلة</button>
                 </div>
-                <button class="btn-add" onclick="addToCart('${p.id}')">إضافة للسلة</button>
             </div>`).join('');
     }
 
@@ -108,10 +118,8 @@
         const list = document.getElementById('cart-list');
         const total = document.getElementById('total-price');
         let sum = 0;
-        document.getElementById('cart-counter').innerText = `🛒 ${cart.length} قِطع`;
-
+        document.getElementById('cart-counter').innerText = `🛒 ${cart.length}`;
         if(cart.length === 0) { list.innerHTML = "السلة فارغة"; total.innerText = "0.00"; return; }
-
         list.innerHTML = cart.map(i => {
             sum += parseFloat(i.price);
             return `<div class="cart-item">
@@ -124,34 +132,35 @@
 
     function search() {
         const query = document.getElementById('searchInp').value.toLowerCase();
-        const filtered = allItems.filter(p => p.name.toLowerCase().includes(query));
-        render(filtered);
+        render(allItems.filter(p => p.name.toLowerCase().includes(query)));
     }
 
     function getLocation() {
         navigator.geolocation.getCurrentPosition(pos => {
             userLoc = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
-            document.getElementById('uAddress').value = "✅ تم تحديد موقعك (سيصل الرابط للأدمن)";
+            document.getElementById('uAddress').value = "✅ تم تحديد موقعك الجغرافي بنجاح!";
+        });
+    }
+
+    function trackOrder() {
+        const phone = document.getElementById('trackPhone').value;
+        const res = document.getElementById('statusResult');
+        db.ref('orders').orderByChild('phone').equalTo(phone).on('value', snap => {
+            const data = snap.val();
+            if(!data) return res.innerHTML = "❌ لا يوجد طلب بهذا الرقم";
+            const lastOrder = Object.values(data).pop();
+            const statuses = { 'processing': '⏳ جاري التجهيز', 'shipping': '🚚 تم الشحن / جاري التوصيل', 'delivered': '✅ تم التوصيل' };
+            res.innerHTML = `<span style="color:var(--accent)">${statuses[lastOrder.status] || 'استلمنا طلبك'}</span>`;
         });
     }
 
     function checkout() {
         const name = document.getElementById('uName').value;
         const phone = document.getElementById('uPhone').value;
-        if(!name || cart.length === 0) return alert("أكمل البيانات!");
-
-        const orderData = {
-            user: name,
-            phone: phone,
-            items: cart.map(i => `${i.name} (${i.size})`),
-            total: document.getElementById('total-price').innerText,
-            location: userLoc,
-            status: "processing"
-        };
-
+        if(!name || !phone || cart.length === 0) return alert("يرجى إكمال البيانات ومنتجات السلة");
+        const orderData = { user: name, phone: phone, items: cart.map(i => `${i.name} (${i.size})`), total: document.getElementById('total-price').innerText, location: userLoc || 'غير محدد', status: "processing", timestamp: Date.now() };
         db.ref('orders').push(orderData);
-        
-        const msg = `*طلب جديد*\nالاسم: ${name}\nالموقع: ${userLoc}\nالمنتجات:\n${orderData.items.join('\n')}\nالإجمالي: $${orderData.total}`;
+        const msg = `*طلب جديد*\n👤 الاسم: ${name}\n📍 الموقع: ${userLoc || 'يدوي'}\n📦 المنتجات:\n${orderData.items.join('\n')}\n💰 الإجمالي: $${orderData.total}`;
         window.location.href = `https://wa.me/201221060599?text=${encodeURIComponent(msg)}`;
     }
 </script>
