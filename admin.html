@@ -2,51 +2,39 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>NPX Admin - Smart Upload</title>
+    <title>NPX Admin - Control Panel</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --p: #6366f1; --dark: #0f172a; }
         body { font-family: sans-serif; background: #f1f5f9; padding: 20px; direction: rtl; }
-        .section { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-width: 600px; margin: auto; }
-        
-        /* منطقة السحب والإفلات */
-        #drop-zone {
-            border: 2px dashed var(--p);
-            border-radius: 12px;
-            padding: 30px;
-            text-align: center;
-            color: var(--p);
-            cursor: pointer;
-            transition: 0.3s;
-            margin: 15px 0;
-            background: #f0f7ff;
-        }
-        #drop-zone.hover { background: var(--p); color: white; border-color: white; }
-        #preview-img { width: 100%; max-height: 200px; object-fit: contain; display: none; margin-top: 10px; border-radius: 8px; }
-        
-        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; }
-        .btn-add { background: var(--p); color: white; border: none; cursor: pointer; font-weight: bold; }
+        .box { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        #drop-zone { border: 2px dashed #6366f1; padding: 30px; text-align: center; border-radius: 10px; cursor: pointer; background: #f8fafc; margin: 10px 0; color: #6366f1; }
+        #drop-zone.hover { background: #e0e7ff; }
+        img#preview { max-height: 150px; display: none; margin: 10px auto; border-radius: 8px; }
+        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
+        .btn-main { background: #6366f1; color: white; border: none; font-weight: bold; cursor: pointer; }
+        .order { border-right: 5px solid #6366f1; padding: 15px; background: white; margin-bottom: 10px; border-radius: 8px; }
     </style>
 </head>
 <body>
 
-<div class="section">
-    <h2><i class="fas fa-plus-circle"></i> إضافة منتج ذكي</h2>
-    
+<div class="box" style="max-width: 500px; margin: auto;">
+    <h2>إضافة منتج بالسحب والإفلات</h2>
     <input type="text" id="pName" placeholder="اسم المنتج">
-    <input type="number" id="pPrice" placeholder="السعر ($)">
+    <input type="number" id="pPrice" placeholder="السعر">
     <input type="number" id="pQty" placeholder="الكمية">
     
-    <div id="drop-zone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)" onclick="document.getElementById('fileInput').click()">
-        <i class="fas fa-cloud-upload-alt fa-2x"></i>
-        <p id="drop-text">اسحب صورة المنتج هنا أو اضغط للرفع</p>
-        <img id="preview-img" src="">
-        <input type="file" id="fileInput" hidden accept="image/*" onchange="processFile(this.files[0])">
+    <div id="drop-zone" ondragover="event.preventDefault(); this.classList.add('hover')" ondragleave="this.classList.remove('hover')" ondrop="handleDrop(event)">
+        اسحب صورة المنتج هنا
+        <img id="preview" src="">
     </div>
+    
+    <button class="btn-main" onclick="upload()">حفظ ونشر المنتج</button>
+</div>
 
-    <button class="btn-add" onclick="addProduct()">حفظ المنتج ونشره</button>
+<div id="ordersArea" style="max-width: 800px; margin: 20px auto;">
+    <h2>إدارة الطلبات</h2>
+    <div id="list"></div>
 </div>
 
 <script>
@@ -54,61 +42,48 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let base64Image = ""; // سيتم تخزين كود الصورة هنا
-
-    // --- منطق السحب والإفلات ---
-    function handleDragOver(e) {
-        e.preventDefault();
-        document.getElementById('drop-zone').classList.add('hover');
-    }
-
-    function handleDragLeave(e) {
-        document.getElementById('drop-zone').classList.remove('hover');
-    }
+    let base64 = "";
 
     function handleDrop(e) {
         e.preventDefault();
-        document.getElementById('drop-zone').classList.remove('hover');
+        this.classList.remove('hover');
         const file = e.dataTransfer.files[0];
-        processFile(file);
-    }
-
-    // معالجة الصورة وتحويلها لـ Base64
-    function processFile(file) {
-        if (!file || !file.type.startsWith('image/')) return alert("يرجى رفع ملف صورة فقط!");
-        
         const reader = new FileReader();
-        reader.onload = function(e) {
-            base64Image = e.target.result;
-            const img = document.getElementById('preview-img');
-            img.src = base64Image;
-            img.style.display = "block";
-            document.getElementById('drop-text').style.display = "none";
+        reader.onload = (ev) => {
+            base64 = ev.target.result;
+            const img = document.getElementById('preview');
+            img.src = base64; img.style.display = "block";
         };
         reader.readAsDataURL(file);
     }
 
-    // --- إضافة المنتج لقاعدة البيانات ---
-    function addProduct() {
-        const name = document.getElementById('pName').value;
-        const price = document.getElementById('pPrice').value;
-        const qty = parseInt(document.getElementById('pQty').value);
-
-        if (!name || !price || !qty || !base64Image) {
-            return alert("تأكد من إدخال كافة البيانات ورفع الصورة!");
-        }
-
-        db.ref('inventory').push({
-            name,
-            price,
-            qty,
-            img: base64Image, // يتم حفظ الصورة ككود نصي طويل
-            category: "عام"
-        }).then(() => {
-            alert("تم رفع المنتج بنجاح!");
-            location.reload(); // إعادة تحميل لتصفير الحقول
-        });
+    function upload() {
+        const name = document.getElementById('pName').value, price = document.getElementById('pPrice').value, qty = document.getElementById('pQty').value;
+        if(!base64 || !name) return alert("أكمل البيانات");
+        db.ref('inventory').push({ name, price, qty: parseInt(qty), img: base64 });
+        alert("تم النشر!"); location.reload();
     }
+
+    db.ref('orders').on('value', snap => {
+        const area = document.getElementById('list');
+        area.innerHTML = '';
+        snap.forEach(c => {
+            const o = c.val();
+            area.innerHTML += `
+                <div class="order">
+                    <b>${o.name} - ${o.phone}</b> | الإجمالي: $${o.total}<br>
+                    <p>${o.items.map(i=>i.name).join(' + ')}</p>
+                    <a href="${o.location}" target="_blank">📍 فتح الموقع</a><br><br>
+                    ${o.status === 'pending' ? 
+                        `<button onclick="done('${c.key}')" style="background:green; color:white; border:none; padding:8px; border-radius:5px; cursor:pointer;">تم التوصيل (تفعيل التقييم)</button>` : 
+                        '<span>✅ طلب مكتمل</span>'}
+                    <button onclick="db.ref('orders/${c.key}').remove()" style="background:red; color:white; border:none; padding:8px; border-radius:5px; cursor:pointer;">حذف</button>
+                </div>
+            `;
+        });
+    });
+
+    function done(id) { db.ref('orders/' + id).update({ status: 'delivered' }); }
 </script>
 </body>
 </html>
