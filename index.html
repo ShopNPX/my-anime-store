@@ -3,50 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NPX Luxury Store | متجر الشراء الحقيقي</title>
+    <title>NPX Store | نظام الدفع الذكي</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     
     <style>
-        :root { --main-color: #232f3e; --accent-color: #ff9900; --whatsapp-green: #25d366; --bg-color: #f4f7f6; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg-color); margin: 0; color: #333; }
-        
-        nav { background: var(--main-color); padding: 10px 5%; display: flex; align-items: center; justify-content: space-between; color: white; position: sticky; top: 0; z-index: 1000; }
-        .logo { font-size: 1.8rem; font-weight: bold; color: var(--accent-color); }
-
+        :root { --main-color: #232f3e; --accent-color: #ff9900; --bg-color: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); margin: 0; color: #333; }
+        nav { background: var(--main-color); padding: 15px 5%; display: flex; justify-content: space-between; color: white; }
         .container { display: flex; flex-wrap: wrap; padding: 20px 5%; gap: 20px; }
         .products-section { flex: 3; min-width: 320px; }
-        .sidebar { flex: 1.2; min-width: 300px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); height: fit-content; }
-
+        .sidebar { flex: 1.2; min-width: 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); height: fit-content; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
         .card { background: white; border-radius: 10px; padding: 15px; text-align: center; border: 1px solid #eee; transition: 0.3s; }
         .card:hover { transform: translateY(-5px); border-color: var(--accent-color); }
         .card img { width: 100%; height: 150px; object-fit: contain; }
-
-        .cart-item { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-        .payment-methods { margin: 15px 0; }
-        .pay-btn { width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ccc; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .pay-btn.active { border-color: var(--accent-color); background: #fffdf5; }
-
-        .whatsapp-contact { background: var(--whatsapp-green); color: white; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; border-radius: 8px; font-weight: bold; margin-top: 10px; }
-        .confirm-order { background: var(--accent-color); color: white; border: none; width: 100%; padding: 15px; border-radius: 30px; font-size: 1.1rem; font-weight: bold; cursor: pointer; }
-        
+        .payment-box { background: #fff9f0; padding: 15px; border-radius: 8px; border: 1px solid #ffe8cc; margin-top: 20px; }
+        .confirm-btn { background: var(--accent-color); color: white; border: none; width: 100%; padding: 15px; border-radius: 30px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 15px; }
+        .whatsapp-btn { background: #25d366; color: white; text-decoration: none; display: flex; align-items: center; justify-content: center; padding: 12px; border-radius: 8px; margin-top: 10px; font-weight: bold; }
         #login-screen { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        input, textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
         <h1>NPX STORE 🛒</h1>
-        <button onclick="login()" style="padding: 15px 30px; cursor: pointer; border-radius: 50px;">Sign in with Google</button>
+        <button onclick="login()" style="padding: 15px 30px; cursor: pointer; border-radius: 50px; background: white; border: 1px solid #ddd;">تسجيل الدخول بجوجل</button>
     </div>
 
     <div id="main-store" style="display: none;">
         <nav>
-            <div class="logo">NPX STORE</div>
-            <button onclick="logout()" style="background:none; border:1px solid white; color:white; cursor:pointer;">Logout</button>
+            <div style="font-size: 1.5rem; font-weight: bold;">NPX STORE</div>
+            <button onclick="logout()" style="background:none; border:1px solid white; color:white; cursor:pointer; padding: 5px 15px;">خروج</button>
         </nav>
 
         <div class="container">
@@ -55,33 +46,31 @@
             </div>
 
             <div class="sidebar">
-                <h3>🛒 السلة</h3>
-                <div id="cart-content">السلة فارغة</div>
-                <h2 style="text-align:center;">Total: $<span id="grand-total">0.00</span></h2>
+                <h3>🛒 سلة المشتريات</h3>
+                <div id="cart-content" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;">السلة فارغة</div>
+                <h2 style="text-align:center; color: #B12704;">الإجمالي: $<span id="grand-total">0.00</span></h2>
 
-                <hr>
-                <h4>🚚 الشحن والدفع</h4>
-                <input type="tel" id="phone" placeholder="رقم الهاتف" style="width:100%; padding:10px; margin-bottom:10px;">
-                <textarea id="address" placeholder="العنوان بالتفصيل" style="width:100%; padding:10px; margin-bottom:10px;"></textarea>
-
-                <div class="payment-methods">
-                    <label><input type="radio" name="pay" value="Cash" checked> 💵 دفع عند الاستلام</label><br>
-                    <label><input type="radio" name="pay" value="PayPal"> 💳 PayPal</label>
+                <div class="payment-box">
+                    <h4>تفاصيل التوصيل والدفع</h4>
+                    <input type="tel" id="phone" placeholder="رقم الهاتف">
+                    <textarea id="address" placeholder="العنوان بالتفصيل"></textarea>
+                    
+                    <p>اختر وسيلة الدفع:</p>
+                    <label><input type="radio" name="pay-method" value="Cash" checked> 💵 دفع عند الاستلام</label><br>
+                    <label><input type="radio" name="pay-method" value="PayPal"> 💳 PayPal (دفع إلكتروني)</label>
+                    
+                    <button class="confirm-btn" onclick="processOrder()">تأكيد الشراء 🚀</button>
                 </div>
 
-                <button class="confirm-order" onclick="submitOrder()">تأكيد الطلب وحفظه</button>
-                
-                <hr>
-                <p style="font-size: 0.9rem; text-align: center;">أو تواصل معي مباشرة لتأكيد التوصيل:</p>
-                <a id="whatsapp-link" href="#" target="_blank" class="whatsapp-contact">
-                    تواصل عبر WhatsApp 💬
+                <a id="wa-link" href="#" target="_blank" class="whatsapp-btn" style="display:none;">
+                    تأكيد الطلب عبر واتساب 💬
                 </a>
             </div>
         </div>
     </div>
 
     <script>
-        // إعدادات Firebase الخاصة بك
+        // إعدادات Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyAVadEAFdmh0SuWq4sZJkSJJrRpF5fOp58",
             authDomain: "authen-36a1f.firebaseapp.com",
@@ -98,11 +87,12 @@
         const catalog = [
             { id: 1, name: "Iphone 15 Pro", price: 999, img: "https://m.media-amazon.com/images/I/81SigAnNfJL._AC_SL1500_.jpg" },
             { id: 2, name: "Sony Headphones", price: 350, img: "https://m.media-amazon.com/images/I/61vjK2MapXL._AC_SL1500_.jpg" },
-            { id: 3, name: "Apple Watch", price: 400, img: "https://m.media-amazon.com/images/I/61f9uUuE6aL._AC_SL1500_.jpg" }
+            { id: 3, name: "Apple Watch S9", price: 400, img: "https://m.media-amazon.com/images/I/61f9uUuE6aL._AC_SL1500_.jpg" }
         ];
 
         let cart = [];
-        const MY_PHONE_NUMBER = "201000000000"; // ضع رقمك هنا بالكود الدولي (مثلاً 20 لمصر)
+        const MY_WA_NUMBER = "201000000000"; // استبدله برقمك (مثال: 201111111111)
+        const MY_PAYPAL_EMAIL = "your-email@example.com"; // إيميل PayPal الخاص بك
 
         function login() { auth.signInWithPopup(provider); }
         function logout() { auth.signOut(); }
@@ -122,9 +112,9 @@
             document.getElementById('product-list').innerHTML = catalog.map(p => `
                 <div class="card">
                     <img src="${p.img}">
-                    <h3>${p.name}</h3>
-                    <p style="font-weight:bold;">$${p.price}</p>
-                    <button class="confirm-order" style="padding:8px;" onclick="addToCart(${p.id})">أضف للسلة</button>
+                    <h4>${p.name}</h4>
+                    <p style="font-weight:bold; color:#B12704;">$${p.price}</p>
+                    <button onclick="addToCart(${p.id})" style="background:#ffd814; border:1px solid #fcd200; padding:8px; border-radius:20px; cursor:pointer; width:100%;">أضف للسلة</button>
                 </div>
             `).join('');
         }
@@ -142,18 +132,15 @@
             
             if(cart.length === 0) {
                 container.innerHTML = "السلة فارغة";
+                document.getElementById('wa-link').style.display = 'none';
                 return;
             }
             container.innerHTML = cart.map(i => `
-                <div class="cart-item">
+                <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.9rem;">
                     <span>${i.name}</span>
-                    <button onclick="removeFromCart(${i.cartId})" style="border:none; color:red; cursor:pointer;">X</button>
+                    <button onclick="removeFromCart(${i.cartId})" style="border:none; background:none; color:red; cursor:pointer;">X</button>
                 </div>
             `).join('');
-
-            // تحديث رابط واتساب بالرسالة
-            const message = `مرحباً، أريد طلب المنتجات التالية:\n${cart.map(i => "- " + i.name).join("\n")}\nالإجمالي: ${total}$`;
-            document.getElementById('whatsapp-link').href = `https://wa.me/${MY_PHONE_NUMBER}?text=${encodeURIComponent(message)}`;
         }
 
         function removeFromCart(id) {
@@ -161,34 +148,47 @@
             updateUI();
         }
 
-        function submitOrder() {
+        function processOrder() {
             const phone = document.getElementById('phone').value;
             const address = document.getElementById('address').value;
-            const method = document.querySelector('input[name="pay"]:checked').value;
+            const method = document.querySelector('input[name="pay-method"]:checked').value;
+            const total = document.getElementById('grand-total').innerText;
 
-            if(!phone || !address || cart.length === 0) return alert("يرجى إكمال البيانات!");
+            if(!phone || !address || cart.length === 0) return alert("يرجى إكمال البيانات واختيار المنتجات!");
 
-            if(method === "PayPal") {
-                // توجيه لصفحة باي بال وهمية أو حقيقية
-                window.location.href = "https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=YOUR_PAYPAL_EMAIL&item_name=Order_NPX&amount=" + document.getElementById('grand-total').innerText + "&currency_code=USD";
-                return;
-            }
-
-            const order = {
+            const orderData = {
                 user: auth.currentUser.displayName,
+                email: auth.currentUser.email,
                 phone: phone,
                 address: address,
                 items: cart,
-                total: document.getElementById('grand-total').innerText,
-                payment: method,
-                timestamp: Date.now()
+                total: total,
+                paymentMethod: method,
+                status: "Pending",
+                date: new Date().toLocaleString()
             };
 
-            db.ref('orders/' + Date.now()).set(order).then(() => {
-                alert("تم تسجيل الطلب! يمكنك الآن مراسلتي عبر واتساب للتأكيد.");
-                cart = [];
-                updateUI();
-            });
+            // 1. حفظ الطلب في Firebase أولاً
+            db.ref('orders/' + Date.now()).set(orderData).then(() => {
+                
+                // 2. التحقق من وسيلة الدفع
+                if(method === "PayPal") {
+                    alert("سيتم تحويلك الآن لصفحة الدفع في PayPal...");
+                    const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${MY_PAYPAL_EMAIL}&item_name=NPX_Store_Order&amount=${total}&currency_code=USD`;
+                    window.location.href = paypalUrl;
+                } else {
+                    alert("تم تسجيل طلبك بنجاح (دفع عند الاستلام)!");
+                    
+                    // إظهار زر واتساب وتجهيز الرسالة
+                    const msg = `مرحباً، قمت بطلب:\n${cart.map(i => "- " + i.name).join("\n")}\nالإجمالي: ${total}$\nالعنوان: ${address}`;
+                    const waBtn = document.getElementById('wa-link');
+                    waBtn.href = `https://wa.me/${MY_WA_NUMBER}?text=${encodeURIComponent(msg)}`;
+                    waBtn.style.display = 'flex';
+                    
+                    cart = [];
+                    updateUI();
+                }
+            }).catch(err => alert("خطأ في الاتصال: " + err.message));
         }
     </script>
 </body>
