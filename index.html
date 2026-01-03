@@ -3,41 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NPX Store | نظام الدفع الذكي</title>
+    <title>NPX Store | نظام الدفع والتوصيل</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     
     <style>
-        :root { --main-color: #232f3e; --accent-color: #ff9900; --bg-color: #f4f7f6; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); margin: 0; color: #333; }
-        nav { background: var(--main-color); padding: 15px 5%; display: flex; justify-content: space-between; color: white; }
+        :root { --main: #232f3e; --accent: #ff9900; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; color: #333; }
+        nav { background: var(--main); padding: 15px 5%; display: flex; justify-content: space-between; color: white; }
         .container { display: flex; flex-wrap: wrap; padding: 20px 5%; gap: 20px; }
         .products-section { flex: 3; min-width: 320px; }
         .sidebar { flex: 1.2; min-width: 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); height: fit-content; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
-        .card { background: white; border-radius: 10px; padding: 15px; text-align: center; border: 1px solid #eee; transition: 0.3s; }
-        .card:hover { transform: translateY(-5px); border-color: var(--accent-color); }
-        .card img { width: 100%; height: 150px; object-fit: contain; }
+        .card { background: white; border-radius: 10px; padding: 15px; text-align: center; border: 1px solid #eee; }
         .payment-box { background: #fff9f0; padding: 15px; border-radius: 8px; border: 1px solid #ffe8cc; margin-top: 20px; }
-        .confirm-btn { background: var(--accent-color); color: white; border: none; width: 100%; padding: 15px; border-radius: 30px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 15px; }
-        .whatsapp-btn { background: #25d366; color: white; text-decoration: none; display: flex; align-items: center; justify-content: center; padding: 12px; border-radius: 8px; margin-top: 10px; font-weight: bold; }
-        #login-screen { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .confirm-btn { background: var(--accent); color: white; border: none; width: 100%; padding: 15px; border-radius: 30px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 15px; }
+        .whatsapp-btn { background: #25d366; color: white; text-decoration: none; display: none; align-items: center; justify-content: center; padding: 12px; border-radius: 8px; margin-top: 10px; font-weight: bold; }
         input, textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        #login-screen { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
         <h1>NPX STORE 🛒</h1>
-        <button onclick="login()" style="padding: 15px 30px; cursor: pointer; border-radius: 50px; background: white; border: 1px solid #ddd;">تسجيل الدخول بجوجل</button>
+        <button onclick="login()" style="padding: 15px 30px; cursor: pointer; border-radius: 50px;">تسجيل الدخول بجوجل</button>
     </div>
 
     <div id="main-store" style="display: none;">
         <nav>
             <div style="font-size: 1.5rem; font-weight: bold;">NPX STORE</div>
-            <button onclick="logout()" style="background:none; border:1px solid white; color:white; cursor:pointer; padding: 5px 15px;">خروج</button>
+            <button onclick="logout()" style="background:none; border:1px solid white; color:white; padding: 5px 15px; cursor:pointer;">خروج</button>
         </nav>
 
         <div class="container">
@@ -47,30 +45,29 @@
 
             <div class="sidebar">
                 <h3>🛒 سلة المشتريات</h3>
-                <div id="cart-content" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;">السلة فارغة</div>
+                <div id="cart-content">السلة فارغة</div>
                 <h2 style="text-align:center; color: #B12704;">الإجمالي: $<span id="grand-total">0.00</span></h2>
 
                 <div class="payment-box">
-                    <h4>تفاصيل التوصيل والدفع</h4>
-                    <input type="tel" id="phone" placeholder="رقم الهاتف">
+                    <h4>بيانات الشحن</h4>
+                    <input type="tel" id="phone" placeholder="رقم الموبايل">
                     <textarea id="address" placeholder="العنوان بالتفصيل"></textarea>
                     
-                    <p>اختر وسيلة الدفع:</p>
-                    <label><input type="radio" name="pay-method" value="Cash" checked> 💵 دفع عند الاستلام</label><br>
-                    <label><input type="radio" name="pay-method" value="PayPal"> 💳 PayPal (دفع إلكتروني)</label>
+                    <p>وسيلة الدفع:</p>
+                    <label><input type="radio" name="pay-method" value="Cash" checked> 💵 كاش عند الاستلام</label><br>
+                    <label><input type="radio" name="pay-method" value="PayPal"> 💳 PayPal</label>
                     
-                    <button class="confirm-btn" onclick="processOrder()">تأكيد الشراء 🚀</button>
+                    <button class="confirm-btn" onclick="processOrder()">إتمام الطلب الآن ✅</button>
                 </div>
 
-                <a id="wa-link" href="#" target="_blank" class="whatsapp-btn" style="display:none;">
-                    تأكيد الطلب عبر واتساب 💬
+                <a id="wa-link" href="#" target="_blank" class="whatsapp-btn">
+                    تأكيد عبر واتساب (01221060599) 💬
                 </a>
             </div>
         </div>
     </div>
 
     <script>
-        // إعدادات Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyAVadEAFdmh0SuWq4sZJkSJJrRpF5fOp58",
             authDomain: "authen-36a1f.firebaseapp.com",
@@ -91,8 +88,7 @@
         ];
 
         let cart = [];
-        const MY_WA_NUMBER = "201221060599"; // استبدله برقمك (مثال: 201111111111)
-        const MY_PAYPAL_EMAIL = "your-email@example.com"; // إيميل PayPal الخاص بك
+        const MY_WA_NUMBER = "201221060599"; // رقمك تم ضبطه هنا
 
         function login() { auth.signInWithPopup(provider); }
         function logout() { auth.signOut(); }
@@ -111,7 +107,7 @@
         function displayProducts() {
             document.getElementById('product-list').innerHTML = catalog.map(p => `
                 <div class="card">
-                    <img src="${p.img}">
+                    <img src="${p.img}" style="width:100%; height:150px; object-fit:contain;">
                     <h4>${p.name}</h4>
                     <p style="font-weight:bold; color:#B12704;">$${p.price}</p>
                     <button onclick="addToCart(${p.id})" style="background:#ffd814; border:1px solid #fcd200; padding:8px; border-radius:20px; cursor:pointer; width:100%;">أضف للسلة</button>
@@ -126,27 +122,14 @@
         }
 
         function updateUI() {
-            const container = document.getElementById('cart-content');
             const total = cart.reduce((s, i) => s + i.price, 0);
             document.getElementById('grand-total').innerText = total.toFixed(2);
-            
-            if(cart.length === 0) {
-                container.innerHTML = "السلة فارغة";
-                document.getElementById('wa-link').style.display = 'none';
-                return;
-            }
-            container.innerHTML = cart.map(i => `
-                <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.9rem;">
-                    <span>${i.name}</span>
-                    <button onclick="removeFromCart(${i.cartId})" style="border:none; background:none; color:red; cursor:pointer;">X</button>
-                </div>
-            `).join('');
+            const container = document.getElementById('cart-content');
+            if(cart.length === 0) { container.innerHTML = "السلة فارغة"; return; }
+            container.innerHTML = cart.map(i => `<div style="display:flex; justify-content:space-between;"><span>${i.name}</span> <button onclick="removeFromCart(${i.cartId})" style="color:red; border:none; background:none; cursor:pointer;">X</button></div>`).join('');
         }
 
-        function removeFromCart(id) {
-            cart = cart.filter(i => i.cartId !== id);
-            updateUI();
-        }
+        function removeFromCart(id) { cart = cart.filter(i => i.cartId !== id); updateUI(); }
 
         function processOrder() {
             const phone = document.getElementById('phone').value;
@@ -154,43 +137,28 @@
             const method = document.querySelector('input[name="pay-method"]:checked').value;
             const total = document.getElementById('grand-total').innerText;
 
-            if(!phone || !address || cart.length === 0) return alert("يرجى إكمال البيانات واختيار المنتجات!");
+            if(!phone || !address || cart.length === 0) return alert("يرجى إكمال البيانات!");
 
-            const orderData = {
+            const orderId = Date.now();
+            db.ref('orders/' + orderId).set({
                 user: auth.currentUser.displayName,
-                email: auth.currentUser.email,
                 phone: phone,
                 address: address,
                 items: cart,
                 total: total,
-                paymentMethod: method,
-                status: "Pending",
-                date: new Date().toLocaleString()
-            };
-
-            // 1. حفظ الطلب في Firebase أولاً
-            db.ref('orders/' + Date.now()).set(orderData).then(() => {
-                
-                // 2. التحقق من وسيلة الدفع
+                method: method
+            }).then(() => {
                 if(method === "PayPal") {
-                    alert("سيتم تحويلك الآن لصفحة الدفع في PayPal...");
-                    const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${MY_PAYPAL_EMAIL}&item_name=NPX_Store_Order&amount=${total}&currency_code=USD`;
-                    window.location.href = paypalUrl;
+                    window.location.href = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=your-email@example.com&item_name=Order&amount=${total}&currency_code=USD`;
                 } else {
-                    alert("تم تسجيل طلبك بنجاح (دفع عند الاستلام)!");
-                    
-                    // إظهار زر واتساب وتجهيز الرسالة
-                    const msg = `مرحباً، قمت بطلب:\n${cart.map(i => "- " + i.name).join("\n")}\nالإجمالي: ${total}$\nالعنوان: ${address}`;
+                    alert("تم حفظ طلبك! اضغط على زر واتساب للتواصل مع صاحب المتجر.");
+                    const msg = `طلب جديد من: ${auth.currentUser.displayName}\nالمنتجات: ${cart.map(i=>i.name).join(', ')}\nالإجمالي: ${total}$\nالعنوان: ${address}`;
                     const waBtn = document.getElementById('wa-link');
                     waBtn.href = `https://wa.me/${MY_WA_NUMBER}?text=${encodeURIComponent(msg)}`;
                     waBtn.style.display = 'flex';
-                    
-                    cart = [];
-                    updateUI();
                 }
-            }).catch(err => alert("خطأ في الاتصال: " + err.message));
+            });
         }
     </script>
 </body>
 </html>
-
