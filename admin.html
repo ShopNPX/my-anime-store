@@ -2,22 +2,111 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>NPX Admin | لوحة التحكم</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NPX Control Panel | لوحة التحكم الاحترافية</title>
+    
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <style>
-        body { font-family: sans-serif; background: #f0f2f5; padding: 20px; }
-        .order-card { background: white; padding: 20px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .btn { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; color: white; font-weight: bold; margin-left: 5px; }
-        .btn-ship { background: #007bff; }
-        .btn-deliver { background: #28a745; }
-        .btn-del { background: #dc3545; }
-        .status { font-weight: bold; color: #555; }
+        :root {
+            --sidebar-width: 260px;
+            --primary: #4f46e5;
+            --success: #10b981;
+            --danger: #ef4444;
+            --bg: #f3f4f6;
+            --white: #ffffff;
+        }
+
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); display: flex; }
+
+        /* Login Screen */
+        #admin-lock { position: fixed; inset: 0; background: #1e1e2f; z-index: 10000; display: flex; justify-content: center; align-items: center; }
+        .lock-card { background: var(--white); padding: 40px; border-radius: 20px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+        .lock-card input { padding: 12px; width: 250px; border: 2px solid #ddd; border-radius: 10px; margin: 20px 0; font-size: 1rem; text-align: center; }
+
+        /* Sidebar */
+        .sidebar { width: var(--sidebar-width); background: #111827; height: 100vh; position: fixed; color: white; padding: 20px; box-sizing: border-box; }
+        .sidebar h2 { color: var(--primary); border-bottom: 1px solid #374151; padding-bottom: 15px; margin-top: 0; }
+        .nav-item { padding: 15px; cursor: pointer; border-radius: 10px; margin-bottom: 5px; transition: 0.3s; display: flex; align-items: center; gap: 10px; }
+        .nav-item:hover, .nav-item.active { background: var(--primary); }
+
+        /* Main Content */
+        .main { margin-right: var(--sidebar-width); flex: 1; padding: 30px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; background: var(--white); padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+
+        /* Grid System */
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+        .card { background: var(--white); border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-right: 6px solid #ddd; }
+        .card.processing { border-right-color: #f59e0b; }
+        .card.shipping { border-right-color: var(--primary); }
+        .card.delivered { border-right-color: var(--success); }
+
+        .btn { border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9rem; transition: 0.2s; }
+        .btn-ship { background: var(--primary); color: white; }
+        .btn-done { background: var(--success); color: white; }
+        .btn-del { background: #fee2e2; color: var(--danger); }
+        
+        /* Reviews View */
+        .review-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        
+        #orders-view, #reviews-view { display: none; }
+        .view-active { display: block !important; }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 70px; padding: 10px; }
+            .sidebar h2, .nav-item span { display: none; }
+            .main { margin-right: 70px; }
+        }
     </style>
 </head>
 <body>
-    <h1>مدير NPX STORE 👑</h1>
-    <div id="admin-orders">جاري تحميل الطلبات...</div>
+
+    <div id="admin-lock">
+        <div class="lock-card">
+            <i class="fas fa-user-shield fa-3x" style="color: var(--primary);"></i>
+            <h2>NPX Web Admin</h2>
+            <input type="password" id="admin-pass" placeholder="Password">
+            <br>
+            <button class="btn btn-ship" onclick="unlock()">دخول النظام</button>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <h2>NPX Admin</h2>
+        <div class="nav-item active" onclick="showView('orders')">
+            <i class="fas fa-shopping-cart"></i> <span>الطلبات</span>
+        </div>
+        <div class="nav-item" onclick="showView('reviews')">
+            <i class="fas fa-star"></i> <span>التقييمات</span>
+        </div>
+        <div class="nav-item" style="margin-top: 50px; color: #9ca3af;" onclick="location.reload()">
+            <i class="fas fa-sync"></i> <span>تحديث البيانات</span>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="header">
+            <h1 id="view-title">إدارة الطلبات</h1>
+            <div id="live-indicator" style="color: var(--success); font-weight: bold;">
+                <i class="fas fa-circle fa-xs"></i> مباشر
+            </div>
+        </div>
+
+        <div id="orders-view" class="view-active">
+            <div class="dashboard-grid" id="orders-container">
+                <p>جاري تحميل الطلبات...</p>
+            </div>
+        </div>
+
+        <div id="reviews-view">
+            <div id="reviews-container">
+                <p>جاري تحميل التقييمات...</p>
+            </div>
+        </div>
+    </div>
 
     <script>
         const firebaseConfig = {
@@ -30,33 +119,80 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        db.ref('orders').on('value', snap => {
-            const orders = snap.val();
-            const container = document.getElementById('admin-orders');
-            if(!orders) { container.innerHTML = "لا توجد طلبات حالياً."; return; }
-            
-            container.innerHTML = Object.keys(orders).map(id => {
-                const o = orders[id];
-                return `
-                <div class="order-card">
-                    <h3>العميل: ${id}</h3>
-                    <p>المشتريات: ${o.items.join(' - ')}</p>
-                    <p>الإجمالي: <b>$${o.total}</b></p>
-                    <p class="status">الحالة الحالية: ${o.status}</p>
-                    <button class="btn btn-ship" onclick="updateStatus('${id}', 'shipping')">شحن 🚚</button>
-                    <button class="btn btn-deliver" onclick="updateStatus('${id}', 'delivered')">تم التسليم ✅</button>
-                    <button class="btn btn-del" onclick="deleteOrder('${id}')">حذف الطلب 🗑️</button>
-                </div>`;
-            }).join('');
-        });
-
-        function updateStatus(uid, newStatus) {
-            db.ref('orders/' + uid).update({ status: newStatus });
+        function unlock() {
+            if(document.getElementById('admin-pass').value === "npx2026") {
+                document.getElementById('admin-lock').style.display = 'none';
+                initData();
+            } else {
+                alert("كلمة مرور خاطئة");
+            }
         }
 
-        function deleteOrder(uid) {
-            if(confirm("هل تريد حذف الطلب نهائياً؟")) db.ref('orders/' + uid).remove();
+        function showView(view) {
+            document.getElementById('orders-view').classList.remove('view-active');
+            document.getElementById('reviews-view').classList.remove('view-active');
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+            if(view === 'orders') {
+                document.getElementById('orders-view').classList.add('view-active');
+                document.getElementById('view-title').innerText = "إدارة الطلبات";
+                event.currentTarget.classList.add('active');
+            } else {
+                document.getElementById('reviews-view').classList.add('view-active');
+                document.getElementById('view-title').innerText = "آراء العملاء";
+                event.currentTarget.classList.add('active');
+            }
         }
+
+        function initData() {
+            // Live Orders
+            db.ref('orders').on('value', snap => {
+                const orders = snap.val();
+                const container = document.getElementById('orders-container');
+                if(!orders) { container.innerHTML = "لا توجد طلبات نشطة حالياً."; return; }
+                
+                container.innerHTML = Object.keys(orders).map(id => {
+                    const o = orders[id];
+                    return `
+                    <div class="card ${o.status}">
+                        <div style="display:flex; justify-content:space-between;">
+                            <strong>${o.user}</strong>
+                            <small>${o.status === 'processing' ? 'جديد' : 'محدث'}</small>
+                        </div>
+                        <p style="font-size: 0.9rem; color: #666; margin: 10px 0;">${o.items.join(' , ')}</p>
+                        <div style="font-size: 1.1rem; font-weight: bold; color: var(--primary); margin-bottom: 15px;">$${o.total}</div>
+                        <div style="display:flex; gap:5px;">
+                            <button class="btn btn-ship" onclick="updateOrder('${id}', 'shipping')">شحن 🚚</button>
+                            <button class="btn btn-done" onclick="updateOrder('${id}', 'delivered')">تسليم ✅</button>
+                            <button class="btn btn-del" onclick="deleteOrder('${id}')"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>`;
+                }).join('');
+            });
+
+            // Live Reviews
+            db.ref('reviews').on('value', snap => {
+                const reviews = snap.val();
+                const container = document.getElementById('reviews-container');
+                if(!reviews) { container.innerHTML = "لا توجد تقييمات بعد."; return; }
+                
+                container.innerHTML = Object.keys(reviews).map(rid => {
+                    const r = reviews[rid];
+                    return `
+                    <div class="review-card">
+                        <div>
+                            <strong>${r.user}</strong> <span style="color:#ffc107">${'★'.repeat(r.rating)}</span>
+                            <p style="margin:5px 0; font-size:0.9rem;">${r.text}</p>
+                        </div>
+                        <button class="btn btn-del" onclick="deleteReview('${rid}')">حذف</button>
+                    </div>`;
+                }).join('');
+            });
+        }
+
+        function updateOrder(id, s) { db.ref('orders/' + id).update({ status: s }); }
+        function deleteOrder(id) { if(confirm("حذف الطلب؟")) db.ref('orders/' + id).remove(); }
+        function deleteReview(rid) { if(confirm("حذف التقييم؟")) db.ref('reviews/' + rid).remove(); }
     </script>
 </body>
 </html>
