@@ -6,36 +6,21 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { font-family: sans-serif; background: #f1f5f9; padding: 20px; direction: rtl; }
-        .card { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .flex { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 10px 0; }
-        .btn { padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; color: white; font-weight: bold; }
-        input, select { padding: 10px; margin: 5px; border: 1px solid #ddd; border-radius: 8px; }
+        body { font-family: sans-serif; background: #f0f2f5; padding: 20px; direction: rtl; }
+        .card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .btn { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; color: white; margin: 2px; }
+        input { padding: 8px; margin: 5px; border: 1px solid #ddd; }
     </style>
 </head>
 <body>
-    <h1>لوحة إدارة المخزون والطلبات</h1>
-
+    <h1>إدارة NPX 2026</h1>
     <div class="card">
-        <h3>إضافة منتج جديد</h3>
-        <input id="n" placeholder="اسم المنتج">
-        <input id="p" placeholder="السعر">
-        <input id="q" type="number" placeholder="الكمية">
-        <select id="c">
-            <option value="تيشيرت">تيشيرت</option>
-            <option value="هودي">هودي</option>
-            <option value="إكسسوار">إكسسوار</option>
-        </select>
-        <input id="i" placeholder="رابط الصورة">
-        <button onclick="add()" style="background:#6366f1" class="btn">نشر المنتج</button>
+        <h3>إضافة منتج</h3>
+        <input id="n" placeholder="الاسم"> <input id="p" placeholder="السعر"> <input id="q" placeholder="الكمية"> <input id="i" placeholder="رابط الصورة">
+        <button onclick="add()" class="btn" style="background:blue">إضافة</button>
     </div>
 
-    <div class="card">
-        <h3>إدارة المخزون الحالي</h3>
-        <div id="inv"></div>
-    </div>
-
-    <h3>الطلبات الجديدة</h3>
+    <h3>الطلبات الواردة</h3>
     <div id="ords"></div>
 
 <script>
@@ -44,42 +29,32 @@
     const db = firebase.database();
 
     function add() {
-        const n=document.getElementById('n').value, p=document.getElementById('p').value, q=document.getElementById('q').value, c=document.getElementById('c').value, i=document.getElementById('i').value;
-        db.ref('inventory').push({ name:n, price:p, qty:parseInt(q), category:c, img:i });
-        alert("تمت الإضافة!");
+        const n=document.getElementById('n').value, p=document.getElementById('p').value, q=document.getElementById('q').value, i=document.getElementById('i').value;
+        db.ref('inventory').push({ name:n, price:p, qty:parseInt(q), img:i });
+        alert("تم!");
     }
 
-    db.ref('inventory').on('value', snap => {
-        const inv = document.getElementById('inv');
-        inv.innerHTML = '';
-        snap.forEach(child => {
-            const p = child.val();
-            inv.innerHTML += `<div class="flex">
-                <span>${p.name} (الكمية: ${p.qty})</span>
-                <div>
-                    <button onclick="up('${child.key}', 1)" style="background:#22c55e" class="btn">+</button>
-                    <button onclick="up('${child.key}', -1)" style="background:#f59e0b" class="btn">-</button>
-                    <button onclick="db.ref('inventory/${child.key}').remove()" style="background:#ef4444" class="btn">حذف</button>
-                </div>
-            </div>`;
-        });
-    });
-
-    function up(id, v) { db.ref(`inventory/${id}/qty`).get().then(s => db.ref(`inventory/${id}`).update({qty: s.val()+v})); }
-
     db.ref('orders').on('value', snap => {
-        const ords = document.getElementById('ords');
-        ords.innerHTML = '';
-        snap.forEach(child => {
-            const o = child.val();
-            ords.innerHTML += `<div class="card">
-                <h4>العميل: ${o.name} - الإجمالي: $${o.total}</h4>
-                <p>الأصناف: ${o.items.map(i=>i.name).join(' + ')}</p>
-                <a href="${o.location}" target="_blank">📍 موقع العميل على الخريطة</a><br><br>
-                <button onclick="db.ref('orders/${child.key}').remove()" style="background:#10b981; width:100%" class="btn">تم التوصيل / أرشفة</button>
-            </div>`;
+        const div = document.getElementById('ords');
+        div.innerHTML = '';
+        snap.forEach(c => {
+            const o = c.val();
+            div.innerHTML += `
+                <div class="card">
+                    <b>العميل: ${o.name}</b> (${o.status === 'delivered' ? '✅ تم' : '⏳ معلق'})<br>
+                    <p>الأصناف: ${o.items.map(i=>i.name).join(' - ')}</p>
+                    <a href="${o.location}" target="_blank">📍 عرض الموقع</a><br><br>
+                    <button onclick="mark('${c.key}')" class="btn" style="background:green">تم التوصيل (فتح التقييم)</button>
+                    <button onclick="db.ref('orders/${c.key}').remove()" class="btn" style="background:red">حذف نهائي</button>
+                </div>
+            `;
         });
     });
+
+    function mark(id) {
+        db.ref('orders/' + id).update({ status: "delivered" });
+        alert("تم! سيظهر نظام التقييم للعميل الآن.");
+    }
 </script>
 </body>
 </html>
