@@ -2,88 +2,117 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>NPX Admin - Control Panel</title>
+    <title>NPX Admin - Ultimate Dashboard</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { font-family: sans-serif; background: #f1f5f9; padding: 20px; direction: rtl; }
-        .box { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        #drop-zone { border: 2px dashed #6366f1; padding: 30px; text-align: center; border-radius: 10px; cursor: pointer; background: #f8fafc; margin: 10px 0; color: #6366f1; }
-        #drop-zone.hover { background: #e0e7ff; }
-        img#preview { max-height: 150px; display: none; margin: 10px auto; border-radius: 8px; }
-        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
-        .btn-main { background: #6366f1; color: white; border: none; font-weight: bold; cursor: pointer; }
-        .order { border-right: 5px solid #6366f1; padding: 15px; background: white; margin-bottom: 10px; border-radius: 8px; }
+        :root { --p: #6366f1; --dark: #0f172a; --bg: #f1f5f9; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; direction: rtl; }
+        .stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-box { background: white; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-bottom: 4px solid var(--p); }
+        .stat-box h2 { margin: 10px 0; font-size: 2rem; }
+        
+        .main-container { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
+        @media (max-width: 900px) { .main-container { grid-template-columns: 1fr; } }
+        
+        .box { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        #drop-zone { border: 2px dashed var(--p); padding: 30px; text-align: center; border-radius: 12px; cursor: pointer; background: #f8fafc; margin: 15px 0; }
+        #preview { max-width: 100%; border-radius: 10px; display: none; margin-top: 10px; }
+        
+        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; outline: none; box-sizing: border-box; }
+        .btn-p { background: var(--p); color: white; border: none; font-weight: bold; cursor: pointer; }
+        
+        .order-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; border-right: 5px solid var(--p); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .map-snap { width: 100%; height: 150px; background: #eee; border-radius: 8px; margin: 10px 0; display: flex; align-items: center; justify-content: center; color: #666; font-size: 0.8rem; border: 1px solid #ddd; }
     </style>
 </head>
 <body>
 
-<div class="box" style="max-width: 500px; margin: auto;">
-    <h2>إضافة منتج بالسحب والإفلات</h2>
-    <input type="text" id="pName" placeholder="اسم المنتج">
-    <input type="number" id="pPrice" placeholder="السعر">
-    <input type="number" id="pQty" placeholder="الكمية">
-    
-    <div id="drop-zone" ondragover="event.preventDefault(); this.classList.add('hover')" ondragleave="this.classList.remove('hover')" ondrop="handleDrop(event)">
-        اسحب صورة المنتج هنا
-        <img id="preview" src="">
+    <div class="stats-bar">
+        <div class="stat-box"><h3>المبيعات</h3><h2 id="stMoney">$0</h2></div>
+        <div class="stat-box"><h3>الطلبات</h3><h2 id="stOrders">0</h2></div>
+        <div class="stat-box"><h3>القطع المباعة</h3><h2 id="stItems">0</h2></div>
     </div>
-    
-    <button class="btn-main" onclick="upload()">حفظ ونشر المنتج</button>
-</div>
 
-<div id="ordersArea" style="max-width: 800px; margin: 20px auto;">
-    <h2>إدارة الطلبات</h2>
-    <div id="list"></div>
-</div>
+    <div class="main-container">
+        <div class="box">
+            <h2><i class="fas fa-plus"></i> إضافة منتج بالسحب</h2>
+            <input id="n" placeholder="اسم المنتج">
+            <input id="pr" type="number" placeholder="السعر">
+            <input id="q" type="number" placeholder="الكمية">
+            <select id="cat">
+                <option value="تيشيرت">تيشيرت</option>
+                <option value="هودي">هودي</option>
+            </select>
+            <div id="drop-zone" ondragover="event.preventDefault(); this.style.background='#e0e7ff'" ondragleave="this.style.background='#f8fafc'" ondrop="handleDrop(event)">
+                <i class="fas fa-image fa-2x"></i><br>اسحب الصورة هنا
+                <img id="preview">
+            </div>
+            <button class="btn-p" onclick="add()">حفظ ونشر</button>
+        </div>
+
+        <div class="box">
+            <h2><i class="fas fa-truck"></i> الطلبات الحية</h2>
+            <div id="list"></div>
+        </div>
+    </div>
 
 <script>
     const firebaseConfig = { databaseURL: "https://authen-36a1f-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let base64 = "";
+    let b64 = "";
 
     function handleDrop(e) {
         e.preventDefault();
-        this.classList.remove('hover');
-        const file = e.dataTransfer.files[0];
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            base64 = ev.target.result;
-            const img = document.getElementById('preview');
-            img.src = base64; img.style.display = "block";
-        };
-        reader.readAsDataURL(file);
+        const f = e.dataTransfer.files[0];
+        const r = new FileReader();
+        r.onload = (ev) => { b64 = ev.target.result; const i = document.getElementById('preview'); i.src = b64; i.style.display="block"; };
+        r.readAsDataURL(f);
     }
 
-    function upload() {
-        const name = document.getElementById('pName').value, price = document.getElementById('pPrice').value, qty = document.getElementById('pQty').value;
-        if(!base64 || !name) return alert("أكمل البيانات");
-        db.ref('inventory').push({ name, price, qty: parseInt(qty), img: base64 });
-        alert("تم النشر!"); location.reload();
+    function add() {
+        const n=document.getElementById('n').value, pr=document.getElementById('pr').value, q=document.getElementById('q').value, c=document.getElementById('cat').value;
+        if(!b64 || !n) return alert("أكمل البيانات");
+        db.ref('inventory').push({ name:n, price:pr, qty:parseInt(q), category:c, img:b64 });
+        alert("تم!"); location.reload();
     }
 
     db.ref('orders').on('value', snap => {
         const area = document.getElementById('list');
+        let m=0, o=0, it=0;
         area.innerHTML = '';
         snap.forEach(c => {
-            const o = c.val();
+            const val = c.val(); m += parseFloat(val.total); o++; it += val.items.length;
+            
+            // استخراج إحداثيات الصورة من الرابط (إذا وجد)
+            let mapImg = "https://via.placeholder.com/400x150?text=Map+Preview+Loading...";
+            if(val.location.includes(",")) {
+                let coords = val.location.split('/').pop().replace('1', '').replace('0', '');
+                mapImg = `https://maps.googleapis.com/maps/api/staticmap?center=${coords}&zoom=15&size=400x150&markers=color:red%7C${coords}&key=YOUR_API_KEY`;
+            }
+
             area.innerHTML += `
-                <div class="order">
-                    <b>${o.name} - ${o.phone}</b> | الإجمالي: $${o.total}<br>
-                    <p>${o.items.map(i=>i.name).join(' + ')}</p>
-                    <a href="${o.location}" target="_blank">📍 فتح الموقع</a><br><br>
-                    ${o.status === 'pending' ? 
-                        `<button onclick="done('${c.key}')" style="background:green; color:white; border:none; padding:8px; border-radius:5px; cursor:pointer;">تم التوصيل (تفعيل التقييم)</button>` : 
-                        '<span>✅ طلب مكتمل</span>'}
-                    <button onclick="db.ref('orders/${c.key}').remove()" style="background:red; color:white; border:none; padding:8px; border-radius:5px; cursor:pointer;">حذف</button>
-                </div>
-            `;
+                <div class="order-card">
+                    <b>${val.name}</b> (${val.phone})<br>
+                    الأصناف: ${val.items.map(x=>x.name).join(' + ')}<br>
+                    العنوان: ${val.addr}<br>
+                    <div class="map-snap"><img src="${mapImg}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;"></div>
+                    <a href="${val.location}" target="_blank" style="color:blue">📍 فتح الملاحة (Google Maps)</a><br><br>
+                    ${val.status === 'pending' ? 
+                        `<button class="btn-p" style="background:green" onclick="mark('${c.key}')">تم التوصيل (فتح التقييم)</button>` : 
+                        '<span style="color:green">✅ طلب مكتمل</span>'}
+                    <button class="btn-p" style="background:red; width:auto; padding:5px 10px;" onclick="db.ref('orders/${c.key}').remove()">حذف</button>
+                </div>`;
         });
+        document.getElementById('stMoney').innerText = `$${m}`;
+        document.getElementById('stOrders').innerText = o;
+        document.getElementById('stItems').innerText = it;
     });
 
-    function done(id) { db.ref('orders/' + id).update({ status: 'delivered' }); }
+    function mark(id) { db.ref('orders/' + id).update({ status: 'delivered' }); }
 </script>
 </body>
 </html>
