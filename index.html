@@ -3,61 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NPX Anime Store | متجر أنمي</title>
+    <title>NPX Shopping Center | متجر التسوق الحديث</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     
     <style>
-        :root { --amazon-orange: #febd69; --amazon-blue: #131921; --bg: #eaeded; --card: #ffffff; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: #333; margin: 0; }
+        :root { --amazon-orange: #ff9900; --amazon-blue: #232f3e; --bg: #f3f3f3; --card: #ffffff; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: #111; margin: 0; }
         
-        /* Navigation */
         nav { background: var(--amazon-blue); padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; color: white; position: sticky; top: 0; z-index: 100; }
         .search-bar { flex-grow: 1; margin: 0 20px; display: flex; }
-        .search-bar input { width: 100%; padding: 10px; border-radius: 5px 0 0 5px; border: none; }
-        .search-bar button { background: var(--amazon-orange); border: none; padding: 10px 20px; border-radius: 0 5px 5px 0; cursor: pointer; }
+        .search-bar input { width: 100%; padding: 10px; border-radius: 4px 0 0 4px; border: none; }
+        .search-bar button { background: var(--amazon-orange); border: none; padding: 10px 20px; border-radius: 0 4px 4px 0; cursor: pointer; font-weight: bold; }
 
-        /* Product Grid */
-        .container { padding: 20px; display: flex; gap: 20px; }
-        .main-content { flex: 3; }
-        .sidebar { flex: 1; background: white; padding: 20px; border-radius: 8px; height: fit-content; border: 1px solid #ddd; }
+        .container { padding: 20px; display: flex; gap: 20px; flex-wrap: wrap; }
+        .main-content { flex: 3; min-width: 300px; }
+        .sidebar { flex: 1; background: white; padding: 20px; border-radius: 8px; height: fit-content; border: 1px solid #ddd; min-width: 250px; }
         
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; }
-        .product-card { background: var(--card); padding: 15px; border-radius: 5px; border: 1px solid #ddd; transition: 0.2s; }
-        .product-card:hover { box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .product-card img { width: 100%; height: 180px; object-fit: contain; }
-        .product-card h3 { font-size: 1rem; margin: 10px 0; height: 40px; overflow: hidden; }
-        .price { font-size: 1.2rem; font-weight: bold; color: #B12704; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        .product-card { background: var(--card); padding: 15px; border-radius: 8px; border: 1px solid #ddd; transition: 0.3s; position: relative; }
+        .product-card:hover { box-shadow: 0 6px 12px rgba(0,0,0,0.1); transform: translateY(-3px); }
+        .product-card img { width: 100%; height: 200px; object-fit: cover; border-radius: 4px; }
+        .product-card h3 { font-size: 1.1rem; margin: 12px 0; color: #007185; }
+        .price { font-size: 1.4rem; font-weight: bold; color: #B12704; }
         
-        /* Checkout Form */
         .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input[type="text"] { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        .btn-add { background: #ffd814; border: 1px solid #fcd200; border-radius: 20px; padding: 10px; width: 100%; cursor: pointer; margin-top: 10px; }
-        .btn-order { background: var(--amazon-orange); border: 1px solid #f3a847; border-radius: 20px; padding: 12px; width: 100%; cursor: pointer; font-weight: bold; margin-top: 20px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; }
+        input[type="text"], input[type="tel"], textarea { width: 100%; padding: 10px; border: 1px solid #888; border-radius: 4px; box-sizing: border-box; }
+        
+        .btn-add { background: #ffd814; border: 1px solid #fcd200; border-radius: 8px; padding: 10px; width: 100%; cursor: pointer; margin-top: 10px; font-weight: bold; }
+        .btn-order { background: var(--amazon-orange); border: 1px solid #a88734; border-radius: 8px; padding: 12px; width: 100%; cursor: pointer; font-weight: bold; margin-top: 20px; font-size: 1rem; }
         
         #login-page { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: white; }
+        .cart-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #eee; font-size: 0.9rem; }
     </style>
 </head>
 <body>
 
     <div id="login-page">
-        <h1 style="color: var(--amazon-blue)">NPX Shop Login</h1>
-        <button onclick="login()" style="padding: 15px 30px; cursor: pointer; border-radius: 5px; border: 1px solid #ddd; background: white; display: flex; align-items: center; gap: 10px;">
+        <h1 style="color: var(--amazon-blue)">مرحباً بك في متجر NPX</h1>
+        <p>يرجى تسجيل الدخول للبدء بالتسوق</p>
+        <button onclick="login()" style="padding: 12px 24px; cursor: pointer; border-radius: 25px; border: 1px solid #ddd; background: white; display: flex; align-items: center; gap: 10px; font-size: 1rem;">
             <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="20">
-            Sign in with Google
+            الدخول بحساب Google
         </button>
     </div>
 
     <div id="shop-page" style="display: none;">
         <nav>
-            <div style="font-size: 1.5rem; font-weight: bold;">NPX Shop</div>
+            <div style="font-size: 1.5rem; font-weight: bold;">NPX Mall</div>
             <div class="search-bar">
-                <input type="text" placeholder="Search for items...">
-                <button>🔍</button>
+                <input type="text" placeholder="ابحث عن منتجات، هواتف، ملابس...">
+                <button>بحث</button>
             </div>
-            <button onclick="logout()" style="background: none; color: white; border: 1px solid white; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Logout</button>
+            <button onclick="logout()" style="background: none; color: white; border: 1px solid white; padding: 5px 10px; border-radius: 5px; cursor: pointer;">خروج</button>
         </nav>
 
         <div class="container">
@@ -66,24 +66,27 @@
             </div>
 
             <div class="sidebar">
-                <h3>Cart Summary</h3>
-                <hr>
-                <div id="cart-items">Your cart is empty</div>
-                <div style="margin-top: 20px;">
-                    <div class="price">Total: $<span id="total-price">0.00</span></div>
+                <h3>ملخص السلة</h3>
+                <div id="cart-items">سلة التسوق فارغة</div>
+                <div style="margin-top: 20px; border-top: 2px solid #eee; padding-top: 10px;">
+                    <div class="price">الإجمالي: <span id="total-price">0.00</span> $</div>
                 </div>
 
-                <div style="margin-top: 30px;">
-                    <h3>Delivery Info</h3>
+                <div style="margin-top: 30px; background: #f9f9f9; padding: 15px; border-radius: 8px;">
+                    <h3 style="margin-top:0">بيانات الشحن (توصيل للمنزل)</h3>
                     <div class="form-group">
-                        <label>Roblox Username</label>
-                        <input type="text" id="rbx-user" placeholder="e.g. Player123">
+                        <label>رقم الهاتف</label>
+                        <input type="tel" id="user-phone" placeholder="01xxxxxxxxx">
                     </div>
                     <div class="form-group">
-                        <label>Your Country/City</label>
-                        <input type="text" id="user-location" placeholder="e.g. Cairo, Egypt">
+                        <label>المدينة والمنطقة</label>
+                        <input type="text" id="user-city" placeholder="مثال: القاهرة، مدينة نصر">
                     </div>
-                    <button class="btn-order" onclick="placeOrder()">Place Order</button>
+                    <div class="form-group">
+                        <label>العنوان التفصيلي</label>
+                        <textarea id="user-address" rows="3" placeholder="اسم الشارع، رقم المبنى، رقم الشقة"></textarea>
+                    </div>
+                    <button class="btn-order" onclick="placeOrder()">إتمام طلب الشراء</button>
                 </div>
             </div>
         </div>
@@ -91,9 +94,9 @@
 
     <script>
         const firebaseConfig = {
-            apiKey: "AIzaSyAVadEAFdmh0SuWq4sZJkSJJrRpF5fOp58",
-            authDomain: "authen-36a1f.firebaseapp.com",
-            projectId: "authen-36a1f",
+            apiKey: "AIzaSyAVadEAFdmh0SuWq4sZJkSJJrRpF5fOp58", //
+            authDomain: "authen-36a1f.firebaseapp.com",     //
+            projectId: "authen-36a1f",                      //
             storageBucket: "authen-36a1f.firebasestorage.app",
             messagingSenderId: "144619996396",
             appId: "1:144619996396:web:21c057f485099f574bd1c9"
@@ -104,10 +107,10 @@
         const provider = new firebase.auth.GoogleAuthProvider();
 
         const items = [
-            { id: 1, name: "Super Super Happy Face", price: 150.00, img: "https://via.placeholder.com/200?text=Happy+Face" },
-            { id: 2, name: "Valkyrie Helm", price: 299.99, img: "https://via.placeholder.com/200?text=Valkyrie" },
-            { id: 3, name: "Ice Dragon Wing", price: 45.00, img: "https://via.placeholder.com/200?text=Ice+Wings" },
-            { id: 4, name: "Golden Katana", price: 12.50, img: "https://via.placeholder.com/200?text=Katana" }
+            { id: 1, name: "هاتف ذكي أحدث طراز", price: 899.00, img: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400" },
+            { id: 2, name: "سماعات لاسلكية عازلة للضوضاء", price: 150.00, img: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400" },
+            { id: 3, name: "ساعة ذكية رياضية", price: 199.50, img: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400" },
+            { id: 4, name: "حقيبة ظهر للسفر والمغامرات", price: 45.00, img: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400" }
         ];
 
         let cart = [];
@@ -131,8 +134,8 @@
                 <div class="product-card">
                     <img src="${p.img}">
                     <h3>${p.name}</h3>
-                    <div class="price">$${p.price.toFixed(2)}</div>
-                    <button class="btn-add" onclick="addToCart(${p.id})">Add to Cart</button>
+                    <div class="price">${p.price.toFixed(2)} $</div>
+                    <button class="btn-add" onclick="addToCart(${p.id})">إضافة للسلة</button>
                 </div>
             `).join('');
             document.getElementById('products').innerHTML = html;
@@ -148,19 +151,20 @@
             const list = document.getElementById('cart-items');
             const total = cart.reduce((sum, item) => sum + item.price, 0);
             
-            list.innerHTML = cart.map(item => `<div>• ${item.name} ($${item.price})</div>`).join('');
+            list.innerHTML = cart.map(item => `<div class="cart-item"><span>${item.name}</span> <b>${item.price}$</b></div>`).join('');
             document.getElementById('total-price').innerText = total.toFixed(2);
-            if(cart.length === 0) list.innerHTML = "Your cart is empty";
+            if(cart.length === 0) list.innerHTML = "سلة التسوق فارغة";
         }
 
         function placeOrder() {
-            const rbx = document.getElementById('rbx-user').value;
-            const loc = document.getElementById('user-location').value;
+            const phone = document.getElementById('user-phone').value;
+            const city = document.getElementById('user-city').value;
+            const addr = document.getElementById('user-address').value;
             
-            if(cart.length === 0) return alert("Your cart is empty!");
-            if(!rbx || !loc) return alert("Please fill in your Roblox name and Location!");
+            if(cart.length === 0) return alert("سلة التسوق فارغة!");
+            if(!phone || !city || !addr) return alert("يرجى ملء جميع بيانات الشحن (الهاتف والعنوان)!");
 
-            alert(`Order Placed Successfully!\n\nUser: ${auth.currentUser.displayName}\nRoblox: ${rbx}\nLocation: ${loc}\nTotal: $${document.getElementById('total-price').innerText}`);
+            alert(`تم استلام طلبك بنجاح يا ${auth.currentUser.displayName}!\n\nالإجمالي: ${document.getElementById('total-price').innerText}$\nسيتم الاتصال بك على رقم: ${phone}\nالعنوان: ${city} - ${addr}`);
             cart = [];
             updateCart();
         }
