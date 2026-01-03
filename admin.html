@@ -2,115 +2,60 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anime Roblox Store | متجر أنمي</title>
-    
+    <title>NPX Admin | لوحة التحكم</title>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <style>
-        :root { --primary: #6c5ce7; --bg: #0b0c10; --card: #1f2833; --accent: #45a29e; }
-        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: white; margin: 0; }
-        #login-page { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-        .google-btn { background: white; color: #333; padding: 12px 25px; border-radius: 30px; border: none; cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 1.1rem; }
-        #shop-page { display: none; padding: 20px; }
-        nav { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 15px 30px; border-radius: 15px; margin-bottom: 25px; }
-        .search-box { width: 60%; padding: 10px 20px; border-radius: 25px; border: 1px solid var(--accent); background: #0b0c10; color: white; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
-        .card { background: var(--card); border-radius: 15px; padding: 15px; text-align: center; border: 1px solid transparent; transition: 0.3s; }
-        .card:hover { border-color: var(--primary); box-shadow: 0 0 15px var(--primary); }
-        .card img { width: 100%; border-radius: 10px; height: 180px; object-fit: cover; }
-        .price { color: #2ecc71; font-size: 1.4rem; font-weight: bold; margin: 10px 0; }
-        .rbx-input { width: 90%; padding: 8px; border-radius: 5px; background: #0b0c10; color: #00ff00; text-align: center; margin-bottom: 10px; border: 1px solid #444; }
-        .buy-btn { background: var(--primary); color: white; border: none; padding: 10px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        body { font-family: sans-serif; background: #f0f2f5; padding: 20px; }
+        .order-card { background: white; padding: 20px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .btn { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; color: white; font-weight: bold; margin-left: 5px; }
+        .btn-ship { background: #007bff; }
+        .btn-deliver { background: #28a745; }
+        .btn-del { background: #dc3545; }
+        .status { font-weight: bold; color: #555; }
     </style>
 </head>
 <body>
-
-    <div id="login-page">
-        <h1 style="font-size: 3rem; color: var(--primary);">ANIME SHOP 🎌</h1>
-        <p>سجل دخولك بحساب Gmail لبدء التسوق</p>
-        <button class="google-btn" onclick="loginWithGoogle()">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="20">
-            تسجيل الدخول عبر Gmail
-        </button>
-    </div>
-
-    <div id="shop-page">
-        <nav>
-            <h2 id="user-name">متجري</h2>
-            <input type="text" id="searchInput" class="search-box" placeholder="ابحث عن أدوات أنمي..." onkeyup="search()">
-            <button onclick="logout()" style="background: none; border: 1px solid #ff4757; color: #ff4757; cursor: pointer; padding: 5px 15px; border-radius: 5px;">خروج</button>
-        </nav>
-        <div class="grid" id="products-list"></div>
-    </div>
+    <h1>مدير NPX STORE 👑</h1>
+    <div id="admin-orders">جاري تحميل الطلبات...</div>
 
     <script>
-        // بيانات مشروعك من الصورة
         const firebaseConfig = {
             apiKey: "AIzaSyAVadEAFdmh0SuWq4sZJkSJJrRpF5fOp58",
             authDomain: "authen-36a1f.firebaseapp.com",
             projectId: "authen-36a1f",
-            storageBucket: "authen-36a1f.firebasestorage.app",
-            messagingSenderId: "144619996396",
-            appId: "1:144619996396:web:21c057f485099f574bd1c9",
-            measurementId: "G-2PT1J1GQCC"
+            databaseURL: "https://authen-36a1f-default-rtdb.firebaseio.com/",
+            appId: "1:144619996396:web:21c057f485099f574bd1c9"
         };
-
         firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const provider = new firebase.auth.GoogleAuthProvider();
+        const db = firebase.database();
 
-        function loginWithGoogle() {
-            auth.signInWithPopup(provider).catch(error => {
-                alert("يجب تشغيل الموقع عبر Server وليس كملف عادي: " + error.message);
-            });
-        }
-
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                document.getElementById('login-page').style.display = 'none';
-                document.getElementById('shop-page').style.display = 'block';
-                document.getElementById('user-name').innerText = "أهلاً " + user.displayName.split(' ')[0];
-                render(products);
-            } else {
-                document.getElementById('login-page').style.display = 'flex';
-                document.getElementById('shop-page').style.display = 'none';
-            }
+        db.ref('orders').on('value', snap => {
+            const orders = snap.val();
+            const container = document.getElementById('admin-orders');
+            if(!orders) { container.innerHTML = "لا توجد طلبات حالياً."; return; }
+            
+            container.innerHTML = Object.keys(orders).map(id => {
+                const o = orders[id];
+                return `
+                <div class="order-card">
+                    <h3>العميل: ${id}</h3>
+                    <p>المشتريات: ${o.items.join(' - ')}</p>
+                    <p>الإجمالي: <b>$${o.total}</b></p>
+                    <p class="status">الحالة الحالية: ${o.status}</p>
+                    <button class="btn btn-ship" onclick="updateStatus('${id}', 'shipping')">شحن 🚚</button>
+                    <button class="btn btn-deliver" onclick="updateStatus('${id}', 'delivered')">تم التسليم ✅</button>
+                    <button class="btn btn-del" onclick="deleteOrder('${id}')">حذف الطلب 🗑️</button>
+                </div>`;
+            }).join('');
         });
 
-        function logout() { auth.signOut(); }
-
-        const products = [
-            { id: 1, name: "Goku Aura Blue", price: 15.00, img: "https://via.placeholder.com/250/0000FF/FFFFFF?text=Goku+Aura" },
-            { id: 2, name: "Naruto Run Speed", price: 9.99, img: "https://via.placeholder.com/250/FFA500/FFFFFF?text=Naruto+Run" },
-            { id: 3, name: "Katana of Zoro", price: 29.50, img: "https://via.placeholder.com/250/008000/FFFFFF?text=Zoro+Sword" },
-            { id: 4, name: "Luffy Straw Hat", price: 5.00, img: "https://via.placeholder.com/250/FFFF00/000000?text=Straw+Hat" }
-        ];
-
-        function render(items) {
-            const list = document.getElementById('products-list');
-            list.innerHTML = items.map(p => `
-                <div class="card">
-                    <img src="${p.img}">
-                    <h3>${p.name}</h3>
-                    <div class="price">$${p.price.toFixed(2)}</div>
-                    <input type="text" class="rbx-input" id="rbx-${p.id}" placeholder="اسم حساب روبلوكس">
-                    <button class="buy-btn" onclick="order('${p.name}', ${p.id})">اشترِ الآن</button>
-                </div>
-            `).join('');
+        function updateStatus(uid, newStatus) {
+            db.ref('orders/' + uid).update({ status: newStatus });
         }
 
-        function search() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = products.filter(p => p.name.toLowerCase().includes(query));
-            render(filtered);
-        }
-
-        function order(name, id) {
-            const rbxName = document.getElementById('rbx-' + id).value;
-            if(!rbxName) return alert("يرجى كتابة اسم حساب روبلوكس أولاً!");
-            alert(`شكراً ${auth.currentUser.displayName}!\nتم طلب: ${name}\nلحساب روبلوكس: ${rbxName}`);
+        function deleteOrder(uid) {
+            if(confirm("هل تريد حذف الطلب نهائياً؟")) db.ref('orders/' + uid).remove();
         }
     </script>
 </body>
