@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NPX Store | نظام الدفع والتوصيل</title>
+    <title>NPX Store | تواصل معنا</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     
     <style>
-        :root { --main: #232f3e; --accent: #ff9900; --bg: #f4f7f6; }
+        :root { --main: #232f3e; --accent: #ff9900; --bg: #f4f7f6; --whatsapp: #25d366; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; color: #333; }
         nav { background: var(--main); padding: 15px 5%; display: flex; justify-content: space-between; color: white; }
         .container { display: flex; flex-wrap: wrap; padding: 20px 5%; gap: 20px; }
@@ -19,8 +19,27 @@
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
         .card { background: white; border-radius: 10px; padding: 15px; text-align: center; border: 1px solid #eee; }
         .payment-box { background: #fff9f0; padding: 15px; border-radius: 8px; border: 1px solid #ffe8cc; margin-top: 20px; }
+        
+        /* زر إتمام الطلب */
         .confirm-btn { background: var(--accent); color: white; border: none; width: 100%; padding: 15px; border-radius: 30px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 15px; }
-        .whatsapp-btn { background: #25d366; color: white; text-decoration: none; display: none; align-items: center; justify-content: center; padding: 12px; border-radius: 8px; margin-top: 10px; font-weight: bold; }
+        
+        /* زر الواتساب الجديد الظاهر دائماً */
+        .whatsapp-btn { 
+            background: var(--whatsapp); 
+            color: white; 
+            text-decoration: none; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 12px; 
+            border-radius: 8px; 
+            margin-top: 20px; 
+            font-weight: bold;
+            transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3);
+        }
+        .whatsapp-btn:hover { background: #1ebe57; transform: scale(1.02); }
+
         input, textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
         #login-screen { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     </style>
@@ -29,7 +48,7 @@
 
     <div id="login-screen">
         <h1>NPX STORE 🛒</h1>
-        <button onclick="login()" style="padding: 15px 30px; cursor: pointer; border-radius: 50px;">تسجيل الدخول بجوجل</button>
+        <button onclick="login()" style="padding: 15px 30px; cursor: pointer; border-radius: 50px; background: white; border: 1px solid #ddd;">تسجيل الدخول بجوجل</button>
     </div>
 
     <div id="main-store" style="display: none;">
@@ -45,24 +64,25 @@
 
             <div class="sidebar">
                 <h3>🛒 سلة المشتريات</h3>
-                <div id="cart-content">السلة فارغة</div>
+                <div id="cart-content" style="border-bottom: 1px solid #eee; padding-bottom: 10px;">السلة فارغة</div>
                 <h2 style="text-align:center; color: #B12704;">الإجمالي: $<span id="grand-total">0.00</span></h2>
 
                 <div class="payment-box">
-                    <h4>بيانات الشحن</h4>
-                    <input type="tel" id="phone" placeholder="رقم الموبايل">
-                    <textarea id="address" placeholder="العنوان بالتفصيل"></textarea>
+                    <h4>إتمام عملية الشراء</h4>
+                    <input type="tel" id="phone" placeholder="رقم موبايلك">
+                    <textarea id="address" placeholder="عنوان التوصيل"></textarea>
                     
-                    <p>وسيلة الدفع:</p>
+                    <p style="font-size: 0.9rem; font-weight: bold;">اختر طريقة الدفع:</p>
                     <label><input type="radio" name="pay-method" value="Cash" checked> 💵 كاش عند الاستلام</label><br>
                     <label><input type="radio" name="pay-method" value="PayPal"> 💳 PayPal</label>
                     
-                    <button class="confirm-btn" onclick="processOrder()">إتمام الطلب الآن ✅</button>
+                    <button class="confirm-btn" onclick="processOrder()">تأكيد الطلب ✅</button>
                 </div>
 
-                <a id="wa-link" href="#" target="_blank" class="whatsapp-btn">
-                    تأكيد عبر واتساب (01221060599) 💬
+                <a id="wa-link" href="https://wa.me/201221060599" target="_blank" class="whatsapp-btn">
+                    تواصل مع صاحب المتجر 💬
                 </a>
+                <p style="font-size: 0.75rem; text-align: center; color: #666; margin-top: 5px;">رقم المتجر: 01221060599</p>
             </div>
         </div>
     </div>
@@ -88,7 +108,7 @@
         ];
 
         let cart = [];
-        const MY_WA_NUMBER = "201221060599"; // رقمك تم ضبطه هنا
+        const MY_WA_NUMBER = "201221060599"; 
 
         function login() { auth.signInWithPopup(provider); }
         function logout() { auth.signOut(); }
@@ -125,8 +145,17 @@
             const total = cart.reduce((s, i) => s + i.price, 0);
             document.getElementById('grand-total').innerText = total.toFixed(2);
             const container = document.getElementById('cart-content');
-            if(cart.length === 0) { container.innerHTML = "السلة فارغة"; return; }
-            container.innerHTML = cart.map(i => `<div style="display:flex; justify-content:space-between;"><span>${i.name}</span> <button onclick="removeFromCart(${i.cartId})" style="color:red; border:none; background:none; cursor:pointer;">X</button></div>`).join('');
+            if(cart.length === 0) { 
+                container.innerHTML = "السلة فارغة"; 
+                // إعادة ضبط رابط الواتساب للحالة الافتراضية
+                document.getElementById('wa-link').href = `https://wa.me/${MY_WA_NUMBER}?text=${encodeURIComponent("مرحباً، لدي استفسار بخصوص المتجر.")}`;
+                return; 
+            }
+            container.innerHTML = cart.map(i => `<div style="display:flex; justify-content:space-between; margin-top:5px;"><span>${i.name}</span> <button onclick="removeFromCart(${i.cartId})" style="color:red; border:none; background:none; cursor:pointer;">X</button></div>`).join('');
+            
+            // تحديث الرابط برسالة الطلب تلقائياً
+            const msg = `مرحباً، أريد طلب:\n${cart.map(i=>i.name).join(', ')}\nالإجمالي: ${total}$`;
+            document.getElementById('wa-link').href = `https://wa.me/${MY_WA_NUMBER}?text=${encodeURIComponent(msg)}`;
         }
 
         function removeFromCart(id) { cart = cart.filter(i => i.cartId !== id); updateUI(); }
@@ -137,10 +166,9 @@
             const method = document.querySelector('input[name="pay-method"]:checked').value;
             const total = document.getElementById('grand-total').innerText;
 
-            if(!phone || !address || cart.length === 0) return alert("يرجى إكمال البيانات!");
+            if(!phone || !address || cart.length === 0) return alert("يرجى إكمال البيانات واختيار المنتجات!");
 
-            const orderId = Date.now();
-            db.ref('orders/' + orderId).set({
+            db.ref('orders/' + Date.now()).set({
                 user: auth.currentUser.displayName,
                 phone: phone,
                 address: address,
@@ -151,11 +179,7 @@
                 if(method === "PayPal") {
                     window.location.href = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=your-email@example.com&item_name=Order&amount=${total}&currency_code=USD`;
                 } else {
-                    alert("تم حفظ طلبك! اضغط على زر واتساب للتواصل مع صاحب المتجر.");
-                    const msg = `طلب جديد من: ${auth.currentUser.displayName}\nالمنتجات: ${cart.map(i=>i.name).join(', ')}\nالإجمالي: ${total}$\nالعنوان: ${address}`;
-                    const waBtn = document.getElementById('wa-link');
-                    waBtn.href = `https://wa.me/${MY_WA_NUMBER}?text=${encodeURIComponent(msg)}`;
-                    waBtn.style.display = 'flex';
+                    alert("تم إرسال طلبك! اضغط الآن على زر الواتساب الأخضر بالأسفل لتأكيد التوصيل معنا.");
                 }
             });
         }
