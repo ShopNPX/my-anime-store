@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NPX Elite Store | متجر الملابس</title>
+    <title>NPX Elite Store</title>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -13,38 +13,29 @@
         
         /* Navbar */
         nav { background: rgba(15,23,42,0.95); backdrop-filter: blur(10px); padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 2px solid var(--p); }
-        .logo { font-size: 1.8rem; font-weight: 800; color: var(--p); letter-spacing: 2px; }
-        .cart-icon { position: relative; cursor: pointer; font-size: 1.4rem; background: #334155; padding: 10px; border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; }
-        .cart-count { position: absolute; top: -5px; right: -5px; background: #ef4444; font-size: 0.75rem; padding: 2px 6px; border-radius: 50%; }
+        .logo { font-size: 1.8rem; font-weight: 800; color: var(--p); }
+        .cart-icon { position: relative; cursor: pointer; font-size: 1.4rem; background: #334155; padding: 10px; border-radius: 50%; }
 
-        /* Filter Section */
-        .header-content { padding: 30px 5%; text-align: center; background: linear-gradient(to bottom, #1e293b, #0f172a); }
-        .filters { display: flex; gap: 10px; overflow-x: auto; padding: 20px 5%; scrollbar-width: none; justify-content: center; }
-        .f-btn { background: #334155; border: none; color: white; padding: 10px 22px; border-radius: 25px; cursor: pointer; white-space: nowrap; transition: 0.3s; font-weight: 600; }
-        .f-btn.active { background: var(--p); box-shadow: 0 0 15px var(--p); }
-        .popular-btn { background: linear-gradient(45deg, #f59e0b, #ef4444); color: white; border: none; padding: 10px 22px; border-radius: 25px; cursor: pointer; font-weight: bold; }
+        /* Lock Message */
+        #orderLockMsg { display: none; background: #ef4444; color: white; text-align: center; padding: 15px; font-weight: bold; position: sticky; top: 75px; z-index: 999; }
 
         /* Product Grid */
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding: 20px 5% 50px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding: 40px 5%; }
         .card { background: var(--card); border-radius: 20px; overflow: hidden; border: 1px solid #334155; position: relative; transition: 0.4s; }
-        .card:hover { transform: translateY(-10px); border-color: var(--p); }
         .card img { width: 100%; height: 320px; object-fit: cover; }
-        .badge { position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.7); padding: 5px 12px; border-radius: 10px; font-size: 0.8rem; }
         
         .config-area { padding: 20px; }
         .price-tag { font-size: 1.6rem; font-weight: bold; color: var(--p); margin-bottom: 15px; }
-        .select-label { font-size: 0.85rem; color: #94a3b8; margin-bottom: 5px; display: block; }
         .options { display: flex; gap: 8px; margin-bottom: 15px; }
-        .opt-btn { background: #0f172a; border: 1px solid #475569; color: white; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: 0.2s; }
+        .opt-btn { background: #0f172a; border: 1px solid #475569; color: white; padding: 6px 12px; border-radius: 8px; cursor: pointer; }
         .opt-btn.active { background: var(--p); border-color: var(--p); }
         .add-btn { width: 100%; padding: 14px; border-radius: 12px; border: none; background: var(--p); color: white; font-weight: bold; cursor: pointer; }
+        .add-btn:disabled { background: #475569; cursor: not-allowed; opacity: 0.5; }
 
-        /* Purchase Page Overlay */
-        #checkoutPage { position: fixed; inset: 0; background: var(--dark); z-index: 2000; display: none; padding: 5% 5%; overflow-y: auto; }
+        /* Purchase Page */
+        #checkoutPage { position: fixed; inset: 0; background: var(--dark); z-index: 2000; display: none; padding: 5%; overflow-y: auto; }
         .checkout-grid { display: grid; grid-template-columns: 1fr 400px; gap: 40px; max-width: 1100px; margin: 0 auto; }
-        @media (max-width: 900px) { .checkout-grid { grid-template-columns: 1fr; } }
-        .item-card { display: flex; justify-content: space-between; background: #1e293b; padding: 20px; border-radius: 15px; margin-bottom: 15px; border-right: 5px solid var(--p); }
-        .form-input { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #334155; background: #0f172a; color: white; margin-bottom: 15px; outline: none; }
+        .form-input { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #334155; background: #0f172a; color: white; margin-bottom: 15px; }
         .confirm-btn { width: 100%; padding: 20px; border-radius: 15px; border: none; background: #22c55e; color: white; font-size: 1.2rem; font-weight: bold; cursor: pointer; }
     </style>
 </head>
@@ -54,44 +45,27 @@
     <div class="logo">NPX ELITE</div>
     <div class="cart-icon" onclick="openCheckout()">
         <i class="fas fa-shopping-bag"></i>
-        <span class="cart-count" id="cCount">0</span>
+        <span style="position:absolute; top:-5px; right:-5px; background:red; font-size:0.7rem; padding:2px 6px; border-radius:50%;" id="cCount">0</span>
     </div>
 </nav>
 
-<div class="header-content">
-    <h1>أفضل تشكيلة ملابس أنمي وكاجوال</h1>
-    <div class="filters">
-        <button class="popular-btn" onclick="sortPopular()"><i class="fas fa-fire"></i> الأكثر رواجاً</button>
-        <button class="f-btn active" onclick="setCat('الكل', this)">الكل</button>
-        <button class="f-btn" onclick="setCat('تيشيرت', this)">تيشيرتات</button>
-        <button class="f-btn" onclick="setCat('هودي', this)">هوديز</button>
-    </div>
-</div>
+<div id="orderLockMsg">⚠️ لديك طلب قيد المراجعة حالياً. لا يمكنك إجراء طلب جديد حتى يتم شحن طلبك الحالي.</div>
 
 <div class="grid" id="productGrid"></div>
 
 <div id="checkoutPage">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:40px; max-width:1100px; margin-inline:auto;">
-        <h1><i class="fas fa-cart-arrow-down"></i> حقيبة التسوق</h1>
-        <button onclick="closeCheckout()" style="background:#ef4444; border:none; color:white; padding:12px 25px; border-radius:12px; cursor:pointer; font-weight:bold;">العودة للمتجر</button>
+    <div style="display:flex; justify-content:space-between; max-width:1100px; margin: 0 auto 30px;">
+        <h1>إتمام الطلب</h1>
+        <button onclick="closeCheckout()" style="background:#ef4444; border:none; color:white; padding:10px 20px; border-radius:10px; cursor:pointer;">إلغاء</button>
     </div>
-
     <div class="checkout-grid">
         <div id="cartItems"></div>
-        <div style="background:#1e293b; padding:30px; border-radius:25px; height:fit-content; border: 1px solid #334155;">
-            <h3 style="margin-top:0">تفاصيل الاستلام</h3>
+        <div style="background:#1e293b; padding:30px; border-radius:20px;">
             <input type="text" id="uName" class="form-input" placeholder="الاسم الكامل">
-            <input type="tel" id="uPhone" class="input-field form-input" placeholder="رقم الواتساب">
-            <button onclick="getLoc()" style="width:100%; padding:12px; background:#3b82f6; border:none; color:white; border-radius:12px; margin-bottom:15px; cursor:pointer;">
-                <i class="fas fa-location-dot"></i> تحديد موقعي الحالي
-            </button>
-            <textarea id="uAddr" class="form-input" rows="3" placeholder="العنوان (المدينة، الشارع، المبنى)"></textarea>
-            
-            <div style="font-size:1.6rem; margin:25px 0; display:flex; justify-content:space-between; border-top:1px solid #334155; padding-top:20px;">
-                <span>إجمالي الطلب:</span>
-                <span style="color:var(--p)">$<span id="totalVal">0.00</span></span>
-            </div>
-            <button class="confirm-btn" onclick="confirmOrder()">تأكيد عبر واتساب <i class="fab fa-whatsapp"></i></button>
+            <input type="tel" id="uPhone" class="form-input" placeholder="رقم الهاتف">
+            <textarea id="uAddr" class="form-input" rows="3" placeholder="العنوان"></textarea>
+            <h2 style="display:flex; justify-content:space-between;"><span>الإجمالي:</span> <span style="color:var(--p)">$<span id="totalVal">0.00</span></span></h2>
+            <button class="confirm-btn" onclick="confirmOrder()">تأكيد الطلب</button>
         </div>
     </div>
 </div>
@@ -101,39 +75,38 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let products = [], cart = [], currentCat = "الكل", userLoc = "";
+    let products = [], cart = [], isLocked = false;
 
-    // جلب المنتجات
+    // فحص إذا كان المستخدم محظوراً من الطلب (لديه طلب سابق)
+    function checkLock() {
+        if(localStorage.getItem('npx_active_order')) {
+            isLocked = true;
+            document.getElementById('orderLockMsg').style.display = 'block';
+        }
+    }
+
     db.ref('inventory').on('value', snap => {
         products = [];
         const data = snap.val();
         for(let id in data) products.push({ id, ...data[id] });
+        checkLock();
         render();
     });
 
     function render() {
         const container = document.getElementById('productGrid');
-        const filtered = products.filter(p => currentCat === "الكل" || p.category === currentCat);
-        
-        container.innerHTML = filtered.map(p => `
+        container.innerHTML = products.map(p => `
             <div class="card">
-                <div class="badge">المخزون: ${p.qty}</div>
                 <img src="${p.img}">
                 <div class="config-area">
-                    <h3 style="margin:0">${p.name}</h3>
+                    <h3>${p.name}</h3>
                     <div class="price-tag">$${p.price}</div>
-                    
-                    <span class="select-label">المقاس:</span>
                     <div class="options" id="size-${p.id}">
-                        ${['S', 'M', 'L', 'XL'].map(s => `<button class="opt-btn" onclick="selectOpt(this)">${s}</button>`).join('')}
+                        ${['S', 'M', 'L'].map(s => `<button class="opt-btn" onclick="selectOpt(this)">${s}</button>`).join('')}
                     </div>
-
-                    <span class="select-label">اللون:</span>
-                    <div class="options" id="color-${p.id}">
-                        ${['أسود', 'أبيض', 'أزرق'].map(c => `<button class="opt-btn" onclick="selectOpt(this)">${c}</button>`).join('')}
-                    </div>
-
-                    <button class="add-btn" onclick="addToCart('${p.id}')">إضافة للسلة +</button>
+                    <button class="add-btn" ${isLocked ? 'disabled' : ''} onclick="addToCart('${p.id}')">
+                        ${isLocked ? 'الطلب معطل حالياً' : 'إضافة للسلة +'}
+                    </button>
                 </div>
             </div>
         `).join('');
@@ -145,32 +118,17 @@
     }
 
     function addToCart(id) {
+        if(isLocked) return;
         const p = products.find(x => x.id === id);
         const sz = document.querySelector(`#size-${id} .active`);
-        const cl = document.querySelector(`#color-${id} .active`);
-        
-        if(!sz || !cl) return alert("الرجاء اختيار المقاس واللون!");
-        if(p.qty <= 0) return alert("نفد من المخزون!");
-
-        cart.push({ ...p, selectedSize: sz.innerText, selectedColor: cl.innerText, cartId: Date.now() });
+        if(!sz) return alert("اختر المقاس!");
+        cart.push({ ...p, selectedSize: sz.innerText });
         document.getElementById('cCount').innerText = cart.length;
-        alert("تمت الإضافة بنجاح ✅");
-    }
-
-    function sortPopular() {
-        products.sort((a, b) => (b.sales || 0) - (a.sales || 0));
-        render();
-    }
-
-    function setCat(c, btn) {
-        currentCat = c;
-        document.querySelectorAll('.f-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        render();
     }
 
     function openCheckout() {
-        if(cart.length === 0) return alert("سلتك فارغة!");
+        if(isLocked) return alert("لا يمكنك فتح السلة، لديك طلب قيد التنفيذ!");
+        if(cart.length === 0) return alert("السلة فارغة!");
         document.getElementById('checkoutPage').style.display = 'block';
         updateCheckoutUI();
     }
@@ -181,45 +139,35 @@
         let total = 0;
         document.getElementById('cartItems').innerHTML = cart.map((item, idx) => {
             total += parseFloat(item.price);
-            return `
-                <div class="item-card">
-                    <div>
-                        <h3 style="margin:0">${item.name}</h3>
-                        <p style="color:#94a3b8; margin:5px 0;">المقاس: ${item.selectedSize} | اللون: ${item.selectedColor}</p>
-                        <b style="color:var(--p)">$${item.price}</b>
-                    </div>
-                    <button onclick="cart.splice(${idx},1);updateCheckoutUI();" style="background:none; border:none; color:#ef4444; font-size:1.5rem; cursor:pointer;"><i class="fas fa-trash-alt"></i></button>
-                </div>`;
+            return `<div style="background:#0f172a; padding:15px; border-radius:10px; margin-bottom:10px; display:flex; justify-content:space-between;">
+                <span>${item.name} (${item.selectedSize})</span>
+                <b>$${item.price}</b>
+            </div>`;
         }).join('');
         document.getElementById('totalVal').innerText = total.toFixed(2);
-        document.getElementById('cCount').innerText = cart.length;
-    }
-
-    function getLoc() {
-        navigator.geolocation.getCurrentPosition(p => {
-            userLoc = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
-            document.getElementById('uAddr').value = "✅ تم تحديد موقعك الجغرافي (رابط الخريطة جاهز)";
-        });
     }
 
     async function confirmOrder() {
         const n = document.getElementById('uName').value, ph = document.getElementById('uPhone').value;
-        if(!n || !ph) return alert("الرجاء إدخال بياناتك!");
+        if(!n || !ph) return alert("أكمل البيانات!");
 
-        // تحديث المخزون وزيادة عداد الرواج
+        // تحديث المخزون
         for(let item of cart) {
             const ref = db.ref(`inventory/${item.id}`);
             const snap = await ref.get();
             const data = snap.val();
-            if(data.qty <= 1) await ref.remove(); // حذف تلقائي إذا صفرت الكمية
+            if(data.qty <= 1) await ref.remove();
             else await ref.update({ qty: data.qty - 1, sales: (data.sales || 0) + 1 });
         }
 
-        const msg = `*طلب جديد من متجر NPX*\n\n👤 العميل: ${n}\n📞 الهاتف: ${ph}\n🏠 العنوان: ${document.getElementById('uAddr').value}\n📍 الموقع: ${userLoc}\n\n📦 المشتريات:\n${cart.map(i => `- ${i.name} [المقاس: ${i.selectedSize}, اللون: ${i.selectedColor}]`).join('\n')}\n\n💰 الإجمالي: $${document.getElementById('totalVal').innerText}`;
+        // إرسال الطلب وحفظ "قفل" في جهاز العميل
+        const orderRef = db.ref('orders').push({ user: n, phone: ph, items: cart.map(i => i.name), total: document.getElementById('totalVal').innerText });
         
-        db.ref('orders').push({ user: n, phone: ph, items: cart.map(i => i.name), total: document.getElementById('totalVal').innerText, location: userLoc, status: 'processing' });
+        // قفل المتصفح
+        localStorage.setItem('npx_active_order', orderRef.key);
         
-        window.location.href = `https://wa.me/201221060599?text=${encodeURIComponent(msg)}`;
+        alert("تم استلام طلبك! لا يمكنك الطلب مرة أخرى حتى يتم إنهاء هذا الطلب.");
+        window.location.reload();
     }
 </script>
 </body>
