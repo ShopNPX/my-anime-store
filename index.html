@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NPX Ultra Store 2026</title>
+    <title>NPX Ultra Store</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -13,43 +13,26 @@
         nav { background: #111827; padding: 15px 5%; display: flex; align-items: center; gap: 15px; position: sticky; top: 0; z-index: 1000; border-bottom: 2px solid var(--p); }
         .search-area { flex: 1; position: relative; }
         .search-area input { width: 100%; padding: 10px 35px 10px 15px; border-radius: 12px; border: 1px solid #334155; background: #1e293b; color: white; outline: none; }
-        .search-area i { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
-        .cats { display: flex; gap: 10px; padding: 15px 5%; overflow-x: auto; scrollbar-width: none; }
-        .cat-btn { background: #1e293b; color: #94a3b8; border: 1px solid #334155; padding: 8px 20px; border-radius: 12px; cursor: pointer; white-space: nowrap; transition: 0.3s; }
-        .cat-btn.active { background: var(--p); color: white; border-color: var(--p); }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; padding: 0 5%; }
-        .card { background: var(--card); border-radius: 15px; overflow: hidden; border: 1px solid #334155; position: relative; transition: 0.3s; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; padding: 20px 5%; }
+        .card { background: var(--card); border-radius: 15px; overflow: hidden; border: 1px solid #334155; position: relative; }
         .card img { width: 100%; height: 260px; object-fit: cover; }
-        .qty-tag { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.8); padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; border: 1px solid var(--p); }
-        .buy-btn { width: 100%; padding: 12px; background: var(--p); border: none; color: white; font-weight: bold; border-radius: 10px; cursor: pointer; margin-top: 10px; }
+        .buy-btn { width: 100%; padding: 12px; background: var(--p); border: none; color: white; font-weight: bold; border-radius: 10px; cursor: pointer; }
         .buy-btn:disabled { background: #475569; opacity: 0.5; cursor: not-allowed; }
         #lockBar { display: none; background: #1e293b; color: white; padding: 20px; text-align: center; margin: 15px 5%; border-radius: 12px; border: 1px solid var(--red); box-shadow: 0 0 15px rgba(239, 68, 68, 0.2); }
         #cartUI, #ratingUI { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; display: none; justify-content: center; align-items: center; padding: 20px; }
         .box { background: var(--card); padding: 25px; border-radius: 20px; width: 100%; max-width: 450px; text-align: center; border: 1px solid #334155; }
         input, textarea { width: 100%; padding: 12px; margin: 8px 0; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 10px; box-sizing: border-box; }
-        .star { font-size: 1.8rem; color: #475569; cursor: pointer; margin: 0 8px; transition: 0.2s; }
-        .star.active { color: var(--gold); transform: scale(1.2); }
+        .star { font-size: 1.8rem; color: #475569; cursor: pointer; margin: 0 8px; }
+        .star.active { color: var(--gold); }
     </style>
 </head>
 <body>
 
 <nav>
     <div style="font-weight: 900; color: var(--p); font-size: 1.5rem;">NPX</div>
-    <div class="search-area">
-        <i class="fas fa-search"></i>
-        <input type="text" id="searchInp" placeholder="ابحث عن منتجك..." onkeyup="filterAndRender()">
-    </div>
-    <div onclick="toggleCart(true)" style="position:relative; cursor:pointer;">
-        <i class="fas fa-shopping-bag fa-lg"></i>
-        <span id="cartCount" style="position:absolute; top:-10px; right:-10px; background:var(--red); font-size:0.7rem; padding:2px 6px; border-radius:50%;">0</span>
-    </div>
+    <div class="search-area"><input type="text" id="searchInp" placeholder="ابحث عن منتجك..." onkeyup="filterAndRender()"></div>
+    <div onclick="toggleCart(true)" style="position:relative; cursor:pointer;"><i class="fas fa-shopping-bag fa-lg"></i><span id="cartCount" style="position:absolute; top:-10px; right:-10px; background:var(--red); font-size:0.7rem; padding:2px 6px; border-radius:50%;">0</span></div>
 </nav>
-
-<div class="cats">
-    <button class="cat-btn active" onclick="setCategory('الكل', this)">الكل</button>
-    <button class="cat-btn" onclick="setCategory('تيشيرت', this)">تيشيرت</button>
-    <button class="cat-btn" onclick="setCategory('هودي', this)">هودي</button>
-</div>
 
 <div id="lockBar">
     <strong id="statusText">⏳ طلبك قيد المراجعة</strong>
@@ -61,14 +44,14 @@
 
 <div id="cartUI">
     <div class="box">
-        <h2 style="margin-top:0;">تأكيد الطلب</h2>
+        <h2>تأكيد الطلب</h2>
         <div id="cartItemsList" style="text-align:right; max-height:150px; overflow-y:auto; margin-bottom:15px;"></div>
         <div style="font-weight:bold; margin:10px 0;">الإجمالي: $<span id="totalSum">0</span></div>
         <input id="uName" placeholder="الاسم الكامل">
         <input id="uPhone" placeholder="رقم الواتساب">
-        <button onclick="fetchGPS()" style="width:100%; padding:10px; background:#3b82f6; border:none; color:white; border-radius:10px; cursor:pointer;">📍 تحديد الموقع GPS</button>
+        <button onclick="fetchGPS()" style="width:100%; padding:10px; background:#3b82f6; border:none; color:white; border-radius:10px;">📍 تحديد الموقع GPS</button>
         <textarea id="uAddr" placeholder="العنوان بالتفصيل"></textarea>
-        <button onclick="finalSubmit()" style="width:100%; padding:15px; background:#22c55e; color:white; border:none; font-weight:bold; border-radius:10px; cursor:pointer; font-size:1.1rem;">إرسال للواتساب وتأكيد الطلب</button>
+        <button onclick="finalSubmit()" style="width:100%; padding:15px; background:#22c55e; color:white; border:none; font-weight:bold; border-radius:10px;">إرسال للواتساب وتأكيد الطلب</button>
         <button onclick="toggleCart(false)" style="background:none; border:none; color:#94a3b8; margin-top:10px; cursor:pointer;">إغلاق</button>
     </div>
 </div>
@@ -76,35 +59,27 @@
 <div id="ratingUI">
     <div class="box">
         <h2 style="color:var(--gold);">تم التوصيل! 🎉</h2>
-        <p>يسعدنا تقييمك للمنتجات لتتمكن من الشراء مجدداً:</p>
+        <p>يسعدنا تقييمك للطلب:</p>
         <div style="margin: 20px 0;">
-            <i class="fas fa-star star" onclick="setRating(1)"></i>
-            <i class="fas fa-star star" onclick="setRating(2)"></i>
-            <i class="fas fa-star star" onclick="setRating(3)"></i>
-            <i class="fas fa-star star" onclick="setRating(4)"></i>
-            <i class="fas fa-star star" onclick="setRating(5)"></i>
+            <i class="fas fa-star star" onclick="setRating(1)"></i><i class="fas fa-star star" onclick="setRating(2)"></i><i class="fas fa-star star" onclick="setRating(3)"></i><i class="fas fa-star star" onclick="setRating(4)"></i><i class="fas fa-star star" onclick="setRating(5)"></i>
         </div>
         <textarea id="revText" placeholder="اكتب رأيك هنا..."></textarea>
-        <button onclick="submitReview()" style="width:100%; padding:15px; background:var(--p); color:white; border:none; font-weight:bold; border-radius:10px;">إرسال التقييم</button>
+        <button onclick="submitReview()" style="width:100%; padding:15px; background:var(--p); color:white; border:none; border-radius:10px;">إرسال التقييم</button>
     </div>
 </div>
 
 <script>
-    // تكوين Firebase (ضع بياناتك هنا)
     const firebaseConfig = { databaseURL: "https://authen-36a1f-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let products = [], cart = [], currentCat = "الكل", gpsLink = "غير محدد", userRating = 0;
+    let products = [], cart = [], gpsLink = "غير محدد", userRating = 0;
 
-    // 1. جلب البيانات ومراقبة حالة الطلب
     db.ref('inventory').on('value', snap => {
-        products = [];
-        snap.forEach(c => { products.push({id: c.key, ...c.val()}); });
+        products = []; snap.forEach(c => products.push({id: c.key, ...c.val()}));
         filterAndRender();
     });
 
-    // مراقبة الطلب الحالي
     const activeKey = localStorage.getItem('npx_active_id');
     if(activeKey) {
         db.ref('orders/' + activeKey).on('value', snap => {
@@ -115,22 +90,22 @@
                 document.getElementById('lockBar').style.display = 'none';
             } else {
                 document.getElementById('lockBar').style.display = 'block';
-                startTimer(order.timestamp);
+                checkTime(order.timestamp);
             }
         });
     }
 
-    function startTimer(timestamp) {
+    function checkTime(ts) {
         setInterval(() => {
-            const diff = (Date.now() - timestamp) / 1000 / 60; // دقائق
+            const diff = (Date.now() - ts) / 1000 / 60;
             const btn = document.getElementById('cancelBtn');
             const msg = document.getElementById('timerMsg');
             if(diff < 60) {
                 btn.style.display = 'inline-block';
-                msg.innerText = `متبقي ${Math.floor(60 - diff)} دقيقة لإمكانية الإلغاء`;
+                msg.innerText = `متبقي ${Math.floor(60 - diff)} دقيقة للإلغاء`;
             } else {
                 btn.style.display = 'none';
-                msg.innerText = "انتهت صلاحية الإلغاء (ساعة واحدة)";
+                msg.innerText = "انتهت مهلة الإلغاء (1 ساعة)";
             }
         }, 1000);
     }
@@ -138,17 +113,12 @@
     function filterAndRender() {
         const query = document.getElementById('searchInp').value.toLowerCase();
         const isLocked = localStorage.getItem('npx_active_id');
-        const container = document.getElementById('mainGrid');
-        
-        const filtered = products.filter(p => (currentCat === "الكل" || p.category === currentCat) && p.name.toLowerCase().includes(query));
-
-        container.innerHTML = filtered.map(p => `
+        document.getElementById('mainGrid').innerHTML = products.filter(p => p.name.toLowerCase().includes(query)).map(p => `
             <div class="card">
-                <div class="qty-tag">متاح: ${p.qty}</div>
                 <img src="${p.img}">
                 <div style="padding:15px;">
-                    <h3 style="margin:0">${p.name}</h3>
-                    <b style="color:var(--p); font-size:1.2rem;">$${p.price}</b>
+                    <h3>${p.name}</h3>
+                    <b style="color:var(--p);">$${p.price} (متاح: ${p.qty})</b>
                     <button class="buy-btn" ${isLocked || p.qty <= 0 ? 'disabled' : ''} onclick="addToCart('${p.id}')">
                         ${isLocked ? 'طلب نشط' : (p.qty <= 0 ? 'نفد' : 'إضافة +')}
                     </button>
@@ -158,50 +128,34 @@
     }
 
     function addToCart(id) {
-        const pIdx = products.findIndex(x => x.id === id);
-        if(products[pIdx].qty <= 0) return;
-        
-        products[pIdx].qty -= 1; // خصم لحظي من العرض
-        cart.push({...products[pIdx], cartId: Date.now(), originalId: id});
-        updateCartUI();
-        filterAndRender();
+        const p = products.find(x => x.id === id);
+        cart.push({...p, cartId: Date.now(), originalId: id});
+        updateUI();
     }
 
-    function removeFromCart(cId, orgId) {
-        const pIdx = products.findIndex(x => x.id === orgId);
-        products[pIdx].qty += 1; // استرجاع للعرض
-        cart = cart.filter(i => i.cartId !== cId);
-        updateCartUI();
-        filterAndRender();
-    }
-
-    function updateCartUI() {
+    function updateUI() {
         document.getElementById('cartCount').innerText = cart.length;
         let total = 0;
         document.getElementById('cartItemsList').innerHTML = cart.map(i => {
             total += parseFloat(i.price);
-            return `<div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                <span>${i.name}</span>
-                <span>$${i.price} <i class="fas fa-trash" onclick="removeFromCart(${i.cartId}, '${i.originalId}')" style="color:red; cursor:pointer; margin-right:5px;"></i></span>
-            </div>`;
+            return `<div>${i.name} - $${i.price}</div>`;
         }).join('');
         document.getElementById('totalSum').innerText = total;
     }
 
-    function toggleCart(s) { if(s && cart.length === 0) return alert("السلة فارغة"); document.getElementById('cartUI').style.display = s ? 'flex' : 'none'; }
+    function toggleCart(s) { document.getElementById('cartUI').style.display = s ? 'flex' : 'none'; }
 
     function fetchGPS() {
         navigator.geolocation.getCurrentPosition(p => {
             gpsLink = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
-            document.getElementById('uAddr').value = "✅ تم تحديد موقعك بدقة";
+            document.getElementById('uAddr').value = "✅ تم التقاط الموقع";
         });
     }
 
     async function finalSubmit() {
-        const n = document.getElementById('uName').value, ph = document.getElementById('uPhone').value, addr = document.getElementById('uAddr').value;
-        if(!n || !ph || !addr) return alert("يرجى إكمال البيانات");
+        const n = document.getElementById('uName').value, ph = document.getElementById('uPhone').value;
+        if(!n || !ph) return alert("أكمل البيانات");
 
-        // خصم نهائي من الداتابيز
         for(let item of cart) {
             const ref = db.ref(`inventory/${item.originalId}/qty`);
             const s = await ref.get();
@@ -209,30 +163,22 @@
         }
 
         const total = document.getElementById('totalSum').innerText;
-        const oData = { name:n, phone:ph, items:cart, location:gpsLink, total, status:"pending", timestamp:Date.now() };
-        const oRef = db.ref('orders').push(oData);
-        
+        const oRef = db.ref('orders').push({ name:n, phone:ph, items:cart, location:gpsLink, total, status:"pending", timestamp:Date.now() });
         localStorage.setItem('npx_active_id', oRef.key);
         localStorage.setItem('npx_active_data', JSON.stringify(cart));
 
-        // رسالة واتساب مفصلة
-        const itemsTxt = cart.map(i => `- ${i.name}`).join('%0A');
-        const waMsg = `طلب جديد من NPX%0Aالاسم: ${n}%0Aالهاتف: ${ph}%0Aالأصناف:%0A${itemsTxt}%0Aالإجمالي: $${total}%0Aالموقع: ${gpsLink}`;
-        
+        const waMsg = `طلب جديد: ${n}%0Aالمنتجات: ${cart.map(i=>i.name).join(', ')}%0Aالإجمالي: $${total}%0Aالموقع: ${gpsLink}`;
         window.location.href = `https://wa.me/201221060599?text=${waMsg}`;
     }
 
     async function cancelOrder() {
         const id = localStorage.getItem('npx_active_id'), data = JSON.parse(localStorage.getItem('npx_active_data'));
-        if(confirm("إلغاء الطلب واسترجاع المخزون؟")) {
+        if(confirm("إلغاء الطلب؟")) {
             for(let i of data) {
                 const r = db.ref(`inventory/${i.originalId}/qty`);
-                const s = await r.get();
-                await r.set(s.val() + 1);
+                const s = await r.get(); await r.set(s.val() + 1);
             }
-            await db.ref('orders/' + id).remove();
-            localStorage.clear();
-            location.reload();
+            db.ref('orders/' + id).remove(); localStorage.clear(); location.reload();
         }
     }
 
@@ -240,19 +186,8 @@
 
     function submitReview() {
         const data = JSON.parse(localStorage.getItem('npx_active_data'));
-        data.forEach(item => {
-            db.ref('reviews/' + item.originalId).push({ stars: userRating, comment: document.getElementById('revText').value });
-        });
-        localStorage.clear();
-        alert("شكراً لتقييمك!");
-        location.reload();
-    }
-
-    function setCategory(c, b) {
-        currentCat = c;
-        document.querySelectorAll('.cat-btn').forEach(x => x.classList.remove('active'));
-        b.classList.add('active');
-        filterAndRender();
+        data.forEach(item => db.ref('reviews/' + item.originalId).push({ stars: userRating, comment: document.getElementById('revText').value }));
+        localStorage.clear(); location.reload();
     }
 </script>
 </body>
