@@ -3,68 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NPX Luxury Store | متجرنا الفاخر</title>
+    <title>NPX Luxury Store | متجر الشراء الحقيقي</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     
     <style>
-        :root { --main-color: #232f3e; --accent-color: #ff9900; --bg-color: #f4f7f6; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, sans-serif; background: var(--bg-color); margin: 0; color: #333; }
+        :root { --main-color: #232f3e; --accent-color: #ff9900; --whatsapp-green: #25d366; --bg-color: #f4f7f6; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg-color); margin: 0; color: #333; }
         
-        /* Navbar */
-        nav { background: var(--main-color); padding: 10px 5%; display: flex; align-items: center; justify-content: space-between; color: white; box-shadow: 0 2px 10px rgba(0,0,0,0.2); position: sticky; top: 0; z-index: 1000; }
-        .logo { font-size: 1.8rem; font-weight: bold; color: var(--accent-color); letter-spacing: 1px; }
-        .logout-btn { background: transparent; border: 1px solid white; color: white; padding: 6px 15px; border-radius: 4px; cursor: pointer; transition: 0.3s; }
-        .logout-btn:hover { background: white; color: var(--main-color); }
+        nav { background: var(--main-color); padding: 10px 5%; display: flex; align-items: center; justify-content: space-between; color: white; position: sticky; top: 0; z-index: 1000; }
+        .logo { font-size: 1.8rem; font-weight: bold; color: var(--accent-color); }
 
-        /* Container */
-        .container { display: flex; flex-wrap: wrap; padding: 30px 5%; gap: 30px; }
+        .container { display: flex; flex-wrap: wrap; padding: 20px 5%; gap: 20px; }
         .products-section { flex: 3; min-width: 320px; }
-        .cart-section { flex: 1.2; min-width: 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); height: fit-content; }
+        .sidebar { flex: 1.2; min-width: 300px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); height: fit-content; }
 
-        /* Product Cards */
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
-        .card { background: white; border-radius: 12px; padding: 15px; text-align: center; transition: 0.3s; border: 1px solid #eee; }
-        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-color: var(--accent-color); }
-        .card img { width: 100%; height: 180px; object-fit: contain; border-radius: 8px; margin-bottom: 15px; }
-        .card h3 { font-size: 1.1rem; margin: 10px 0; height: 45px; overflow: hidden; }
-        .price-tag { font-size: 1.3rem; font-weight: bold; color: #B12704; margin-bottom: 15px; }
-        .add-btn { background: #ffd814; border: 1px solid #fcd200; width: 100%; padding: 10px; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .add-btn:hover { background: #f7ca00; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+        .card { background: white; border-radius: 10px; padding: 15px; text-align: center; border: 1px solid #eee; transition: 0.3s; }
+        .card:hover { transform: translateY(-5px); border-color: var(--accent-color); }
+        .card img { width: 100%; height: 150px; object-fit: contain; }
 
-        /* Cart Styles */
-        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; }
-        .delete-btn { color: #ff4d4d; cursor: pointer; font-size: 1.2rem; border: none; background: none; font-weight: bold; }
-        .delete-btn:hover { color: #cc0000; }
-        .total-box { margin-top: 20px; font-size: 1.4rem; font-weight: bold; border-top: 2px solid var(--main-color); padding-top: 15px; display: flex; justify-content: space-between; }
+        .cart-item { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .payment-methods { margin: 15px 0; }
+        .pay-btn { width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ccc; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .pay-btn.active { border-color: var(--accent-color); background: #fffdf5; }
 
-        /* Checkout Form */
-        .order-form { margin-top: 25px; background: #fafafa; padding: 20px; border-radius: 8px; }
-        .order-form input, .order-form textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-        .confirm-btn { background: var(--accent-color); color: white; border: none; width: 100%; padding: 15px; border-radius: 30px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 15px; box-shadow: 0 4px 10px rgba(255, 153, 0, 0.3); }
-        .confirm-btn:hover { background: #e68a00; }
-
-        #login-screen { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: white; }
+        .whatsapp-contact { background: var(--whatsapp-green); color: white; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; border-radius: 8px; font-weight: bold; margin-top: 10px; }
+        .confirm-order { background: var(--accent-color); color: white; border: none; width: 100%; padding: 15px; border-radius: 30px; font-size: 1.1rem; font-weight: bold; cursor: pointer; }
+        
+        #login-screen { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
-        <h1 style="font-size: 2.5rem; color: var(--main-color);">NPX MALL 🛒</h1>
-        <p style="color: #666;">سجل دخولك لتجربة تسوق فريدة</p>
-        <button onclick="login()" style="padding: 15px 35px; border-radius: 50px; border: 1px solid #ddd; background: white; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 1.1rem;">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="20">
-            الدخول بواسطة جوجل
-        </button>
+        <h1>NPX STORE 🛒</h1>
+        <button onclick="login()" style="padding: 15px 30px; cursor: pointer; border-radius: 50px;">Sign in with Google</button>
     </div>
 
     <div id="main-store" style="display: none;">
         <nav>
             <div class="logo">NPX STORE</div>
-            <div id="welcome-msg" style="font-weight: 500;"></div>
-            <button class="logout-btn" onclick="logout()">خروج</button>
+            <button onclick="logout()" style="background:none; border:1px solid white; color:white; cursor:pointer;">Logout</button>
         </nav>
 
         <div class="container">
@@ -72,33 +54,39 @@
                 <div class="grid" id="product-list"></div>
             </div>
 
-            <div class="cart-section">
-                <h3>📦 سلة المشتريات</h3>
-                <div id="cart-content">السلة فارغة حالياً..</div>
-                
-                <div class="total-box">
-                    <span>الإجمالي:</span>
-                    <span id="grand-total">0.00</span> $
+            <div class="sidebar">
+                <h3>🛒 السلة</h3>
+                <div id="cart-content">السلة فارغة</div>
+                <h2 style="text-align:center;">Total: $<span id="grand-total">0.00</span></h2>
+
+                <hr>
+                <h4>🚚 الشحن والدفع</h4>
+                <input type="tel" id="phone" placeholder="رقم الهاتف" style="width:100%; padding:10px; margin-bottom:10px;">
+                <textarea id="address" placeholder="العنوان بالتفصيل" style="width:100%; padding:10px; margin-bottom:10px;"></textarea>
+
+                <div class="payment-methods">
+                    <label><input type="radio" name="pay" value="Cash" checked> 💵 دفع عند الاستلام</label><br>
+                    <label><input type="radio" name="pay" value="PayPal"> 💳 PayPal</label>
                 </div>
 
-                <div class="order-form">
-                    <h4>تفاصيل الشحن</h4>
-                    <input type="tel" id="cust-phone" placeholder="رقم الموبايل">
-                    <textarea id="cust-address" rows="3" placeholder="العنوان بالتفصيل (المدينة، الشارع، المبنى)"></textarea>
-                    <button class="confirm-btn" onclick="submitOrder()">تأكيد الطلب الآن</button>
-                </div>
+                <button class="confirm-order" onclick="submitOrder()">تأكيد الطلب وحفظه</button>
+                
+                <hr>
+                <p style="font-size: 0.9rem; text-align: center;">أو تواصل معي مباشرة لتأكيد التوصيل:</p>
+                <a id="whatsapp-link" href="#" target="_blank" class="whatsapp-contact">
+                    تواصل عبر WhatsApp 💬
+                </a>
             </div>
         </div>
     </div>
 
     <script>
+        // إعدادات Firebase الخاصة بك
         const firebaseConfig = {
             apiKey: "AIzaSyAVadEAFdmh0SuWq4sZJkSJJrRpF5fOp58",
             authDomain: "authen-36a1f.firebaseapp.com",
             projectId: "authen-36a1f",
             databaseURL: "https://authen-36a1f-default-rtdb.firebaseio.com/",
-            storageBucket: "authen-36a1f.firebasestorage.app",
-            messagingSenderId: "144619996396",
             appId: "1:144619996396:web:21c057f485099f574bd1c9"
         };
 
@@ -108,13 +96,13 @@
         const provider = new firebase.auth.GoogleAuthProvider();
 
         const catalog = [
-            { id: 101, name: "آيفون 15 برو - تيتانيوم", price: 999.00, img: "https://m.media-amazon.com/images/I/81SigAnNfJL._AC_SL1500_.jpg" },
-            { id: 102, name: "سماعات سوني WH-1000XM5", price: 348.00, img: "https://m.media-amazon.com/images/I/61vjK2MapXL._AC_SL1500_.jpg" },
-            { id: 103, name: "ماك بوك اير M2", price: 1099.00, img: "https://m.media-amazon.com/images/I/71f5Eu5lJSL._AC_SL1500_.jpg" },
-            { id: 104, name: "ساعة سامسونج جالكسي 6", price: 250.00, img: "https://m.media-amazon.com/images/I/61f9uUuE6aL._AC_SL1500_.jpg" }
+            { id: 1, name: "Iphone 15 Pro", price: 999, img: "https://m.media-amazon.com/images/I/81SigAnNfJL._AC_SL1500_.jpg" },
+            { id: 2, name: "Sony Headphones", price: 350, img: "https://m.media-amazon.com/images/I/61vjK2MapXL._AC_SL1500_.jpg" },
+            { id: 3, name: "Apple Watch", price: 400, img: "https://m.media-amazon.com/images/I/61f9uUuE6aL._AC_SL1500_.jpg" }
         ];
 
         let cart = [];
+        const MY_PHONE_NUMBER = "201000000000"; // ضع رقمك هنا بالكود الدولي (مثلاً 20 لمصر)
 
         function login() { auth.signInWithPopup(provider); }
         function logout() { auth.signOut(); }
@@ -123,7 +111,6 @@
             if (user) {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('main-store').style.display = 'block';
-                document.getElementById('welcome-msg').innerText = "أهلاً، " + user.displayName;
                 displayProducts();
             } else {
                 document.getElementById('login-screen').style.display = 'flex';
@@ -136,68 +123,71 @@
                 <div class="card">
                     <img src="${p.img}">
                     <h3>${p.name}</h3>
-                    <div class="price-tag">${p.price}$</div>
-                    <button class="add-btn" onclick="addToCart(${p.id})">أضف للسلة</button>
+                    <p style="font-weight:bold;">$${p.price}</p>
+                    <button class="confirm-order" style="padding:8px;" onclick="addToCart(${p.id})">أضف للسلة</button>
                 </div>
             `).join('');
         }
 
         function addToCart(id) {
-            const product = catalog.find(p => p.id === id);
-            cart.push({ ...product, cartId: Date.now() }); // إضافة cartId فريد للحذف
-            updateCartUI();
+            const p = catalog.find(x => x.id === id);
+            cart.push({...p, cartId: Date.now()});
+            updateUI();
         }
 
-        function removeFromCart(cartId) {
-            cart = cart.filter(item => item.cartId !== cartId);
-            updateCartUI();
-        }
-
-        function updateCartUI() {
+        function updateUI() {
             const container = document.getElementById('cart-content');
-            if (cart.length === 0) {
-                container.innerHTML = "السلة فارغة حالياً..";
-                document.getElementById('grand-total').innerText = "0.00";
+            const total = cart.reduce((s, i) => s + i.price, 0);
+            document.getElementById('grand-total').innerText = total.toFixed(2);
+            
+            if(cart.length === 0) {
+                container.innerHTML = "السلة فارغة";
                 return;
             }
-
-            container.innerHTML = cart.map(item => `
+            container.innerHTML = cart.map(i => `
                 <div class="cart-item">
-                    <span>${item.name}</span>
-                    <div>
-                        <span style="font-weight:bold; margin-left:10px;">${item.price}$</span>
-                        <button class="delete-btn" onclick="removeFromCart(${item.cartId})">🗑️</button>
-                    </div>
+                    <span>${i.name}</span>
+                    <button onclick="removeFromCart(${i.cartId})" style="border:none; color:red; cursor:pointer;">X</button>
                 </div>
             `).join('');
 
-            const total = cart.reduce((acc, item) => acc + item.price, 0);
-            document.getElementById('grand-total').innerText = total.toFixed(2);
+            // تحديث رابط واتساب بالرسالة
+            const message = `مرحباً، أريد طلب المنتجات التالية:\n${cart.map(i => "- " + i.name).join("\n")}\nالإجمالي: ${total}$`;
+            document.getElementById('whatsapp-link').href = `https://wa.me/${MY_PHONE_NUMBER}?text=${encodeURIComponent(message)}`;
+        }
+
+        function removeFromCart(id) {
+            cart = cart.filter(i => i.cartId !== id);
+            updateUI();
         }
 
         function submitOrder() {
-            const phone = document.getElementById('cust-phone').value;
-            const address = document.getElementById('cust-address').value;
+            const phone = document.getElementById('phone').value;
+            const address = document.getElementById('address').value;
+            const method = document.querySelector('input[name="pay"]:checked').value;
 
-            if (cart.length === 0) return alert("سلتك فارغة!");
-            if (!phone || !address) return alert("يرجى إدخال بيانات الشحن!");
+            if(!phone || !address || cart.length === 0) return alert("يرجى إكمال البيانات!");
 
-            const orderData = {
-                client: auth.currentUser.displayName,
-                email: auth.currentUser.email,
+            if(method === "PayPal") {
+                // توجيه لصفحة باي بال وهمية أو حقيقية
+                window.location.href = "https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=YOUR_PAYPAL_EMAIL&item_name=Order_NPX&amount=" + document.getElementById('grand-total').innerText + "&currency_code=USD";
+                return;
+            }
+
+            const order = {
+                user: auth.currentUser.displayName,
                 phone: phone,
                 address: address,
                 items: cart,
                 total: document.getElementById('grand-total').innerText,
-                date: new Date().toLocaleString()
+                payment: method,
+                timestamp: Date.now()
             };
 
-            db.ref('orders/' + Date.now()).set(orderData).then(() => {
-                alert("🎉 تم تسجيل طلبك بنجاح! سيتم التواصل معك قريباً.");
+            db.ref('orders/' + Date.now()).set(order).then(() => {
+                alert("تم تسجيل الطلب! يمكنك الآن مراسلتي عبر واتساب للتأكيد.");
                 cart = [];
-                updateCartUI();
-                document.getElementById('cust-phone').value = "";
-                document.getElementById('cust-address').value = "";
+                updateUI();
             });
         }
     </script>
