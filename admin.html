@@ -2,103 +2,61 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>لوحة التحكم | NPX Admin</title>
+    <title>NPX Admin | إدارة المخزون</title>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --primary: #6366f1; --bg: #f8fafc; --dark: #0f172a; }
-        body { font-family: 'Segoe UI', sans-serif; display: flex; margin: 0; background: var(--bg); }
-        .sidebar { width: 260px; background: var(--dark); color: white; height: 100vh; position: fixed; padding: 25px; box-sizing: border-box; }
-        .sidebar p { cursor: pointer; padding: 12px; border-radius: 8px; transition: 0.2s; }
-        .sidebar p:hover { background: var(--primary); }
-        .main { margin-right: 260px; padding: 40px; width: 100%; }
-        .card { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        .btn { padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; color: white; font-weight: bold; margin: 2px; }
-        input { padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin: 5px; width: 200px; }
-        #admin-lock { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; justify-content: center; align-items: center; }
+        body { font-family: sans-serif; background: #f0f2f5; padding: 20px; }
+        .card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        input { padding: 8px; margin: 5px; border: 1px solid #ccc; border-radius: 5px; }
+        .btn { padding: 10px; border: none; border-radius: 5px; cursor: pointer; color: white; background: #6366f1; }
     </style>
 </head>
 <body>
 
-<div id="admin-lock">
-    <div style="background:white; padding:40px; border-radius:20px; text-align:center;">
-        <i class="fas fa-lock fa-3x" style="color:var(--primary)"></i>
-        <h2>NPX Secure Admin</h2>
-        <input type="password" id="pass" placeholder="Password" style="width:250px;"><br><br>
-        <button class="btn" style="background:var(--primary); width:250px; padding:12px;" onclick="login()">دخول النظام</button>
-    </div>
-</div>
-
-<div class="sidebar">
-    <h2 style="color:var(--primary)">NPX ADMIN</h2>
-    <hr style="border:0.5px solid #334155; margin:20px 0;">
-    <p onclick="show('orders')"><i class="fas fa-shopping-basket"></i> الطلبات الواردة</p>
-    <p onclick="show('inventory')"><i class="fas fa-plus-circle"></i> إضافة ملابس جديدة</p>
-</div>
-
-<div class="main">
-    <div id="orders-sec">
-        <h1>📦 الطلبات الحالية</h1>
-        <div class="grid" id="orders-list"></div>
+    <h1>إدارة المنتجات والمخزون</h1>
+    <div class="card">
+        <h3>أضف منتج جديد مع كمية</h3>
+        <input type="text" id="n" placeholder="الاسم">
+        <input type="number" id="p" placeholder="السعر">
+        <input type="number" id="q" placeholder="الكمية (مثلاً 5)">
+        <input type="text" id="i" placeholder="رابط الصورة">
+        <button class="btn" onclick="add()">إضافة للمتجر</button>
     </div>
 
-    <div id="inventory-sec" style="display:none;">
-        <h1>👕 إدارة المخزون</h1>
-        <div class="card">
-            <h3>أضف قطعة ملابس جديدة</h3>
-            <input type="text" id="pName" placeholder="اسم القطعة">
-            <input type="number" id="pPrice" placeholder="السعر">
-            <input type="text" id="pImg" placeholder="رابط الصورة المباشر">
-            <button class="btn" style="background:var(--primary)" onclick="addProduct()">إضافة للمتجر</button>
-        </div>
-        <div class="grid" id="inv-list"></div>
-    </div>
-</div>
+    <div class="grid" id="list"></div>
 
 <script>
     const firebaseConfig = { databaseURL: "https://authen-36a1f-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    function login() { if(document.getElementById('pass').value === "npx2026") { document.getElementById('admin-lock').style.display = 'none'; loadData(); } }
-    function show(sec) { document.getElementById('orders-sec').style.display = sec === 'orders' ? 'block' : 'none'; document.getElementById('inventory-sec').style.display = sec === 'inventory' ? 'block' : 'none'; }
-
-    function loadData() {
-        db.ref('orders').on('value', snap => {
-            const data = snap.val();
-            const list = document.getElementById('orders-list');
-            list.innerHTML = '';
-            for(let id in data) {
-                const o = data[id];
-                list.innerHTML += `<div class="card" style="border-right: 6px solid ${o.status=='shipping'?'#3b82f6':o.status=='delivered'?'#10b981':'#f59e0b'}">
-                    <h3>👤 ${o.user}</h3>
-                    <p>📞 ${o.phone}</p>
-                    <p>📦 ${o.items.join(' , ')}</p>
-                    <a href="${o.location}" target="_blank" style="color:blue">📍 خريطة موقع العميل</a><br><br>
-                    <button class="btn" style="background:#3b82f6" onclick="db.ref('orders/${id}').update({status:'shipping'})">شحن 🚚</button>
-                    <button class="btn" style="background:#10b981" onclick="db.ref('orders/${id}').update({status:'delivered'})">توصيل ✅</button>
-                    <button class="btn" style="background:#ef4444" onclick="db.ref('orders/${id}').remove()">حذف</button>
+    db.ref('inventory').on('value', snap => {
+        const data = snap.val();
+        const container = document.getElementById('list');
+        container.innerHTML = '';
+        for(let id in data) {
+            container.innerHTML += `
+                <div class="card">
+                    <img src="${data[id].img}" width="100%">
+                    <h4>${data[id].name}</h4>
+                    <p>السعر: $${data[id].price}</p>
+                    <p><b>الكمية المتبقية: ${data[id].qty}</b></p>
+                    <button class="btn" style="background:red" onclick="db.ref('inventory/${id}').remove()">حذف نهائي</button>
                 </div>`;
-            }
-        });
+        }
+    });
 
-        db.ref('inventory').on('value', snap => {
-            const data = snap.val();
-            const list = document.getElementById('inv-list');
-            list.innerHTML = '';
-            for(let id in data) {
-                list.innerHTML += `<div class="card"><img src="${data[id].img}" width="100%" style="border-radius:8px;">
-                    <h3>${data[id].name}</h3><p>$${data[id].price}</p>
-                    <button class="btn" style="background:#ef4444; width:100%" onclick="db.ref('inventory/${id}').remove()">حذف من المتجر</button></div>`;
-            }
-        });
-    }
-
-    function addProduct() {
-        const n = document.getElementById('pName').value, p = document.getElementById('pPrice').value, i = document.getElementById('pImg').value;
-        if(n && p && i) { db.ref('inventory').push({name:n, price:p, img:i}); alert("تمت الإضافة!"); }
+    function add() {
+        const name = document.getElementById('n').value;
+        const price = document.getElementById('p').value;
+        const qty = document.getElementById('q').value;
+        const img = document.getElementById('i').value;
+        if(name && price && qty) {
+            db.ref('inventory').push({ name, price, qty: parseInt(qty), img });
+            alert("تمت الإضافة للمخزون!");
+        }
     }
 </script>
 </body>
