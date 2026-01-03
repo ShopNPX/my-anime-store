@@ -3,37 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NPX Store | المتجر المتكامل</title>
+    <title>NPX Store Pro | نظام تتبع الطلبات</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     
     <style>
-        :root { --main: #131921; --accent: #febd69; --bg: #f3f3f3; --whatsapp: #25d366; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding-bottom: 50px; }
+        :root { --main: #131921; --accent: #febd69; --bg: #f3f3f3; --whatsapp: #25d366; --blue: #007bff; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; }
         nav { background: var(--main); padding: 15px 5%; display: flex; justify-content: space-between; color: white; align-items: center; position: sticky; top: 0; z-index: 100; }
+        
         .container { display: flex; flex-wrap: wrap; padding: 20px 5%; gap: 20px; }
-        
-        /* Products */
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; flex: 3; }
-        .card { background: white; border-radius: 12px; padding: 15px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .card { background: white; border-radius: 12px; padding: 15px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 1px solid #ddd; }
         .card img { width: 100%; height: 180px; object-fit: contain; }
-        .qty-box { margin: 10px 0; }
-        .qty-box input { width: 50px; padding: 5px; text-align: center; border-radius: 5px; border: 1px solid #ddd; }
         
-        /* Sidebar & Cart */
         .sidebar { flex: 1.2; min-width: 320px; background: white; padding: 25px; border-radius: 15px; height: fit-content; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .cart-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 10px 0; }
-        .del-btn { color: #ff4d4d; border: none; background: none; cursor: pointer; font-size: 1.2rem; font-weight: bold; }
+        .del-btn { color: #ff4d4d; border: none; background: none; cursor: pointer; font-weight: bold; font-size: 1.2rem; }
         
-        /* Modal Rating */
-        #rating-modal { display: none; position: fixed; bottom: 20px; left: 20px; width: 300px; background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); padding: 20px; z-index: 2000; border: 2px solid var(--accent); }
-        .stars-input { font-size: 1.8rem; color: #ccc; cursor: pointer; direction: ltr; text-align: center; }
-        .stars-input span.active { color: #ffc107; }
+        /* تتبع الطلب */
+        .status-box { background: #e7f3ff; border: 1px solid #b2d7ff; padding: 15px; border-radius: 10px; margin-top: 15px; text-align: center; }
+        .status-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; font-weight: bold; margin-top: 5px; background: var(--blue); color: white; }
+        
+        /* نظام النجوم */
+        .stars { font-size: 1.5rem; color: #ccc; cursor: pointer; direction: ltr; margin: 10px 0; }
+        .stars span.active { color: #ffc107; }
 
         input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
-        .btn-confirm { background: var(--whatsapp); color: white; border: none; padding: 15px; border-radius: 30px; width: 100%; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
+        .btn-confirm { background: var(--whatsapp); color: white; border: none; padding: 15px; border-radius: 30px; width: 100%; font-weight: bold; cursor: pointer; }
         #login-screen { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: white; }
     </style>
 </head>
@@ -54,38 +53,45 @@
             <div class="grid" id="product-list"></div>
 
             <div class="sidebar">
-                <h3>🛒 السلة (<span id="cart-count">0</span>)</h3>
-                <div id="cart-content">السلة فارغة</div>
-                <h2 style="text-align:center; color: #B12704;">الإجمالي: $<span id="grand-total">0.00</span></h2>
-                
-                <hr>
-                <input type="tel" id="user-phone" placeholder="رقم الهاتف">
-                <button onclick="fetchLocation()" style="background:#007bff; color:white; border:none; padding:10px; border-radius:8px; width:100%; cursor:pointer; font-weight:bold; margin-bottom:10px;">📍 تحديد مكاني تلقائياً</button>
-                <textarea id="user-address" rows="2" placeholder="العنوان أو المنطقة"></textarea>
-                
-                <button class="btn-confirm" onclick="submitOrder()">إرسال الطلب (واتساب) 🚀</button>
+                <div id="checkout-area">
+                    <h3>🛒 سلة المشتريات</h3>
+                    <div id="cart-content">السلة فارغة</div>
+                    <h2 style="text-align:center; color: #B12704;">$<span id="grand-total">0.00</span></h2>
+                    <input type="tel" id="user-phone" placeholder="رقم الهاتف">
+                    <button onclick="fetchLocation()" style="background:var(--blue); color:white; border:none; padding:10px; border-radius:8px; width:100%; cursor:pointer; margin-bottom:10px;">📍 تحديد مكاني</button>
+                    <textarea id="user-address" rows="2" placeholder="العنوان بالتفصيل"></textarea>
+                    <button class="btn-confirm" onclick="submitOrder()">تأكيد الشراء عبر واتساب 🚀</button>
+                </div>
+
+                <div id="tracking-area" style="display: none;">
+                    <h3>📦 حالة طلبك</h3>
+                    <div class="status-box">
+                        <p id="status-text">جاري معالجة طلبك...</p>
+                        <div id="status-badge" class="status-badge">جاري التجهيز</div>
+                    </div>
+                    
+                    <div id="post-delivery" style="display: none; margin-top: 20px; border-top: 2px dashed #ddd; padding-top: 15px;">
+                        <h4>🌟 قيم تجربتنا</h4>
+                        <div class="stars" id="star-row">
+                            <span onclick="setRate(1)">★</span><span onclick="setRate(2)">★</span><span onclick="setRate(3)">★</span><span onclick="setRate(4)">★</span><span onclick="setRate(5)">★</span>
+                        </div>
+                        <textarea id="rate-comment" placeholder="رأيك في المنتج والتوصيل..."></textarea>
+                        <button onclick="sendReview()" style="background:var(--main); color:white; width:100%; border:none; padding:10px; border-radius:8px; cursor:pointer;">نشر التقييم</button>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="container" style="margin-top: 50px;">
-            <div style="width:100%; background:white; padding:25px; border-radius:15px;">
-                <h2>⭐ تقييمات العملاء</h2>
-                <div id="reviews-list">جاري تحميل الآراء...</div>
+        <div class="container">
+            <div style="width:100%; background:white; padding:20px; border-radius:15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                <h3>💬 آراء العملاء وتجاربهم</h3>
+                <div id="reviews-display">جاري التحميل...</div>
             </div>
         </div>
-    </div>
-
-    <div id="rating-modal">
-        <h3>قيم تجربتك 😍</h3>
-        <div class="stars-input" id="star-box">
-            <span onclick="setRate(1)">★</span><span onclick="setRate(2)">★</span><span onclick="setRate(3)">★</span><span onclick="setRate(4)">★</span><span onclick="setRate(5)">★</span>
-        </div>
-        <textarea id="rate-text" placeholder="رأيك في التوصيل والمنتج..."></textarea>
-        <button onclick="sendReview()" style="background: var(--main); color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold;">نشر التقييم</button>
-        <button onclick="closeModal()" style="background: none; border: none; color: #999; width: 100%; margin-top:10px; cursor:pointer;">تخطي</button>
     </div>
 
     <script>
+        // -- إعدادات Firebase (نفس إعداداتك السابقة) --
         const firebaseConfig = {
             apiKey: "AIzaSyAVadEAFdmh0SuWq4sZJkSJJrRpF5fOp58",
             authDomain: "authen-36a1f.firebaseapp.com",
@@ -93,7 +99,6 @@
             databaseURL: "https://authen-36a1f-default-rtdb.firebaseio.com/",
             appId: "1:144619996396:web:21c057f485099f574bd1c9"
         };
-
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.database();
@@ -101,13 +106,12 @@
 
         let cart = [];
         let mapsUrl = "غير محدد";
-        let currentRating = 0;
+        let userRating = 0;
         const MY_PHONE = "201221060599";
 
         let products = [
-            { id: "i15pm", name: "iPhone 15 Pro Max", price: 1199, stock: 1000, img: "https://m.media-amazon.com/images/I/81SigAnNfJL._AC_SL1500_.jpg" },
-            { id: "aw9", name: "Apple Watch Series 9", price: 399, stock: 500, img: "https://m.media-amazon.com/images/I/71Y873nSAdL._AC_SL1500_.jpg" },
-            { id: "ap2", name: "AirPods Pro 2", price: 249, stock: 800, img: "https://m.media-amazon.com/images/I/61f1YfFpUPL._AC_SL1500_.jpg" }
+            { id: "i15pm", name: "iPhone 15 Pro Max", price: 1199, stock: 10, img: "https://m.media-amazon.com/images/I/81SigAnNfJL._AC_SL1500_.jpg" },
+            { id: "aw9", name: "Apple Watch S9", price: 399, stock: 50, img: "https://m.media-amazon.com/images/I/71Y873nSAdL._AC_SL1500_.jpg" }
         ];
 
         function login() { auth.signInWithPopup(provider); }
@@ -118,6 +122,7 @@
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('main-store').style.display = 'block';
                 syncData();
+                checkExistingOrder(user.uid);
             } else {
                 document.getElementById('login-screen').style.display = 'flex';
                 document.getElementById('main-store').style.display = 'none';
@@ -127,18 +132,18 @@
         function syncData() {
             db.ref('inventory').on('value', snap => {
                 const stocks = snap.val() || {};
-                products = products.map(p => ({ ...p, stock: stocks[p.id] !== undefined ? stocks[p.id] : p.stock }));
+                products = products.map(p => ({ ...p, stock: stocks[p.id] || p.stock }));
                 renderProducts();
             });
 
             db.ref('reviews').on('value', snap => {
                 const reviews = snap.val();
-                const list = document.getElementById('reviews-list');
+                const list = document.getElementById('reviews-display');
                 if(!reviews) { list.innerHTML = "لا توجد تقييمات بعد."; return; }
                 list.innerHTML = Object.values(reviews).reverse().map(r => `
                     <div style="border-bottom:1px solid #eee; padding:10px 0;">
                         <strong>${r.user}</strong> <span style="color:#ffc107">${'★'.repeat(r.rating)}</span>
-                        <p style="margin:5px 0; color:#666;">${r.text}</p>
+                        <p style="margin:5px 0;">${r.text}</p>
                     </div>`).join('');
             });
         }
@@ -149,23 +154,16 @@
                     <img src="${p.img}">
                     <h4>${p.name}</h4>
                     <p style="color:#B12704; font-weight:bold;">$${p.price}</p>
-                    <div class="qty-box">
-                        الكمية: <input type="number" id="qty-${p.id}" value="1" min="1" max="${p.stock}">
-                    </div>
-                    <button onclick="addToCart('${p.id}')" style="background:#ffd814; border:none; padding:10px; border-radius:20px; cursor:pointer; width:100%; font-weight:bold;">أضف للسلة</button>
+                    الكمية: <input type="number" id="qty-${p.id}" value="1" min="1" max="${p.stock}" style="width:50px; text-align:center;">
+                    <button onclick="addToCart('${p.id}')" style="background:var(--accent); border:none; padding:10px; border-radius:20px; width:100%; cursor:pointer; margin-top:10px; font-weight:bold;">أضف للسلة</button>
                 </div>`).join('');
         }
 
         function addToCart(id) {
             const p = products.find(x => x.id === id);
             const qty = parseInt(document.getElementById(`qty-${id}`).value);
-            
             const existing = cart.find(i => i.id === id);
-            if(existing) {
-                existing.qty += qty;
-            } else {
-                cart.push({...p, qty});
-            }
+            if(existing) existing.qty += qty; else cart.push({...p, qty});
             updateUI();
         }
 
@@ -177,24 +175,18 @@
         function updateUI() {
             const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
             document.getElementById('grand-total').innerText = total.toFixed(2);
-            document.getElementById('cart-count').innerText = cart.length;
-            
             const content = document.getElementById('cart-content');
-            if(cart.length === 0) {
-                content.innerHTML = "السلة فارغة";
-                return;
-            }
-            content.innerHTML = cart.map(i => `
+            content.innerHTML = cart.length === 0 ? "السلة فارغة" : cart.map(i => `
                 <div class="cart-item">
                     <span>${i.name} (x${i.qty})</span>
-                    <button class="del-btn" onclick="removeFromCart('${i.id}')">&times;</button>
+                    <button class="del-btn" onclick="removeFromCart('${i.id}')">×</button>
                 </div>`).join('');
         }
 
         async function fetchLocation() {
             navigator.geolocation.getCurrentPosition(async (pos) => {
                 const { latitude: lat, longitude: lon } = pos.coords;
-                mapsUrl = `http://maps.google.com/maps?q=${lat},${lon}`;
+                mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
                 const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ar`);
                 const data = await res.json();
                 document.getElementById('user-address').value = data.display_name;
@@ -202,42 +194,68 @@
         }
 
         async function submitOrder() {
+            if(cart.length === 0) return alert("السلة فارغة!");
             const phone = document.getElementById('user-phone').value;
-            const addr = document.getElementById('user-address').value;
-            if(!phone || !addr || cart.length === 0) return alert("أكمل البيانات والسلة!");
+            const address = document.getElementById('user-address').value;
+            if(!phone || !address) return alert("أكمل بياناتك!");
 
-            // خصم الكميات
+            const orderId = auth.currentUser.uid;
             const updates = {};
             cart.forEach(item => { updates['inventory/' + item.id] = item.stock - item.qty; });
+            
+            // إنشاء طلب جديد بحالة "جاري التجهيز"
+            updates['orders/' + orderId] = {
+                status: "processing",
+                items: cart.map(i => `${i.name} (x${i.qty})`),
+                total: document.getElementById('grand-total').innerText
+            };
+
             await db.ref().update(updates);
 
-            const itemsStr = cart.map(i => `• ${i.name} (عدد ${i.qty})`).join('\n');
-            const msg = `*طلب جديد*\nالاسم: ${auth.currentUser.displayName}\nالهاتف: ${phone}\nالعنوان: ${addr}\nالخريطة: ${mapsUrl}\n\nالمنتجات:\n${itemsStr}\n\nالإجمالي: ${document.getElementById('grand-total').innerText}$`;
-            
+            const msg = `*طلب جديد*\nالاسم: ${auth.currentUser.displayName}\nالهاتف: ${phone}\nالعنوان: ${address}\nالمنتجات:\n${cart.map(i=>`• ${i.name} (x${i.qty})`).join('\n')}\nالخريطة: ${mapsUrl}`;
             window.location.href = `https://wa.me/${MY_PHONE}?text=${encodeURIComponent(msg)}`;
             
-            setTimeout(() => { document.getElementById('rating-modal').style.display = 'block'; }, 2000);
             cart = []; updateUI();
         }
 
+        function checkExistingOrder(uid) {
+            db.ref('orders/' + uid).on('value', snap => {
+                const order = snap.val();
+                if(order) {
+                    document.getElementById('checkout-area').style.display = 'none';
+                    document.getElementById('tracking-area').style.display = 'block';
+                    
+                    const badge = document.getElementById('status-badge');
+                    if(order.status === "processing") {
+                        badge.innerText = "جاري التجهيز 📦"; badge.style.background = "#ffc107";
+                    } else if(order.status === "shipping") {
+                        badge.innerText = "قيد التوصيل 🚚"; badge.style.background = "#007bff";
+                    } else if(order.status === "delivered") {
+                        badge.innerText = "تم التسليم ✅"; badge.style.background = "#28a745";
+                        document.getElementById('post-delivery').style.display = 'block';
+                    }
+                }
+            });
+        }
+
         function setRate(num) {
-            currentRating = num;
-            const stars = document.querySelectorAll('#star-box span');
+            userRating = num;
+            const stars = document.querySelectorAll('#star-row span');
             stars.forEach((s, i) => i < num ? s.classList.add('active') : s.classList.remove('active'));
         }
 
-        function sendReview() {
-            if(currentRating === 0) return alert("يرجى اختيار عدد النجوم");
-            db.ref('reviews').push({
+        async function sendReview() {
+            if(userRating === 0) return alert("قيم بالنجوم أولاً");
+            await db.ref('reviews').push({
                 user: auth.currentUser.displayName,
-                rating: currentRating,
-                text: document.getElementById('rate-text').value || "تقييم جيد جداً"
+                rating: userRating,
+                text: document.getElementById('rate-comment').value || "تقييم ممتاز"
             });
+            // حذف الطلب من التتبع بعد التقييم لفتح السلة مرة أخرى
+            await db.ref('orders/' + auth.currentUser.uid).remove();
             alert("شكراً لتقييمك!");
-            closeModal();
+            location.reload();
         }
-
-        function closeModal() { document.getElementById('rating-modal').style.display = 'none'; }
     </script>
 </body>
 </html>
