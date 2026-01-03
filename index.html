@@ -3,71 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NPX Shopping Center | متجر الشراء الحقيقي</title>
+    <title>NPX Luxury Store | متجرنا الفاخر</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     
     <style>
-        :root { --amazon-orange: #ff9900; --amazon-blue: #232f3e; --bg: #f3f3f3; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; direction: rtl; }
-        nav { background: var(--amazon-blue); padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; color: white; }
-        .container { padding: 20px; display: flex; gap: 20px; flex-wrap: wrap; }
-        .main-content { flex: 3; min-width: 300px; }
-        .sidebar { flex: 1; background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd; min-width: 250px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
-        .product-card { background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd; text-align: center; }
-        .product-card img { width: 100%; height: 150px; object-fit: cover; border-radius: 4px; }
-        .price { font-size: 1.2rem; font-weight: bold; color: #B12704; margin: 10px 0; }
-        .btn-add { background: #ffd814; border: 1px solid #fcd200; border-radius: 8px; padding: 8px; width: 100%; cursor: pointer; }
-        .btn-order { background: var(--amazon-orange); border: 1px solid #a88734; border-radius: 8px; padding: 12px; width: 100%; cursor: pointer; font-weight: bold; margin-top: 20px; }
-        input, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        #login-page { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: white; }
+        :root { --main-color: #232f3e; --accent-color: #ff9900; --bg-color: #f4f7f6; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, sans-serif; background: var(--bg-color); margin: 0; color: #333; }
+        
+        /* Navbar */
+        nav { background: var(--main-color); padding: 10px 5%; display: flex; align-items: center; justify-content: space-between; color: white; box-shadow: 0 2px 10px rgba(0,0,0,0.2); position: sticky; top: 0; z-index: 1000; }
+        .logo { font-size: 1.8rem; font-weight: bold; color: var(--accent-color); letter-spacing: 1px; }
+        .logout-btn { background: transparent; border: 1px solid white; color: white; padding: 6px 15px; border-radius: 4px; cursor: pointer; transition: 0.3s; }
+        .logout-btn:hover { background: white; color: var(--main-color); }
+
+        /* Container */
+        .container { display: flex; flex-wrap: wrap; padding: 30px 5%; gap: 30px; }
+        .products-section { flex: 3; min-width: 320px; }
+        .cart-section { flex: 1.2; min-width: 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); height: fit-content; }
+
+        /* Product Cards */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+        .card { background: white; border-radius: 12px; padding: 15px; text-align: center; transition: 0.3s; border: 1px solid #eee; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-color: var(--accent-color); }
+        .card img { width: 100%; height: 180px; object-fit: contain; border-radius: 8px; margin-bottom: 15px; }
+        .card h3 { font-size: 1.1rem; margin: 10px 0; height: 45px; overflow: hidden; }
+        .price-tag { font-size: 1.3rem; font-weight: bold; color: #B12704; margin-bottom: 15px; }
+        .add-btn { background: #ffd814; border: 1px solid #fcd200; width: 100%; padding: 10px; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .add-btn:hover { background: #f7ca00; }
+
+        /* Cart Styles */
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; }
+        .delete-btn { color: #ff4d4d; cursor: pointer; font-size: 1.2rem; border: none; background: none; font-weight: bold; }
+        .delete-btn:hover { color: #cc0000; }
+        .total-box { margin-top: 20px; font-size: 1.4rem; font-weight: bold; border-top: 2px solid var(--main-color); padding-top: 15px; display: flex; justify-content: space-between; }
+
+        /* Checkout Form */
+        .order-form { margin-top: 25px; background: #fafafa; padding: 20px; border-radius: 8px; }
+        .order-form input, .order-form textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        .confirm-btn { background: var(--accent-color); color: white; border: none; width: 100%; padding: 15px; border-radius: 30px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 15px; box-shadow: 0 4px 10px rgba(255, 153, 0, 0.3); }
+        .confirm-btn:hover { background: #e68a00; }
+
+        #login-screen { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: white; }
     </style>
 </head>
 <body>
 
-    <div id="login-page">
-        <h1>مرحباً بك في متجر NPX</h1>
-        <button onclick="login()" style="padding: 12px 24px; cursor: pointer; border-radius: 25px;">الدخول بحساب Google</button>
+    <div id="login-screen">
+        <h1 style="font-size: 2.5rem; color: var(--main-color);">NPX MALL 🛒</h1>
+        <p style="color: #666;">سجل دخولك لتجربة تسوق فريدة</p>
+        <button onclick="login()" style="padding: 15px 35px; border-radius: 50px; border: 1px solid #ddd; background: white; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 1.1rem;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="20">
+            الدخول بواسطة جوجل
+        </button>
     </div>
 
-    <div id="shop-page" style="display: none;">
+    <div id="main-store" style="display: none;">
         <nav>
-            <div style="font-size: 1.5rem;">NPX Mall</div>
-            <button onclick="logout()" style="background: none; color: white; border: 1px solid white; cursor: pointer;">خروج</button>
+            <div class="logo">NPX STORE</div>
+            <div id="welcome-msg" style="font-weight: 500;"></div>
+            <button class="logout-btn" onclick="logout()">خروج</button>
         </nav>
 
         <div class="container">
-            <div class="main-content">
-                <div class="grid" id="products"></div>
+            <div class="products-section">
+                <div class="grid" id="product-list"></div>
             </div>
 
-            <div class="sidebar">
-                <h3>سلة المشتريات</h3>
-                <div id="cart-items">السلة فارغة</div>
-                <div class="price">الإجمالي: <span id="total-price">0.00</span> $</div>
+            <div class="cart-section">
+                <h3>📦 سلة المشتريات</h3>
+                <div id="cart-content">السلة فارغة حالياً..</div>
+                
+                <div class="total-box">
+                    <span>الإجمالي:</span>
+                    <span id="grand-total">0.00</span> $
+                </div>
 
-                <div style="margin-top: 20px; background: #fefefe; padding: 10px; border: 1px solid #eee;">
-                    <h4>بيانات التوصيل</h4>
-                    <label>رقم الهاتف:</label>
-                    <input type="tel" id="user-phone" placeholder="01xxxxxxxxx">
-                    <label>العنوان بالكامل:</label>
-                    <textarea id="user-address" rows="3" placeholder="المدينة، الشارع، رقم الشقة"></textarea>
-                    <button class="btn-order" onclick="placeOrder()">تأكيد الشراء الفعلي</button>
+                <div class="order-form">
+                    <h4>تفاصيل الشحن</h4>
+                    <input type="tel" id="cust-phone" placeholder="رقم الموبايل">
+                    <textarea id="cust-address" rows="3" placeholder="العنوان بالتفصيل (المدينة، الشارع، المبنى)"></textarea>
+                    <button class="confirm-btn" onclick="submitOrder()">تأكيد الطلب الآن</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // إعدادات Firebase الخاصة بك
         const firebaseConfig = {
             apiKey: "AIzaSyAVadEAFdmh0SuWq4sZJkSJJrRpF5fOp58",
             authDomain: "authen-36a1f.firebaseapp.com",
             projectId: "authen-36a1f",
-            databaseURL: "https://authen-36a1f-default-rtdb.firebaseio.com/", // ستحتاج لتفعيلها في لوحة التحكم
+            databaseURL: "https://authen-36a1f-default-rtdb.firebaseio.com/",
             storageBucket: "authen-36a1f.firebasestorage.app",
             messagingSenderId: "144619996396",
             appId: "1:144619996396:web:21c057f485099f574bd1c9"
@@ -75,13 +104,14 @@
 
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
-        const database = firebase.database();
+        const db = firebase.database();
         const provider = new firebase.auth.GoogleAuthProvider();
 
-        const items = [
-            { id: 1, name: "آيفون 15 برو", price: 999.00, img: "https://images.unsplash.com/photo-1696446701796-da61225697cc?w=400" },
-            { id: 2, name: "ساعة آبل الذكية", price: 399.00, img: "https://images.unsplash.com/photo-1546868871-70c122469d8b?w=400" },
-            { id: 3, name: "سماعات سوني لاسلكية", price: 250.00, img: "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=400" }
+        const catalog = [
+            { id: 101, name: "آيفون 15 برو - تيتانيوم", price: 999.00, img: "https://m.media-amazon.com/images/I/81SigAnNfJL._AC_SL1500_.jpg" },
+            { id: 102, name: "سماعات سوني WH-1000XM5", price: 348.00, img: "https://m.media-amazon.com/images/I/61vjK2MapXL._AC_SL1500_.jpg" },
+            { id: 103, name: "ماك بوك اير M2", price: 1099.00, img: "https://m.media-amazon.com/images/I/71f5Eu5lJSL._AC_SL1500_.jpg" },
+            { id: 104, name: "ساعة سامسونج جالكسي 6", price: 250.00, img: "https://m.media-amazon.com/images/I/61f9uUuE6aL._AC_SL1500_.jpg" }
         ];
 
         let cart = [];
@@ -91,61 +121,84 @@
 
         auth.onAuthStateChanged(user => {
             if (user) {
-                document.getElementById('login-page').style.display = 'none';
-                document.getElementById('shop-page').style.display = 'block';
-                renderProducts();
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-store').style.display = 'block';
+                document.getElementById('welcome-msg').innerText = "أهلاً، " + user.displayName;
+                displayProducts();
             } else {
-                document.getElementById('login-page').style.display = 'flex';
-                document.getElementById('shop-page').style.display = 'none';
+                document.getElementById('login-screen').style.display = 'flex';
+                document.getElementById('main-store').style.display = 'none';
             }
         });
 
-        function renderProducts() {
-            document.getElementById('products').innerHTML = items.map(p => `
-                <div class="product-card">
+        function displayProducts() {
+            document.getElementById('product-list').innerHTML = catalog.map(p => `
+                <div class="card">
                     <img src="${p.img}">
                     <h3>${p.name}</h3>
-                    <div class="price">${p.price}$</div>
-                    <button class="btn-add" onclick="addToCart(${p.id})">إضافة للسلة</button>
+                    <div class="price-tag">${p.price}$</div>
+                    <button class="add-btn" onclick="addToCart(${p.id})">أضف للسلة</button>
                 </div>
             `).join('');
         }
 
         function addToCart(id) {
-            const item = items.find(p => p.id === id);
-            cart.push(item);
-            updateCart();
+            const product = catalog.find(p => p.id === id);
+            cart.push({ ...product, cartId: Date.now() }); // إضافة cartId فريد للحذف
+            updateCartUI();
         }
 
-        function updateCart() {
-            const total = cart.reduce((sum, item) => sum + item.price, 0);
-            document.getElementById('cart-items').innerHTML = cart.map(item => `<div>• ${item.name}</div>`).join('');
-            document.getElementById('total-price').innerText = total.toFixed(2);
+        function removeFromCart(cartId) {
+            cart = cart.filter(item => item.cartId !== cartId);
+            updateCartUI();
         }
 
-        function placeOrder() {
-            const phone = document.getElementById('user-phone').value;
-            const address = document.getElementById('user-address').value;
+        function updateCartUI() {
+            const container = document.getElementById('cart-content');
+            if (cart.length === 0) {
+                container.innerHTML = "السلة فارغة حالياً..";
+                document.getElementById('grand-total').innerText = "0.00";
+                return;
+            }
 
-            if (cart.length === 0 || !phone || !address) return alert("يرجى إكمال البيانات والسلة!");
+            container.innerHTML = cart.map(item => `
+                <div class="cart-item">
+                    <span>${item.name}</span>
+                    <div>
+                        <span style="font-weight:bold; margin-left:10px;">${item.price}$</span>
+                        <button class="delete-btn" onclick="removeFromCart(${item.cartId})">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
 
-            // حفظ الطلب في Firebase Database
-            const orderId = Date.now();
-            database.ref('orders/' + orderId).set({
-                customerName: auth.currentUser.displayName,
-                customerEmail: auth.currentUser.email,
+            const total = cart.reduce((acc, item) => acc + item.price, 0);
+            document.getElementById('grand-total').innerText = total.toFixed(2);
+        }
+
+        function submitOrder() {
+            const phone = document.getElementById('cust-phone').value;
+            const address = document.getElementById('cust-address').value;
+
+            if (cart.length === 0) return alert("سلتك فارغة!");
+            if (!phone || !address) return alert("يرجى إدخال بيانات الشحن!");
+
+            const orderData = {
+                client: auth.currentUser.displayName,
+                email: auth.currentUser.email,
                 phone: phone,
                 address: address,
                 items: cart,
-                total: document.getElementById('total-price').innerText,
-                status: "قيد المراجعة"
-            }).then(() => {
-                alert("تم إرسال طلبك بنجاح! سنتواصل معك قريباً.");
+                total: document.getElementById('grand-total').innerText,
+                date: new Date().toLocaleString()
+            };
+
+            db.ref('orders/' + Date.now()).set(orderData).then(() => {
+                alert("🎉 تم تسجيل طلبك بنجاح! سيتم التواصل معك قريباً.");
                 cart = [];
-                updateCart();
-                document.getElementById('user-phone').value = "";
-                document.getElementById('user-address').value = "";
-            }).catch(err => alert("حدث خطأ: " + err.message));
+                updateCartUI();
+                document.getElementById('cust-phone').value = "";
+                document.getElementById('cust-address').value = "";
+            });
         }
     </script>
 </body>
