@@ -3,96 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NPX Professional Store</title>
+    <title>NPX Premium Store</title>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --primary: #6366f1; --dark: #0f172a; --card: #1e293b; --text: #f8fafc; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--dark); color: var(--text); margin: 0; scroll-behavior: smooth; }
+        :root { --p: #6366f1; --dark: #0f172a; --card: #1e293b; --white: #ffffff; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--dark); color: white; margin: 0; overflow-x: hidden; }
         
-        /* Navigation & Header */
-        header { background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); padding: 15px 5%; position: sticky; top: 0; z-index: 1000; border-bottom: 2px solid var(--primary); }
-        .nav-top { display: flex; justify-content: space-between; align-items: center; }
-        .search-container { margin: 15px 0; position: relative; }
-        .search-bar { width: 100%; padding: 12px 45px; border-radius: 30px; border: none; background: #334155; color: white; outline: none; }
-        .search-container i { position: absolute; right: 15px; top: 12px; color: #94a3b8; }
+        /* Navbar */
+        nav { background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(10px); padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid #334155; }
+        .logo { font-size: 1.8rem; font-weight: 800; color: var(--p); }
+        .cart-btn { background: var(--p); padding: 10px 20px; border-radius: 12px; cursor: pointer; position: relative; }
+
+        /* Hero & Search */
+        .hero { padding: 40px 5%; text-align: center; background: linear-gradient(to bottom, #1e293b, #0f172a); }
+        .search-box { max-width: 600px; margin: 20px auto; position: relative; }
+        .search-box input { width: 100%; padding: 15px 50px; border-radius: 30px; border: none; background: #334155; color: white; font-size: 1rem; }
+        .search-box i { position: absolute; right: 20px; top: 15px; color: #94a3b8; }
 
         /* Categories */
-        .categories { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; scrollbar-width: none; }
-        .cat-btn { background: #334155; border: none; color: white; padding: 8px 20px; border-radius: 20px; cursor: pointer; white-space: nowrap; transition: 0.3s; }
-        .cat-btn.active { background: var(--primary); box-shadow: 0 0 15px var(--primary); }
+        .cats { display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
+        .cat-tag { padding: 8px 20px; background: #334155; border-radius: 20px; cursor: pointer; transition: 0.3s; }
+        .cat-tag.active { background: var(--p); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
 
-        /* Main Layout */
-        .main-content { padding: 20px 5%; display: grid; grid-template-columns: 1fr 350px; gap: 30px; }
-        @media (max-width: 900px) { .main-content { grid-template-columns: 1fr; } }
+        /* Products */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px; padding: 0 5% 50px; }
+        .card { background: var(--card); border-radius: 20px; overflow: hidden; border: 1px solid #334155; transition: 0.3s; position: relative; }
+        .card:hover { transform: translateY(-10px); border-color: var(--p); }
+        .card img { width: 100%; height: 280px; object-fit: cover; }
+        .badge { position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 10px; font-size: 0.8rem; }
+        .info { padding: 20px; }
+        .price { font-size: 1.4rem; font-weight: bold; color: var(--p); margin: 10px 0; }
+        .buy-btn { width: 100%; padding: 12px; border-radius: 12px; border: none; background: var(--p); color: white; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .buy-btn:disabled { background: #475569; cursor: not-allowed; }
 
-        /* Product Cards */
-        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
-        .card { background: var(--card); border-radius: 20px; overflow: hidden; transition: 0.3s; border: 1px solid #334155; position: relative; }
-        .card:hover { transform: translateY(-10px); border-color: var(--primary); }
-        .card img { width: 100%; height: 250px; object-fit: cover; }
-        .qty-tag { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 4px 10px; border-radius: 10px; font-size: 0.8rem; }
-        .p-info { padding: 15px; }
-        .btn-buy { background: var(--primary); color: white; border: none; width: 100%; padding: 10px; border-radius: 10px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-
-        /* Checkout Sidebar */
-        .checkout-card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid #334155; position: sticky; top: 100px; }
-        .cart-items { max-height: 300px; overflow-y: auto; margin-bottom: 20px; }
-        .cart-item { display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 10px; border-radius: 10px; margin-bottom: 8px; border-right: 3px solid var(--primary); }
-        .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; margin-bottom: 5px; font-size: 0.9rem; color: #94a3b8; }
-        input, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; }
-        .btn-confirm { background: #22c55e; color: white; border: none; width: 100%; padding: 15px; border-radius: 15px; font-weight: bold; font-size: 1.1rem; cursor: pointer; margin-top: 10px; }
-
-        /* Reviews */
-        .reviews-mini { font-size: 0.8rem; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 8px; margin-top: 10px; }
+        /* Full Screen Purchase Page */
+        #checkoutPage { position: fixed; inset: 0; background: var(--dark); z-index: 2000; display: none; padding: 40px 5%; overflow-y: auto; animation: slideIn 0.4s ease-out; }
+        @keyframes slideIn { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .checkout-container { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        @media (max-width: 768px) { .checkout-container { grid-template-columns: 1fr; } }
+        .summary-item { display: flex; justify-content: space-between; background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 10px; }
+        .input-field { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #334155; background: #0f172a; color: white; margin-bottom: 15px; }
+        .final-btn { width: 100%; padding: 20px; border-radius: 15px; border: none; background: #22c55e; color: white; font-size: 1.2rem; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<header>
-    <div class="nav-top">
-        <h1 style="color:var(--primary); margin:0;">NPX<span style="color:white">STORE</span></h1>
-        <div id="cart-indicator"><i class="fas fa-shopping-basket"></i> <span id="cart-count">0</span> قِطع</div>
+<nav>
+    <div class="logo">NPX STORE</div>
+    <div class="cart-btn" onclick="openCheckout()">
+        <i class="fas fa-shopping-cart"></i> السلة (<span id="cartCount">0</span>)
     </div>
-    <div class="search-container">
+</nav>
+
+<div class="hero">
+    <h1>اكتشف أحدث صيحات الموضة</h1>
+    <div class="search-box">
         <i class="fas fa-search"></i>
-        <input type="text" id="searchInp" class="search-bar" placeholder="ابحث عن الملابس، الماركات، أو الموديلات..." onkeyup="filterProducts()">
+        <input type="text" id="srch" placeholder="بحث عن منتج..." onkeyup="render()">
     </div>
-    <div class="categories" id="catList">
-        <button class="cat-btn active" onclick="filterCat('الكل', this)">الكل</button>
-        <button class="cat-btn" onclick="filterCat('تيشيرت', this)">تيشيرتات</button>
-        <button class="cat-btn" onclick="filterCat('هودي', this)">هوديز</button>
-        <button class="cat-btn" onclick="filterCat('إكسسوار', this)">إكسسوارات</button>
+    <div class="cats" id="catGroup">
+        <div class="cat-tag active" onclick="setCat('الكل')">الكل</div>
+        <div class="cat-tag" onclick="setCat('تيشيرت')">تيشيرتات</div>
+        <div class="cat-tag" onclick="setCat('هودي')">هوديز</div>
     </div>
-</header>
+</div>
 
-<div class="main-content">
-    <div class="products-grid" id="productsDisplay">
+<div class="grid" id="productGrid"></div>
+
+<div id="checkoutPage">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+        <h2><i class="fas fa-file-invoice-dollar"></i> إتمام عملية الشراء</h2>
+        <button onclick="closeCheckout()" style="background:red; color:white; border:none; padding:10px 20px; border-radius:10px; cursor:pointer;">إغلاق والعودة</button>
+    </div>
+
+    <div class="checkout-container">
+        <div>
+            <h3>مخلص الطلب</h3>
+            <div id="cartDetails"></div>
+            <hr style="border:0.5px solid #334155;">
+            <h2 style="text-align:left">الإجمالي: $<span id="finalTotal">0.00</span></h2>
         </div>
-
-    <div class="checkout-sidebar">
-        <div class="checkout-card">
-            <h3>📝 مراجعة الطلب</h3>
-            <div class="cart-items" id="cartList">السلة فارغة</div>
-            <div style="display:flex; justify-content:space-between; font-size:1.3rem; font-weight:bold; margin:15px 0;">
-                <span>الإجمالي:</span>
-                <span>$<span id="totalPrice">0.00</span></span>
-            </div>
-            
-            <div class="input-group">
-                <input type="text" id="uName" placeholder="الاسم الكامل">
-            </div>
-            <div class="input-group">
-                <input type="tel" id="uPhone" placeholder="رقم الواتساب">
-            </div>
-            <button onclick="shareLoc()" style="width:100%; background:#3b82f6; border:none; color:white; padding:10px; border-radius:10px; margin-bottom:10px; cursor:pointer;">
-                <i class="fas fa-location-arrow"></i> مشاركة الموقع
-            </button>
-            <textarea id="uAddr" rows="2" placeholder="العنوان بالتفصيل..."></textarea>
-            
-            <button class="btn-confirm" onclick="processOrder()">إتمام الشراء وإرسال (WhatsApp) <i class="fab fa-whatsapp"></i></button>
+        <div>
+            <h3>بيانات التوصيل</h3>
+            <input type="text" id="uName" class="input-field" placeholder="الاسم الكامل">
+            <input type="tel" id="uPhone" class="input-field" placeholder="رقم الواتساب">
+            <button onclick="getLoc()" style="width:100%; padding:10px; background:#3b82f6; border:none; color:white; border-radius:10px; margin-bottom:15px; cursor:pointer;">تحديد موقعي التلقائي</button>
+            <textarea id="uAddr" class="input-field" rows="3" placeholder="العنوان بالتفصيل"></textarea>
+            <button class="final-btn" onclick="submitOrder()">تأكيد الطلب الآن (WhatsApp) <i class="fab fa-whatsapp"></i></button>
         </div>
     </div>
 </div>
@@ -102,116 +101,122 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let products = [];
-    let cart = [];
-    let userLocation = "";
-    let activeCategory = "الكل";
+    let products = [], cart = [], currentCat = "الكل", userLoc = "";
 
-    // جلب البيانات
+    // تحميل البيانات
     db.ref('inventory').on('value', snap => {
-        const data = snap.val();
         products = [];
+        const data = snap.val();
         for(let id in data) products.push({ id, ...data[id] });
-        displayItems(products);
+        render();
     });
 
-    function displayItems(items) {
-        const container = document.getElementById('productsDisplay');
-        container.innerHTML = items.map(p => `
+    function render() {
+        const query = document.getElementById('srch').value.toLowerCase();
+        const container = document.getElementById('productGrid');
+        
+        const filtered = products.filter(p => 
+            (currentCat === "الكل" || p.category === currentCat) && 
+            p.name.toLowerCase().includes(query)
+        );
+
+        container.innerHTML = filtered.map(p => `
             <div class="card">
-                <div class="qty-tag">متبقي: ${p.qty}</div>
+                <div class="badge">المتوفر: ${p.qty}</div>
                 <img src="${p.img}">
-                <div class="p-info">
+                <div class="info">
                     <h3 style="margin:0">${p.name}</h3>
-                    <p style="color:var(--primary); font-weight:bold; font-size:1.2rem; margin:10px 0;">$${p.price}</p>
-                    <button class="btn-buy" onclick="addToCart('${p.id}')">إضافة للسلة +</button>
-                    <div class="reviews-mini">
-                        <b>التقييمات:</b><br>
-                        ${p.reviews ? Object.values(p.reviews).slice(-2).join('<br>') : 'لا توجد مراجعات'}
-                    </div>
+                    <div class="price">$${p.price}</div>
+                    <button class="buy-btn" ${p.qty <= 0 ? 'disabled' : ''} onclick="addToCart('${p.id}')">
+                        ${p.qty <= 0 ? 'نفد من المخزون' : 'إضافة للسلة +'}
+                    </button>
                 </div>
             </div>
         `).join('');
     }
 
     function addToCart(id) {
-        const p = products.find(x => x.id === id);
-        if(p.qty <= 0) return alert("نفد من المخزون!");
-        cart.push({...p});
-        updateUI();
+        const pIndex = products.findIndex(x => x.id === id);
+        if(products[pIndex].qty > 0) {
+            // تنقيص الكمية مؤقتاً في الواجهة والمصفوفة
+            products[pIndex].qty -= 1;
+            cart.push({...products[pIndex], cartId: Date.now()});
+            document.getElementById('cartCount').innerText = cart.length;
+            render();
+        }
     }
 
-    function updateUI() {
-        const list = document.getElementById('cartList');
-        let total = 0;
-        document.getElementById('cart-count').innerText = cart.length;
-        if(cart.length === 0) { list.innerHTML = "السلة فارغة"; document.getElementById('totalPrice').innerText = "0.00"; return; }
+    function removeFromCart(cartId, originalId) {
+        // إعادة الكمية للمنتج الأصلي
+        const pIndex = products.findIndex(x => x.id === originalId);
+        if(pIndex !== -1) products[pIndex].qty += 1;
         
-        list.innerHTML = cart.map((item, idx) => {
+        cart = cart.filter(item => item.cartId !== cartId);
+        document.getElementById('cartCount').innerText = cart.length;
+        render();
+        updateCheckoutList();
+    }
+
+    function openCheckout() {
+        if(cart.length === 0) return alert("السلة فارغة!");
+        document.getElementById('checkoutPage').style.display = 'block';
+        updateCheckoutList();
+    }
+
+    function closeCheckout() {
+        document.getElementById('checkoutPage').style.display = 'none';
+    }
+
+    function updateCheckoutList() {
+        const container = document.getElementById('cartDetails');
+        let total = 0;
+        container.innerHTML = cart.map(item => {
             total += parseFloat(item.price);
-            return `<div class="cart-item">
-                <span>${item.name}</span>
-                <b>$${item.price}</b>
-                <i class="fas fa-trash" style="color:#ef4444; cursor:pointer;" onclick="cart.splice(${idx},1);updateUI();"></i>
-            </div>`;
+            return `
+                <div class="summary-item">
+                    <span>${item.name}</span>
+                    <div>
+                        <b>$${item.price}</b>
+                        <i class="fas fa-trash" style="color:red; margin-right:15px; cursor:pointer;" onclick="removeFromCart(${item.cartId}, '${item.id}')"></i>
+                    </div>
+                </div>
+            `;
         }).join('');
-        document.getElementById('totalPrice').innerText = total.toFixed(2);
+        document.getElementById('finalTotal').innerText = total.toFixed(2);
     }
 
-    function filterCat(cat, btn) {
-        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        activeCategory = cat;
-        filterProducts();
-    }
-
-    function filterProducts() {
-        const q = document.getElementById('searchInp').value.toLowerCase();
-        const filtered = products.filter(p => {
-            const matchesSearch = p.name.toLowerCase().includes(q);
-            const matchesCat = activeCategory === "الكل" || p.category === activeCategory;
-            return matchesSearch && matchesCat;
-        });
-        displayItems(filtered);
-    }
-
-    function shareLoc() {
+    function getLoc() {
         navigator.geolocation.getCurrentPosition(p => {
-            userLocation = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
-            document.getElementById('uAddr').value = "✅ تم التقاط موقعك الجغرافي";
+            userLoc = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
+            document.getElementById('uAddr').value = "✅ تم تحديد موقعك الجغرافي";
         });
     }
 
-    function processOrder() {
-        const name = document.getElementById('uName').value;
-        const phone = document.getElementById('uPhone').value;
-        const addr = document.getElementById('uAddr').value;
+    function setCat(c) {
+        currentCat = c;
+        document.querySelectorAll('.cat-tag').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        render();
+    }
 
-        if(!name || !phone || cart.length === 0) return alert("الرجاء تعبئة البيانات واختيار المنتجات");
+    async function submitOrder() {
+        const n = document.getElementById('uName').value;
+        const ph = document.getElementById('uPhone').value;
+        if(!n || !ph) return alert("يرجى إدخال البيانات");
 
-        // تحديث المخزون (الكمية) والحذف التلقائي
-        cart.forEach(item => {
-            const newQty = item.qty - 1;
-            if(newQty <= 0) db.ref(`inventory/${item.id}`).remove();
-            else db.ref(`inventory/${item.id}`).update({ qty: newQty });
-        });
+        // تحديث قاعدة البيانات فعلياً عند التأكيد النهائي
+        for(let item of cart) {
+            const pRef = db.ref(`inventory/${item.id}`);
+            const snap = await pRef.get();
+            const currentQty = snap.val().qty;
+            if(currentQty <= 1) await pRef.remove();
+            else await pRef.update({ qty: currentQty - 1 });
+        }
 
-        const orderData = {
-            user: name,
-            phone: phone,
-            address: addr,
-            location: userLocation,
-            items: cart.map(i => i.name),
-            total: document.getElementById('totalPrice').innerText,
-            status: 'processing',
-            date: new Date().toLocaleString()
-        };
-
-        // إرسال للأدمن
+        const orderData = { user: n, phone: ph, items: cart.map(i => i.name), total: document.getElementById('finalTotal').innerText, location: userLoc, status: 'processing' };
         db.ref('orders').push(orderData);
 
-        // إرسال واتساب
-        const msg = `*طلب شراء جديد من NPX*\n\n👤 العميل: ${name}\n📞 الهاتف: ${phone}\n📍 الموقع: ${userLocation || 'يدوي'}\n🏠 العنوان: ${addr}\n\n📦 المنتجات:\n- ${orderData.items.join('\n- ')}\n\n💰 الإجمالي: $${orderData.total}`;
+        const msg = `*طلب شراء NPX*\nالعميل: ${n}\nالمنتجات:\n- ${orderData.items.join('\n- ')}\nالإجمالي: $${orderData.total}\nالموقع: ${userLoc}`;
         window.location.href = `https://wa.me/201221060599?text=${encodeURIComponent(msg)}`;
     }
 </script>
