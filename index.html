@@ -46,7 +46,7 @@
     </div>
 
     <script>
-        // بيانات مشروعك من الصورة
+        // إعدادات مشروعك الصحيحة
         const firebaseConfig = {
             apiKey: "AIzaSyAVadEAFdmh0SuWq4sZJkSJJrRpF5fOp58",
             authDomain: "authen-36a1f.firebaseapp.com",
@@ -63,7 +63,7 @@
 
         function loginWithGoogle() {
             auth.signInWithPopup(provider).catch(error => {
-                alert("يجب تشغيل الموقع عبر Server وليس كملف عادي: " + error.message);
+                alert("خطأ: " + error.message);
             });
         }
 
