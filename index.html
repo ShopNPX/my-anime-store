@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NPX Store | طلب ذكي مع GPS</title>
+    <title>NPX Store | التوصيل الذكي</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -13,19 +13,21 @@
         :root { --main: #232f3e; --accent: #ff9900; --bg: #f4f7f6; --whatsapp: #25d366; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; color: #333; }
         nav { background: var(--main); padding: 10px 5%; display: flex; justify-content: space-between; align-items: center; color: white; position: sticky; top: 0; z-index: 1000; }
-        .logo { font-size: 1.5rem; font-weight: bold; color: var(--accent); }
         .container { display: flex; flex-wrap: wrap; padding: 20px 5%; gap: 20px; }
-        .products-section { flex: 3; min-width: 320px; }
-        .sidebar { flex: 1.2; min-width: 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); height: fit-content; }
+        .sidebar { flex: 1.2; min-width: 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
         .card { background: white; border-radius: 10px; padding: 15px; text-align: center; border: 1px solid #eee; }
-        .card img { width: 100%; height: 150px; object-fit: contain; }
         
-        /* Buttons */
-        .gps-btn { background: #e8f0fe; color: #1a73e8; border: 1px dashed #1a73e8; width: 100%; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold; margin: 5px 0; }
+        /* زر الموقع الجديد */
+        .load-loc-btn { 
+            background: #f0f7ff; color: #0066cc; border: 1px solid #cce5ff; 
+            width: 100%; padding: 12px; border-radius: 8px; cursor: pointer; 
+            font-weight: bold; margin: 10px 0; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .load-loc-btn:hover { background: #e0efff; }
         .confirm-btn { background: var(--accent); color: white; border: none; width: 100%; padding: 15px; border-radius: 30px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 15px; }
         
-        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
         #login-screen { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     </style>
 </head>
@@ -33,38 +35,36 @@
 
     <div id="login-screen">
         <h1>NPX STORE 🛒</h1>
-        <button onclick="login()" style="padding: 15px 30px; cursor: pointer; border-radius: 50px; background: white; border: 1px solid #ddd;">دخول بجوجل</button>
+        <button onclick="login()" style="padding: 15px 30px; cursor: pointer; border-radius: 50px;">دخول بجوجل</button>
     </div>
 
     <div id="main-store" style="display: none;">
         <nav>
-            <div class="logo">NPX STORE</div>
-            <button onclick="logout()" style="background:none; border:1px solid white; color:white; padding: 5px 12px; border-radius: 5px; cursor:pointer;">خروج</button>
+            <div style="font-size: 1.5rem; font-weight: bold;">NPX STORE</div>
+            <button onclick="logout()" style="background:none; border:1px solid white; color:white; padding: 5px 12px; cursor:pointer;">خروج</button>
         </nav>
 
         <div class="container">
-            <div class="products-section">
+            <div style="flex: 3;">
                 <div class="grid" id="product-list"></div>
             </div>
 
             <div class="sidebar">
-                <h3>🛒 سلة المشتريات</h3>
+                <h3>🛒 المشتريات</h3>
                 <div id="cart-content">السلة فارغة</div>
-                <h2 style="text-align:center; color: #B12704;">$<span id="grand-total">0.00</span></h2>
+                <h2 style="text-align:center;">$<span id="grand-total">0.00</span></h2>
 
-                <div style="background: #fff9f0; padding: 15px; border-radius: 8px; border: 1px solid #ffe8cc;">
+                <div style="background: #fff9f0; padding: 15px; border-radius: 10px;">
                     <h4>بيانات التوصيل</h4>
-                    <input type="tel" id="user-phone" placeholder="رقم الهاتف">
-                    <textarea id="user-address" placeholder="العنوان كتابةً (اختياري)"></textarea>
+                    <input type="tel" id="user-phone" placeholder="رقم الموبايل">
                     
-                    <button class="gps-btn" onclick="getLocation()">📍 تحديد موقعي تلقائياً (GPS)</button>
-                    <div id="gps-status" style="font-size: 0.8rem; color: green; display: none; text-align: center;">✅ تم تحديد الموقع بنجاح</div>
+                    <button class="load-loc-btn" onclick="fetchAddress()">
+                        📍 تحميل موقعي تلقائياً
+                    </button>
                     
-                    <p style="font-weight: bold; font-size: 0.9rem;">الدفع:</p>
-                    <label><input type="radio" name="pay" value="Cash" checked> 💵 كاش</label>
-                    <label><input type="radio" name="pay" value="PayPal"> 💳 PayPal</label>
+                    <textarea id="user-address" rows="3" placeholder="سيظهر عنوانك هنا تلقائياً أو اكتبه يدوياً"></textarea>
                     
-                    <button class="confirm-btn" onclick="processOrder()">إرسال الطلب والموقع 🚀</button>
+                    <button class="confirm-btn" onclick="processOrder()">تأكيد وإرسال الطلب 🚀</button>
                 </div>
             </div>
         </div>
@@ -84,15 +84,14 @@
         const db = firebase.database();
         const provider = new firebase.auth.GoogleAuthProvider();
 
-        const catalog = [
-            { id: 1, name: "Iphone 15 Pro", price: 999, img: "https://m.media-amazon.com/images/I/81SigAnNfJL._AC_SL1500_.jpg" },
-            { id: 2, name: "Sony Headphones", price: 350, img: "https://m.media-amazon.com/images/I/61vjK2MapXL._AC_SL1500_.jpg" },
-            { id: 3, name: "Apple Watch S9", price: 400, img: "https://m.media-amazon.com/images/I/61f9uUuE6aL._AC_SL1500_.jpg" }
-        ];
-
         let cart = [];
-        let userCoords = ""; // لتخزين اللوكيشن
+        let mapsUrl = "";
         const MY_PHONE = "201221060599"; 
+
+        const items = [
+            { id: 1, name: "Iphone 15 Pro", price: 999, img: "https://m.media-amazon.com/images/I/81SigAnNfJL._AC_SL1500_.jpg" },
+            { id: 2, name: "Sony Headphones", price: 350, img: "https://m.media-amazon.com/images/I/61vjK2MapXL._AC_SL1500_.jpg" }
+        ];
 
         function login() { auth.signInWithPopup(provider); }
         function logout() { auth.signOut(); }
@@ -101,93 +100,72 @@
             if (user) {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('main-store').style.display = 'block';
-                displayProducts();
+                renderItems();
             } else {
                 document.getElementById('login-screen').style.display = 'flex';
                 document.getElementById('main-store').style.display = 'none';
             }
         });
 
-        function displayProducts() {
-            document.getElementById('product-list').innerHTML = catalog.map(p => `
+        // وظيفة جلب العنوان تلقائياً
+        async function fetchAddress() {
+            const btn = document.querySelector('.load-loc-btn');
+            btn.innerText = "جاري التحميل... ⏳";
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(async (pos) => {
+                    const lat = pos.coords.latitude;
+                    const lon = pos.coords.longitude;
+                    mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+                    
+                    try {
+                        // استخدام خدمة مجانية لتحويل الإحداثيات لعنوان نصي
+                        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+                        const data = await res.json();
+                        document.getElementById('user-address').value = data.display_name || "تم تحديد الموقع بنجاح";
+                        btn.innerText = "✅ تم تحميل الموقع";
+                    } catch (e) {
+                        document.getElementById('user-address').value = "تم تحديد الإحداثيات بنجاح (رابط الخريطة جاهز)";
+                    }
+                }, () => {
+                    alert("يرجى تفعيل الـ GPS والسماح للمتصفح بالوصول لموقعك.");
+                    btn.innerText = "📍 تحميل موقعي تلقائياً";
+                });
+            }
+        }
+
+        function renderItems() {
+            document.getElementById('product-list').innerHTML = items.map(p => `
                 <div class="card">
-                    <img src="${p.img}">
+                    <img src="${p.img}" width="100%">
                     <h4>${p.name}</h4>
-                    <p style="font-weight:bold;">$${p.price}</p>
-                    <button onclick="addToCart(${p.id})" style="background:#ffd814; border:1px solid #fcd200; padding:8px; border-radius:20px; cursor:pointer; width:100%;">أضف للسلة</button>
+                    <p>$${p.price}</p>
+                    <button onclick="addToCart(${p.id})" style="background:#ffd814; border:none; padding:10px; border-radius:20px; cursor:pointer; width:100%;">أضف للسلة</button>
                 </div>
             `).join('');
         }
 
         function addToCart(id) {
-            const p = catalog.find(x => x.id === id);
-            cart.push({...p, cartId: Date.now()});
+            cart.push(items.find(x => x.id === id));
             updateUI();
         }
 
         function updateUI() {
             const total = cart.reduce((s, i) => s + i.price, 0);
             document.getElementById('grand-total').innerText = total.toFixed(2);
-            const container = document.getElementById('cart-content');
-            if(cart.length === 0) { container.innerHTML = "السلة فارغة"; return; }
-            container.innerHTML = cart.map(i => `<div style="display:flex; justify-content:space-between; margin-top:5px; font-size:0.8rem;"><span>${i.name}</span> <button onclick="removeFromCart(${i.cartId})" style="color:red; border:none; cursor:pointer;">X</button></div>`).join('');
-        }
-
-        function removeFromCart(id) { cart = cart.filter(i => i.cartId !== id); updateUI(); }
-
-        // وظيفة تحديد الموقع GPS
-        function getLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(position => {
-                    const lat = position.coords.latitude;
-                    const lon = position.coords.longitude;
-                    userCoords = `https://www.google.com/maps?q=${lat},${lon}`;
-                    document.getElementById('gps-status').style.display = 'block';
-                }, () => {
-                    alert("يرجى تفعيل الـ GPS في متصفحك للسماح لنا بتحديد موقعك.");
-                });
-            } else {
-                alert("متصفحك لا يدعم تحديد الموقع.");
-            }
+            document.getElementById('cart-content').innerHTML = cart.length === 0 ? "السلة فارغة" : cart.map(i => `<div>${i.name}</div>`).join('');
         }
 
         function processOrder() {
             const phone = document.getElementById('user-phone').value;
             const address = document.getElementById('user-address').value;
-            const method = document.querySelector('input[name="pay"]:checked').value;
-            const total = document.getElementById('grand-total').innerText;
+            if(!phone || cart.length === 0) return alert("أكمل البيانات!");
 
-            if(!phone || cart.length === 0) return alert("يرجى إدخال الهاتف واختيار المنتجات!");
-
-            const orderData = {
-                customer: auth.currentUser.displayName,
-                phone: phone,
-                address: address,
-                locationLink: userCoords,
-                items: cart,
-                total: total,
-                method: method
-            };
-
-            db.ref('orders/' + Date.now()).set(orderData).then(() => {
-                // تجهيز الرسالة
-                const itemsStr = cart.map(i => "• " + i.name).join("\n");
-                const waMsg = `*طلب جديد!* 🛒\n\n` +
-                              `👤 الاسم: ${auth.currentUser.displayName}\n` +
-                              `📞 الهاتف: ${phone}\n` +
-                              `🏠 العنوان: ${address || "لم يتم إدخاله"}\n` +
-                              `📍 الموقع (GPS): ${userCoords || "غير متاح"}\n` +
-                              `💰 الإجمالي: ${total}$\n\n` +
-                              `📦 المنتجات:\n${itemsStr}`;
-
-                if(method === "PayPal") {
-                    window.location.href = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=your-email@example.com&amount=${total}&currency_code=USD`;
-                } else {
-                    alert("تم حفظ الطلب! سيتم فتح واتساب الآن لإرسال الموقع والبيانات.");
-                    window.location.href = `https://wa.me/${MY_PHONE}?text=${encodeURIComponent(waMsg)}`;
-                    cart = []; updateUI();
-                }
-            });
+            const waMsg = `*طلب جديد!* 🛒\n👤 الاسم: ${auth.currentUser.displayName}\n📞 الهاتف: ${phone}\n📍 العنوان: ${address}\n🗺 الخريطة: ${mapsUrl}\n💰 الإجمالي: ${document.getElementById('grand-total').innerText}$`;
+            
+            db.ref('orders/' + Date.now()).set({ user: auth.currentUser.displayName, phone, address, mapsUrl, total: document.getElementById('grand-total').innerText });
+            
+            window.location.href = `https://wa.me/${MY_PHONE}?text=${encodeURIComponent(waMsg)}`;
         }
     </script>
 </body>
