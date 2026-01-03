@@ -2,65 +2,62 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>NPX Admin Control | لوحة الإدارة</title>
+    <title>NPX Admin | الإدارة المركزية</title>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --p: #6366f1; --bg: #f1f5f9; --dark: #0f172a; }
-        body { font-family: 'Segoe UI', sans-serif; display: flex; margin: 0; background: var(--bg); }
-        .sidebar { width: 280px; background: var(--dark); color: white; height: 100vh; position: fixed; padding: 30px; }
-        .sidebar p { padding: 15px; cursor: pointer; border-radius: 12px; margin-bottom: 10px; transition: 0.3s; }
+        :root { --p: #6366f1; --bg: #f8fafc; --sidebar: #0f172a; }
+        body { font-family: sans-serif; display: flex; margin: 0; background: var(--bg); }
+        .sidebar { width: 260px; background: var(--sidebar); color: white; height: 100vh; position: fixed; padding: 25px; }
+        .sidebar p { cursor: pointer; padding: 12px; border-radius: 10px; transition: 0.3s; }
         .sidebar p:hover { background: var(--p); }
-        .main { margin-right: 280px; padding: 40px; width: 100%; }
-        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 30px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 10px; margin: 5px; width: 100%; box-sizing: border-box; }
-        .btn { padding: 12px 25px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; color: white; background: var(--p); }
-        #login { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; justify-content: center; align-items: center; }
+        .main { margin-right: 260px; padding: 40px; width: 100%; }
+        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin: 5px 0; width: 100%; box-sizing: border-box; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; color: white; background: var(--p); }
+        #loginOverlay { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; justify-content: center; align-items: center; }
     </style>
 </head>
 <body>
 
-<div id="login">
-    <div style="background:white; padding:50px; border-radius:30px; text-align:center; width:350px;">
-        <i class="fas fa-shield-alt fa-4x" style="color:var(--p)"></i>
-        <h2 style="margin:20px 0;">NPX Management</h2>
+<div id="loginOverlay">
+    <div style="background:white; padding:40px; border-radius:20px; text-align:center;">
+        <i class="fas fa-user-lock fa-3x" style="color:var(--p)"></i>
+        <h2>NPX Login</h2>
         <input type="password" id="pass" placeholder="Password"><br><br>
-        <button class="btn" style="width:100%" onclick="check()">دخول النظام</button>
+        <button class="btn" style="width:100%" onclick="login()">دخول</button>
     </div>
 </div>
 
 <div class="sidebar">
-    <h1 style="color:var(--p)">NPX ADMIN</h1>
-    <hr style="border:0.5px solid #1e293b; margin:20px 0;">
-    <p onclick="show('orders')"><i class="fas fa-shopping-cart"></i> الطلبات الواردة</p>
-    <p onclick="show('inv')"><i class="fas fa-tshirt"></i> إدارة المخزون</p>
+    <h2 style="color:var(--p)">NPX DASHBOARD</h2>
+    <p onclick="view('orders')"><i class="fas fa-box-open"></i> الطلبات</p>
+    <p onclick="view('inventory')"><i class="fas fa-tags"></i> المخزون</p>
 </div>
 
 <div class="main">
-    <div id="ordersView">
-        <h1>📦 الطلبات الجديدة</h1>
+    <div id="ordersSec">
+        <h1>الطلبات الواردة</h1>
         <div class="grid" id="orderList"></div>
     </div>
 
-    <div id="invView" style="display:none;">
-        <h1>👕 إضافة منتجات</h1>
+    <div id="inventorySec" style="display:none;">
+        <h1>إدارة المخزون</h1>
         <div class="card">
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                <input type="text" id="pName" placeholder="اسم المنتج">
-                <input type="number" id="pPrice" placeholder="السعر ($)">
-                <input type="number" id="pQty" placeholder="الكمية (مثلاً 10)">
-                <select id="pCat">
-                    <option value="تيشيرت">تيشيرت</option>
-                    <option value="هودي">هودي</option>
-                    <option value="إكسسوار">إكسسوارات</option>
-                </select>
-                <input type="text" id="pImg" placeholder="رابط الصورة" style="grid-column: span 2;">
-            </div>
-            <button class="btn" style="width:100%; margin-top:15px;" onclick="saveProd()">نشر في المتجر</button>
+            <h3>أضف منتج جديد</h3>
+            <input type="text" id="n" placeholder="اسم المنتج">
+            <input type="number" id="p" placeholder="السعر">
+            <input type="number" id="q" placeholder="الكمية">
+            <select id="c">
+                <option value="تيشيرت">تيشيرت</option>
+                <option value="هودي">هودي</option>
+            </select>
+            <input type="text" id="i" placeholder="رابط الصورة المباشر">
+            <button class="btn" onclick="save()">نشر المنتج</button>
         </div>
-        <div class="grid" id="invDisplay"></div>
+        <div class="grid" id="invList"></div>
     </div>
 </div>
 
@@ -69,50 +66,35 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    function check() { if(document.getElementById('pass').value === "npx2026") document.getElementById('login').style.display='none'; load(); }
-    function show(v) { document.getElementById('ordersView').style.display = v=='orders'?'block':'none'; document.getElementById('invView').style.display = v=='inv'?'block':'none'; }
+    function login() { if(document.getElementById('pass').value === "npx2026") { document.getElementById('loginOverlay').style.display='none'; load(); } }
+    function view(s) { document.getElementById('ordersSec').style.display=s=='orders'?'block':'none'; document.getElementById('inventorySec').style.display=s=='inventory'?'block':'none'; }
 
     function load() {
-        // تحميل الطلبات
         db.ref('orders').on('value', snap => {
-            const data = snap.val();
-            const container = document.getElementById('orderList');
-            container.innerHTML = '';
+            const data = snap.val(), list = document.getElementById('orderList');
+            list.innerHTML = '';
             for(let id in data) {
-                const o = data[id];
-                container.innerHTML += `<div class="card" style="border-right:8px solid ${o.status=='shipping'?'#3b82f6':o.status=='delivered'?'#10b981':'#f59e0b'}">
-                    <h3>👤 ${o.user}</h3>
-                    <p>📞 ${o.phone}</p>
-                    <p>📦 ${o.items.join(' , ')}</p>
-                    <p>💰 الإجمالي: $${o.total}</p>
-                    <a href="${o.location}" target="_blank" style="color:var(--p); font-weight:bold;">📍 فتح موقع العميل على الخريطة</a><br><br>
-                    <button class="btn" style="background:#3b82f6" onclick="db.ref('orders/${id}').update({status:'shipping'})">بدء الشحن</button>
-                    <button class="btn" style="background:#10b981" onclick="db.ref('orders/${id}').update({status:'delivered'})">تم التوصيل</button>
-                    <button class="btn" style="background:#ef4444" onclick="db.ref('orders/${id}').remove()">مسح</button>
+                list.innerHTML += `<div class="card" style="border-right:6px solid ${data[id].status=='shipping'?'#3b82f6':'#f59e0b'}">
+                    <h4>👤 ${data[id].user}</h4>
+                    <p>📦 ${data[id].items.join(' , ')}</p>
+                    <a href="${data[id].location}" target="_blank">📍 موقع العميل</a><br><br>
+                    <button class="btn" onclick="db.ref('orders/${id}').remove()">حذف</button>
                 </div>`;
             }
         });
 
-        // تحميل المخزون
         db.ref('inventory').on('value', snap => {
-            const data = snap.val();
-            const container = document.getElementById('invDisplay');
-            container.innerHTML = '';
+            const data = snap.val(), list = document.getElementById('invList');
+            list.innerHTML = '';
             for(let id in data) {
-                container.innerHTML += `<div class="card"><img src="${data[id].img}" width="100%" style="border-radius:10px;">
-                    <h3>${data[id].name}</h3>
-                    <p>النوع: ${data[id].category} | المخزون: <b>${data[id].qty}</b></p>
-                    <button class="btn" style="background:#ef4444; width:100%" onclick="db.ref('inventory/${id}').remove()">حذف نهائي</button></div>`;
+                list.innerHTML += `<div class="card"><img src="${data[id].img}" width="100%"><h3>${data[id].name}</h3><p>المخزون: ${data[id].qty}</p><button class="btn" style="background:red" onclick="db.ref('inventory/${id}').remove()">حذف</button></div>`;
             }
         });
     }
 
-    function saveProd() {
-        const n = document.getElementById('pName').value, p = document.getElementById('pPrice').value, q = document.getElementById('pQty').value, c = document.getElementById('pCat').value, i = document.getElementById('pImg').value;
-        if(n && p && q && i) {
-            db.ref('inventory').push({ name: n, price: p, qty: parseInt(q), category: c, img: i });
-            alert("تمت الإضافة!");
-        }
+    function save() {
+        const n=document.getElementById('n').value, p=document.getElementById('p').value, q=document.getElementById('q').value, c=document.getElementById('c').value, i=document.getElementById('i').value;
+        if(n && p && q && i) { db.ref('inventory').push({ name:n, price:p, qty:parseInt(q), category:c, img:i, sales:0 }); alert("تم!"); }
     }
 </script>
 </body>
