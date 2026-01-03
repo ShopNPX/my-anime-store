@@ -3,61 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NPX Store | نظام المخزون الذكي</title>
+    <title>NPX Store | المتجر الذكي المتكامل</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     
     <style>
-        :root { --main: #232f3e; --accent: #ff9900; --bg: #f4f7f6; }
+        :root { --main: #232f3e; --accent: #ff9900; --bg: #f4f7f6; --success: #28a745; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; }
-        nav { background: var(--main); padding: 15px 5%; display: flex; justify-content: space-between; color: white; align-items: center; }
+        nav { background: var(--main); padding: 15px 5%; display: flex; justify-content: space-between; color: white; align-items: center; position: sticky; top: 0; z-index: 100; }
         .container { display: flex; flex-wrap: wrap; padding: 20px 5%; gap: 20px; }
         
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; flex: 3; }
-        .card { background: white; border-radius: 12px; padding: 15px; text-align: center; border: 1px solid #eee; position: relative; }
+        .card { background: white; border-radius: 12px; padding: 15px; text-align: center; border: 1px solid #eee; transition: 0.3s; }
         .card img { width: 100%; height: 150px; object-fit: contain; }
         
-        /* تصميم حالة المخزون */
-        .stock-tag { font-size: 0.8rem; font-weight: bold; margin: 5px 0; }
-        .in-stock { color: green; }
-        .out-of-stock { color: red; }
+        .stock-tag { font-size: 0.85rem; font-weight: bold; margin: 10px 0; padding: 4px; border-radius: 4px; }
+        .in-stock { background: #e6f4ea; color: #1e7e34; }
+        .out-of-stock { background: #fce8e6; color: #d93025; }
         
-        .buy-btn { width: 100%; padding: 10px; border-radius: 20px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .buy-btn:disabled { background: #ccc; cursor: not-allowed; }
-        .buy-btn.active { background: #ffd814; border: 1px solid #fcd200; }
-
-        .sidebar { flex: 1.2; min-width: 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); height: fit-content; }
-        #login-screen { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .btn-action { width: 100%; padding: 12px; border-radius: 25px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; margin-top: 10px; }
+        .add-btn { background: #ffd814; color: #111; }
+        .add-btn:disabled { background: #ddd; cursor: not-allowed; }
+        
+        .sidebar { flex: 1.2; min-width: 320px; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); height: fit-content; }
+        .loc-btn { background: #007bff; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; width: 100%; margin: 10px 0; font-weight: bold; }
+        
+        textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; resize: none; font-family: inherit; margin-bottom: 10px; }
+        #login-screen { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: white; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
-        <h1>NPX STORE 🛒</h1>
-        <button onclick="login()" style="padding: 15px 35px; border-radius: 50px; cursor: pointer;">دخول بواسطة Google</button>
+        <h1 style="color: var(--main);">NPX STORE 🛒</h1>
+        <button onclick="login()" style="padding: 15px 40px; border-radius: 50px; cursor: pointer; background: var(--main); color: white; border: none; font-size: 1rem;">دخول بواسطة Google</button>
     </div>
 
     <div id="main-store" style="display: none;">
         <nav>
-            <div style="font-size: 1.5rem; font-weight: bold;">NPX STORE</div>
-            <button onclick="logout()" style="background:none; border:1px solid white; color:white; padding: 5px 15px; cursor:pointer;">خروج</button>
+            <div style="font-size: 1.6rem; font-weight: bold; color: var(--accent);">NPX STORE</div>
+            <button onclick="logout()" style="background:none; border:1px solid white; color:white; padding: 6px 15px; border-radius: 20px; cursor:pointer;">خروج</button>
         </nav>
 
         <div class="container">
             <div class="grid" id="product-list"></div>
 
             <div class="sidebar">
-                <h3>🛒 السلة</h3>
-                <div id="cart-content">السلة فارغة</div>
-                <h2 style="text-align:center;">Total: $<span id="grand-total">0.00</span></h2>
+                <h3>📦 ملخص الطلب</h3>
+                <div id="cart-content" style="min-height: 50px; color: #666;">السلة فارغة</div>
+                <h2 style="text-align:center; color: #d93025;">الإجمالي: $<span id="grand-total">0.00</span></h2>
                 
-                <hr>
-                <input type="tel" id="user-phone" placeholder="رقم الهاتف" style="width:100%; padding:10px; margin-bottom:10px;">
-                <textarea id="user-address" placeholder="العنوان" style="width:100%; padding:10px;"></textarea>
-                
-                <button class="buy-btn active" style="margin-top:15px; font-size: 1.1rem;" onclick="completePurchase()">تأكيد الشراء 🚀</button>
+                <div style="border-top: 2px dashed #eee; padding-top: 15px; margin-top: 15px;">
+                    <label>رقم الموبايل:</label>
+                    <input type="tel" id="user-phone" placeholder="01xxxxxxxxx" style="width:100%; padding:12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box;">
+                    
+                    <button class="loc-btn" onclick="fetchLocation()">📍 تحديد مكاني تلقائياً</button>
+                    <textarea id="user-address" rows="3" placeholder="العنوان سيظهر هنا..."></textarea>
+                    
+                    <button class="btn-action add-btn" style="background: var(--success); color: white; font-size: 1.1rem;" onclick="submitOrder()">تأكيد الشراء (واتساب) ✅</button>
+                </div>
             </div>
         </div>
     </div>
@@ -77,13 +83,13 @@
         const provider = new firebase.auth.GoogleAuthProvider();
 
         let cart = [];
-        const MY_PHONE = "201221060599";
+        let mapsUrl = "";
+        const OWNER_PHONE = "201221060599";
 
-        // قائمة المنتجات مع الكمية (Stock)
         let products = [
-            { id: "p1", name: "iPhone 15 Pro", price: 999, stock: 5, img: "https://m.media-amazon.com/images/I/81SigAnNfJL._AC_SL1500_.jpg" },
-            { id: "p2", name: "Sony Headphones", price: 350, stock: 0, img: "https://m.media-amazon.com/images/I/61vjK2MapXL._AC_SL1500_.jpg" },
-            { id: "p3", name: "Apple Watch S9", price: 400, stock: 2, img: "https://m.media-amazon.com/images/I/61f9uUuE6aL._AC_SL1500_.jpg" }
+            { id: "item1", name: "iPhone 15 Pro", price: 999, stock: 5, img: "https://m.media-amazon.com/images/I/81SigAnNfJL._AC_SL1500_.jpg" },
+            { id: "item2", name: "Sony XM5", price: 350, stock: 0, img: "https://m.media-amazon.com/images/I/61vjK2MapXL._AC_SL1500_.jpg" },
+            { id: "item3", name: "Apple Watch S9", price: 400, stock: 3, img: "https://m.media-amazon.com/images/I/61f9uUuE6aL._AC_SL1500_.jpg" }
         ];
 
         function login() { auth.signInWithPopup(provider); }
@@ -93,43 +99,34 @@
             if (user) {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('main-store').style.display = 'block';
-                syncStock(); // جلب الكميات الحقيقية من الداتابيز
+                syncAndRender();
             } else {
                 document.getElementById('login-screen').style.display = 'flex';
                 document.getElementById('main-store').style.display = 'none';
             }
         });
 
-        // مزامنة المخزون مع Firebase
-        function syncStock() {
-            db.ref('inventory').on('value', snapshot => {
-                const data = snapshot.val();
-                if (data) {
-                    products = products.map(p => ({
-                        ...p,
-                        stock: data[p.id] !== undefined ? data[p.id] : p.stock
-                    }));
-                }
+        function syncAndRender() {
+            db.ref('inventory').on('value', snap => {
+                const stocks = snap.val() || {};
+                products = products.map(p => ({ ...p, stock: stocks[p.id] !== undefined ? stocks[p.id] : p.stock }));
                 renderProducts();
             });
         }
 
         function renderProducts() {
             document.getElementById('product-list').innerHTML = products.map(p => {
-                const isAvailable = p.stock > 0;
+                const available = p.stock > 0;
                 return `
                 <div class="card">
                     <img src="${p.img}">
                     <h4>${p.name}</h4>
-                    <p style="font-weight:bold; color:#B12704;">$${p.price}</p>
-                    <div class="stock-tag ${isAvailable ? 'in-stock' : 'out-of-stock'}">
-                        ${isAvailable ? `متوفر: ${p.stock} قطعة` : 'نفذت الكمية'}
+                    <p style="font-weight:bold; font-size:1.2rem;">$${p.price}</p>
+                    <div class="stock-tag ${available ? 'in-stock' : 'out-of-stock'}">
+                        ${available ? `متاح: ${p.stock} قطعة` : 'غير متوفر حالياً'}
                     </div>
-                    <button 
-                        class="buy-btn ${isAvailable ? 'active' : ''}" 
-                        onclick="addToCart('${p.id}')" 
-                        ${!isAvailable ? 'disabled' : ''}>
-                        ${isAvailable ? 'أضف للسلة' : 'غير متوفر'}
+                    <button class="btn-action add-btn" onclick="addToCart('${p.id}')" ${!available ? 'disabled' : ''}>
+                        ${available ? 'إضافة للسلة' : 'نفذت الكمية'}
                     </button>
                 </div>`;
             }).join('');
@@ -137,41 +134,52 @@
 
         function addToCart(id) {
             const p = products.find(x => x.id === id);
-            if (p.stock > 0) {
-                cart.push({...p});
-                updateCartUI();
-            }
+            cart.push({...p});
+            updateUI();
         }
 
-        function updateCartUI() {
+        function updateUI() {
             const total = cart.reduce((s, i) => s + i.price, 0);
             document.getElementById('grand-total').innerText = total.toFixed(2);
             document.getElementById('cart-content').innerHTML = cart.length === 0 ? "السلة فارغة" : cart.map(i => `• ${i.name}`).join('<br>');
         }
 
-        async function completePurchase() {
-            const phone = document.getElementById('user-phone').value;
-            if(!phone || cart.length === 0) return alert("أكمل البيانات!");
+        async function fetchLocation() {
+            const area = document.getElementById('user-address');
+            area.placeholder = "جاري جلب العنوان... ⏳";
+            
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                const { latitude: lat, longitude: lon } = pos.coords;
+                mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+                
+                try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ar`);
+                    const data = await res.json();
+                    area.value = data.display_name;
+                } catch (e) {
+                    area.value = "تم تحديد الموقع بنجاح (رابط الخريطة جاهز)";
+                }
+            }, () => alert("يرجى تفعيل الـ GPS"));
+        }
 
-            // تحديث المخزون في الداتابيز (خصم قطعة لكل منتج تم شراؤه)
+        async function submitOrder() {
+            const phone = document.getElementById('user-phone').value;
+            const address = document.getElementById('user-address').value;
+            if(!phone || !address || cart.length === 0) return alert("يرجى إكمال البيانات!");
+
+            // خصم الكمية من الداتابيز
             const updates = {};
             cart.forEach(item => {
-                const currentProd = products.find(p => p.id === item.id);
-                updates['inventory/' + item.id] = currentProd.stock - 1;
+                const p = products.find(x => x.id === item.id);
+                updates['inventory/' + item.id] = p.stock - 1;
             });
 
-            try {
-                await db.ref().update(updates);
-                
-                const msg = `*طلب جديد!*\nالاسم: ${auth.currentUser.displayName}\nالهاتف: ${phone}\nالمنتجات:\n${cart.map(i=>i.name).join('\n')}\nالإجمالي: ${document.getElementById('grand-total').innerText}$`;
-                
-                window.location.href = `https://wa.me/${MY_PHONE}?text=${encodeURIComponent(msg)}`;
-                cart = [];
-                updateCartUI();
-                alert("تم تحديث المخزون وإرسال الطلب!");
-            } catch (e) {
-                alert("حدث خطأ في تحديث المخزون.");
-            }
+            await db.ref().update(updates);
+
+            const msg = `*طلب جديد* 🛒\n👤 العميل: ${auth.currentUser.displayName}\n📞 الهاتف: ${phone}\n📍 العنوان: ${address}\n🗺 الخريطة: ${mapsUrl}\n💰 الإجمالي: ${document.getElementById('grand-total').innerText}$\n📦 المنتجات:\n${cart.map(i=>i.name).join('\n')}`;
+
+            window.location.href = `https://wa.me/${OWNER_PHONE}?text=${encodeURIComponent(msg)}`;
+            cart = []; updateUI();
         }
     </script>
 </body>
