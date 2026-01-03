@@ -3,95 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NPX Premium Store</title>
+    <title>NPX Elite Store</title>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --p: #6366f1; --dark: #0f172a; --card: #1e293b; --white: #ffffff; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--dark); color: white; margin: 0; overflow-x: hidden; }
+        :root { --p: #6366f1; --dark: #0f172a; --card: #1e293b; --text: #f8fafc; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--dark); color: var(--text); margin: 0; }
         
         /* Navbar */
-        nav { background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(10px); padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid #334155; }
-        .logo { font-size: 1.8rem; font-weight: 800; color: var(--p); }
-        .cart-btn { background: var(--p); padding: 10px 20px; border-radius: 12px; cursor: pointer; position: relative; }
+        nav { background: rgba(15,23,42,0.9); backdrop-filter: blur(10px); padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 2px solid var(--p); }
+        .logo { font-size: 1.8rem; font-weight: 800; color: var(--p); letter-spacing: 2px; }
+        .cart-icon { position: relative; cursor: pointer; font-size: 1.4rem; background: #334155; padding: 10px; border-radius: 50%; }
+        .cart-count { position: absolute; top: -5px; right: -5px; background: #ef4444; font-size: 0.7rem; padding: 3px 7px; border-radius: 50%; }
 
-        /* Hero & Search */
-        .hero { padding: 40px 5%; text-align: center; background: linear-gradient(to bottom, #1e293b, #0f172a); }
-        .search-box { max-width: 600px; margin: 20px auto; position: relative; }
-        .search-box input { width: 100%; padding: 15px 50px; border-radius: 30px; border: none; background: #334155; color: white; font-size: 1rem; }
-        .search-box i { position: absolute; right: 20px; top: 15px; color: #94a3b8; }
+        /* Filter Section */
+        .filters { padding: 20px 5%; display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; background: #111827; }
+        .f-btn { background: #334155; border: none; color: white; padding: 10px 20px; border-radius: 25px; cursor: pointer; white-space: nowrap; transition: 0.3s; }
+        .f-btn.active { background: var(--p); box-shadow: 0 0 15px var(--p); }
+        .popular-btn { background: linear-gradient(45deg, #f59e0b, #ef4444); font-weight: bold; border: none; color: white; padding: 10px 20px; border-radius: 25px; cursor: pointer; }
 
-        /* Categories */
-        .cats { display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
-        .cat-tag { padding: 8px 20px; background: #334155; border-radius: 20px; cursor: pointer; transition: 0.3s; }
-        .cat-tag.active { background: var(--p); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
-
-        /* Products */
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px; padding: 0 5% 50px; }
-        .card { background: var(--card); border-radius: 20px; overflow: hidden; border: 1px solid #334155; transition: 0.3s; position: relative; }
+        /* Product Card */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding: 30px 5%; }
+        .card { background: var(--card); border-radius: 20px; overflow: hidden; border: 1px solid #334155; position: relative; transition: 0.3s; }
         .card:hover { transform: translateY(-10px); border-color: var(--p); }
-        .card img { width: 100%; height: 280px; object-fit: cover; }
-        .badge { position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 10px; font-size: 0.8rem; }
-        .info { padding: 20px; }
-        .price { font-size: 1.4rem; font-weight: bold; color: var(--p); margin: 10px 0; }
-        .buy-btn { width: 100%; padding: 12px; border-radius: 12px; border: none; background: var(--p); color: white; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .buy-btn:disabled { background: #475569; cursor: not-allowed; }
+        .card img { width: 100%; height: 300px; object-fit: cover; }
+        .config-area { padding: 15px; }
+        .select-group { display: flex; gap: 5px; margin: 10px 0; }
+        .opt-btn { background: #0f172a; border: 1px solid #475569; color: white; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; }
+        .opt-btn.active { background: var(--p); border-color: var(--p); }
+        .price-tag { font-size: 1.5rem; font-weight: bold; color: var(--p); margin: 10px 0; }
 
-        /* Full Screen Purchase Page */
-        #checkoutPage { position: fixed; inset: 0; background: var(--dark); z-index: 2000; display: none; padding: 40px 5%; overflow-y: auto; animation: slideIn 0.4s ease-out; }
-        @keyframes slideIn { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        .checkout-container { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
-        @media (max-width: 768px) { .checkout-container { grid-template-columns: 1fr; } }
-        .summary-item { display: flex; justify-content: space-between; background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 10px; }
-        .input-field { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #334155; background: #0f172a; color: white; margin-bottom: 15px; }
-        .final-btn { width: 100%; padding: 20px; border-radius: 15px; border: none; background: #22c55e; color: white; font-size: 1.2rem; font-weight: bold; cursor: pointer; }
+        /* Full Purchase Page */
+        #checkoutPage { position: fixed; inset: 0; background: var(--dark); z-index: 2000; display: none; padding: 30px 5%; overflow-y: auto; }
+        .checkout-grid { display: grid; grid-template-columns: 1fr 400px; gap: 40px; margin-top: 30px; }
+        @media (max-width: 900px) { .checkout-grid { grid-template-columns: 1fr; } }
+        .item-row { display: flex; justify-content: space-between; background: #1e293b; padding: 15px; border-radius: 15px; margin-bottom: 10px; border-left: 5px solid var(--p); }
+        .form-input { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #334155; background: #0f172a; color: white; margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
 <nav>
-    <div class="logo">NPX STORE</div>
-    <div class="cart-btn" onclick="openCheckout()">
-        <i class="fas fa-shopping-cart"></i> السلة (<span id="cartCount">0</span>)
+    <div class="logo">NPX ELITE</div>
+    <div class="cart-icon" onclick="openCheckout()">
+        <i class="fas fa-shopping-bag"></i>
+        <span class="cart-count" id="cCount">0</span>
     </div>
 </nav>
 
-<div class="hero">
-    <h1>اكتشف أحدث صيحات الموضة</h1>
-    <div class="search-box">
-        <i class="fas fa-search"></i>
-        <input type="text" id="srch" placeholder="بحث عن منتج..." onkeyup="render()">
-    </div>
-    <div class="cats" id="catGroup">
-        <div class="cat-tag active" onclick="setCat('الكل')">الكل</div>
-        <div class="cat-tag" onclick="setCat('تيشيرت')">تيشيرتات</div>
-        <div class="cat-tag" onclick="setCat('هودي')">هوديز</div>
-    </div>
+<div class="filters">
+    <button class="popular-btn" onclick="sortPopular()"><i class="fas fa-fire"></i> الأكثر رواجاً</button>
+    <button class="f-btn active" onclick="setCat('الكل', this)">الكل</button>
+    <button class="f-btn" onclick="setCat('تيشيرت', this)">تيشيرتات</button>
+    <button class="f-btn" onclick="setCat('هودي', this)">هوديز</button>
 </div>
 
 <div class="grid" id="productGrid"></div>
 
 <div id="checkoutPage">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
-        <h2><i class="fas fa-file-invoice-dollar"></i> إتمام عملية الشراء</h2>
-        <button onclick="closeCheckout()" style="background:red; color:white; border:none; padding:10px 20px; border-radius:10px; cursor:pointer;">إغلاق والعودة</button>
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h1>سلة المشتريات</h1>
+        <button onclick="closeCheckout()" style="background:#ef4444; border:none; color:white; padding:10px 20px; border-radius:10px; cursor:pointer;">العودة للمتجر</button>
     </div>
 
-    <div class="checkout-container">
-        <div>
-            <h3>مخلص الطلب</h3>
-            <div id="cartDetails"></div>
-            <hr style="border:0.5px solid #334155;">
-            <h2 style="text-align:left">الإجمالي: $<span id="finalTotal">0.00</span></h2>
-        </div>
-        <div>
+    <div class="checkout-grid">
+        <div id="cartItems"></div>
+        <div style="background:#1e293b; padding:25px; border-radius:20px; height:fit-content;">
             <h3>بيانات التوصيل</h3>
-            <input type="text" id="uName" class="input-field" placeholder="الاسم الكامل">
-            <input type="tel" id="uPhone" class="input-field" placeholder="رقم الواتساب">
-            <button onclick="getLoc()" style="width:100%; padding:10px; background:#3b82f6; border:none; color:white; border-radius:10px; margin-bottom:15px; cursor:pointer;">تحديد موقعي التلقائي</button>
-            <textarea id="uAddr" class="input-field" rows="3" placeholder="العنوان بالتفصيل"></textarea>
-            <button class="final-btn" onclick="submitOrder()">تأكيد الطلب الآن (WhatsApp) <i class="fab fa-whatsapp"></i></button>
+            <input type="text" id="uName" class="form-input" placeholder="الاسم الكامل">
+            <input type="tel" id="uPhone" class="form-input" placeholder="رقم الواتساب">
+            <textarea id="uAddr" class="form-input" rows="3" placeholder="العنوان بالتفصيل"></textarea>
+            <div style="font-size:1.5rem; margin:20px 0; display:flex; justify-content:space-between;">
+                <span>الإجمالي:</span>
+                <span style="color:var(--p)">$<span id="totalVal">0.00</span></span>
+            </div>
+            <button onclick="confirmOrder()" style="width:100%; padding:20px; background:#22c55e; border:none; color:white; font-size:1.2rem; font-weight:bold; border-radius:15px; cursor:pointer;">تأكيد الطلب عبر واتساب</button>
         </div>
     </div>
 </div>
@@ -101,9 +88,8 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let products = [], cart = [], currentCat = "الكل", userLoc = "";
+    let products = [], cart = [], currentCat = "الكل";
 
-    // تحميل البيانات
     db.ref('inventory').on('value', snap => {
         products = [];
         const data = snap.val();
@@ -112,111 +98,93 @@
     });
 
     function render() {
-        const query = document.getElementById('srch').value.toLowerCase();
         const container = document.getElementById('productGrid');
+        const filtered = products.filter(p => currentCat === "الكل" || p.category === currentCat);
         
-        const filtered = products.filter(p => 
-            (currentCat === "الكل" || p.category === currentCat) && 
-            p.name.toLowerCase().includes(query)
-        );
-
         container.innerHTML = filtered.map(p => `
             <div class="card">
-                <div class="badge">المتوفر: ${p.qty}</div>
                 <img src="${p.img}">
-                <div class="info">
+                <div class="config-area">
                     <h3 style="margin:0">${p.name}</h3>
-                    <div class="price">$${p.price}</div>
-                    <button class="buy-btn" ${p.qty <= 0 ? 'disabled' : ''} onclick="addToCart('${p.id}')">
-                        ${p.qty <= 0 ? 'نفد من المخزون' : 'إضافة للسلة +'}
-                    </button>
+                    <div class="select-group" id="size-${p.id}">
+                        ${['S', 'M', 'L', 'XL'].map(s => `<button class="opt-btn" onclick="selectOpt(this)">${s}</button>`).join('')}
+                    </div>
+                    <div class="select-group" id="color-${p.id}">
+                        ${['أسود', 'أبيض', 'أزرق'].map(c => `<button class="opt-btn" onclick="selectOpt(this)">${c}</button>`).join('')}
+                    </div>
+                    <div class="price-tag">$${p.price}</div>
+                    <button class="f-btn" style="width:100%; background:var(--p)" onclick="addToCart('${p.id}')">إضافة للسلة +</button>
                 </div>
             </div>
         `).join('');
     }
 
-    function addToCart(id) {
-        const pIndex = products.findIndex(x => x.id === id);
-        if(products[pIndex].qty > 0) {
-            // تنقيص الكمية مؤقتاً في الواجهة والمصفوفة
-            products[pIndex].qty -= 1;
-            cart.push({...products[pIndex], cartId: Date.now()});
-            document.getElementById('cartCount').innerText = cart.length;
-            render();
-        }
+    function selectOpt(btn) {
+        btn.parentElement.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
     }
 
-    function removeFromCart(cartId, originalId) {
-        // إعادة الكمية للمنتج الأصلي
-        const pIndex = products.findIndex(x => x.id === originalId);
-        if(pIndex !== -1) products[pIndex].qty += 1;
+    function addToCart(id) {
+        const p = products.find(x => x.id === id);
+        const sz = document.querySelector(`#size-${id} .active`);
+        const cl = document.querySelector(`#color-${id} .active`);
         
-        cart = cart.filter(item => item.cartId !== cartId);
-        document.getElementById('cartCount').innerText = cart.length;
+        if(!sz || !cl) return alert("يرجى اختيار المقاس واللون أولاً!");
+        if(p.qty <= 0) return alert("نفد من المخزون!");
+
+        cart.push({ ...p, selectedSize: sz.innerText, selectedColor: cl.innerText, cartId: Date.now() });
+        document.getElementById('cCount').innerText = cart.length;
+        alert("تمت الإضافة للسلة!");
+    }
+
+    function sortPopular() {
+        // ترتيب المنتجات بناءً على عدد مرات البيع (Sales) إذا كان موجوداً، أو عشوائياً للعرض
+        products.sort((a, b) => (b.sales || 0) - (a.sales || 0));
         render();
-        updateCheckoutList();
     }
 
     function openCheckout() {
         if(cart.length === 0) return alert("السلة فارغة!");
         document.getElementById('checkoutPage').style.display = 'block';
-        updateCheckoutList();
+        updateCheckoutUI();
     }
 
-    function closeCheckout() {
-        document.getElementById('checkoutPage').style.display = 'none';
-    }
+    function closeCheckout() { document.getElementById('checkoutPage').style.display = 'none'; }
 
-    function updateCheckoutList() {
-        const container = document.getElementById('cartDetails');
+    function updateCheckoutUI() {
         let total = 0;
-        container.innerHTML = cart.map(item => {
+        document.getElementById('cartItems').innerHTML = cart.map((item, idx) => {
             total += parseFloat(item.price);
             return `
-                <div class="summary-item">
-                    <span>${item.name}</span>
+                <div class="item-row">
+                    <div>
+                        <h4 style="margin:0">${item.name}</h4>
+                        <small>المقاس: ${item.selectedSize} | اللون: ${item.selectedColor}</small>
+                    </div>
                     <div>
                         <b>$${item.price}</b>
-                        <i class="fas fa-trash" style="color:red; margin-right:15px; cursor:pointer;" onclick="removeFromCart(${item.cartId}, '${item.id}')"></i>
+                        <i class="fas fa-trash" style="color:red; margin-right:15px; cursor:pointer;" onclick="cart.splice(${idx},1);updateCheckoutUI();"></i>
                     </div>
-                </div>
-            `;
+                </div>`;
         }).join('');
-        document.getElementById('finalTotal').innerText = total.toFixed(2);
+        document.getElementById('totalVal').innerText = total.toFixed(2);
+        document.getElementById('cCount').innerText = cart.length;
     }
 
-    function getLoc() {
-        navigator.geolocation.getCurrentPosition(p => {
-            userLoc = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
-            document.getElementById('uAddr').value = "✅ تم تحديد موقعك الجغرافي";
-        });
-    }
+    async function confirmOrder() {
+        const n = document.getElementById('uName').value, ph = document.getElementById('uPhone').value, ad = document.getElementById('uAddr').value;
+        if(!n || !ph) return alert("أكمل البيانات!");
 
-    function setCat(c) {
-        currentCat = c;
-        document.querySelectorAll('.cat-tag').forEach(t => t.classList.remove('active'));
-        event.target.classList.add('active');
-        render();
-    }
-
-    async function submitOrder() {
-        const n = document.getElementById('uName').value;
-        const ph = document.getElementById('uPhone').value;
-        if(!n || !ph) return alert("يرجى إدخال البيانات");
-
-        // تحديث قاعدة البيانات فعلياً عند التأكيد النهائي
+        // تحديث الكمية والحذف التلقائي وزيادة عداد الرواج (Popularity)
         for(let item of cart) {
-            const pRef = db.ref(`inventory/${item.id}`);
-            const snap = await pRef.get();
-            const currentQty = snap.val().qty;
-            if(currentQty <= 1) await pRef.remove();
-            else await pRef.update({ qty: currentQty - 1 });
+            const ref = db.ref(`inventory/${item.id}`);
+            const snap = await ref.get();
+            const currentData = snap.val();
+            if(currentData.qty <= 1) await ref.remove();
+            else await ref.update({ qty: currentData.qty - 1, sales: (currentData.sales || 0) + 1 });
         }
 
-        const orderData = { user: n, phone: ph, items: cart.map(i => i.name), total: document.getElementById('finalTotal').innerText, location: userLoc, status: 'processing' };
-        db.ref('orders').push(orderData);
-
-        const msg = `*طلب شراء NPX*\nالعميل: ${n}\nالمنتجات:\n- ${orderData.items.join('\n- ')}\nالإجمالي: $${orderData.total}\nالموقع: ${userLoc}`;
+        const msg = `*طلب جديد من NPX ELITE*\nالعميل: ${n}\nالمنتجات:\n${cart.map(i => `- ${i.name} [${i.selectedSize}/${i.selectedColor}]`).join('\n')}\nالإجمالي: $${document.getElementById('totalVal').innerText}`;
         window.location.href = `https://wa.me/201221060599?text=${encodeURIComponent(msg)}`;
     }
 </script>
