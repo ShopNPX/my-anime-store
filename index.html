@@ -23,17 +23,16 @@
         .cart-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 10px 0; }
         .del-btn { color: #ff4d4d; border: none; background: none; cursor: pointer; font-weight: bold; font-size: 1.2rem; }
         
-        /* تتبع الطلب */
         .status-box { background: #e7f3ff; border: 1px solid #b2d7ff; padding: 15px; border-radius: 10px; margin-top: 15px; text-align: center; }
         .status-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; font-weight: bold; margin-top: 5px; background: var(--blue); color: white; }
         
-        /* نظام النجوم */
         .stars { font-size: 1.5rem; color: #ccc; cursor: pointer; direction: ltr; margin: 10px 0; }
         .stars span.active { color: #ffc107; }
 
         input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
         .btn-confirm { background: var(--whatsapp); color: white; border: none; padding: 15px; border-radius: 30px; width: 100%; font-weight: bold; cursor: pointer; }
         #login-screen { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: white; }
+        .btn-guest { background: #eee; color: #333; margin-top: 10px; padding: 10px 20px; border-radius: 50px; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -41,6 +40,7 @@
     <div id="login-screen">
         <h1>NPX STORE 🛒</h1>
         <button onclick="login()" style="padding: 15px 40px; border-radius: 50px; cursor: pointer; background: var(--main); color: white; border: none;">دخول بواسطة Google</button>
+        <button onclick="guestLogin()" class="btn-guest">الدخول كضيف سريع</button>
     </div>
 
     <div id="main-store" style="display: none;">
@@ -91,7 +91,6 @@
     </div>
 
     <script>
-        // -- إعدادات Firebase (نفس إعداداتك السابقة) --
         const firebaseConfig = {
             apiKey: "AIzaSyAVadEAFdmh0SuWq4sZJkSJJrRpF5fOp58",
             authDomain: "authen-36a1f.firebaseapp.com",
@@ -107,6 +106,7 @@
         let cart = [];
         let mapsUrl = "غير محدد";
         let userRating = 0;
+        let currentUserData = null;
         const MY_PHONE = "201221060599";
 
         let products = [
@@ -115,19 +115,39 @@
         ];
 
         function login() { auth.signInWithPopup(provider); }
-        function logout() { auth.signOut(); }
+        
+        function guestLogin() {
+            let gid = localStorage.getItem('npx_guest_id');
+            if(!gid) {
+                gid = 'guest_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('npx_guest_id', gid);
+            }
+            currentUserData = { uid: gid, displayName: "ضيف زائر", isGuest: true };
+            enterStore();
+        }
+
+        function logout() { 
+            localStorage.removeItem('npx_guest_id');
+            auth.signOut().then(() => location.reload()); 
+        }
 
         auth.onAuthStateChanged(user => {
             if (user) {
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('main-store').style.display = 'block';
-                syncData();
-                checkExistingOrder(user.uid);
+                currentUserData = { uid: user.uid, displayName: user.displayName, isGuest: false };
+                enterStore();
             } else {
-                document.getElementById('login-screen').style.display = 'flex';
-                document.getElementById('main-store').style.display = 'none';
+                const gid = localStorage.getItem('npx_guest_id');
+                if(gid) guestLogin();
+                else document.getElementById('login-screen').style.display = 'flex';
             }
         });
+
+        function enterStore() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-store').style.display = 'block';
+            syncData();
+            checkExistingOrder(currentUserData.uid);
+        }
 
         function syncData() {
             db.ref('inventory').on('value', snap => {
@@ -199,20 +219,20 @@
             const address = document.getElementById('user-address').value;
             if(!phone || !address) return alert("أكمل بياناتك!");
 
-            const orderId = auth.currentUser.uid;
             const updates = {};
             cart.forEach(item => { updates['inventory/' + item.id] = item.stock - item.qty; });
             
-            // إنشاء طلب جديد بحالة "جاري التجهيز"
-            updates['orders/' + orderId] = {
+            updates['orders/' + currentUserData.uid] = {
+                user: currentUserData.displayName + (currentUserData.isGuest ? " (ضيف)" : ""),
                 status: "processing",
                 items: cart.map(i => `${i.name} (x${i.qty})`),
-                total: document.getElementById('grand-total').innerText
+                total: document.getElementById('grand-total').innerText,
+                phone: phone
             };
 
             await db.ref().update(updates);
 
-            const msg = `*طلب جديد*\nالاسم: ${auth.currentUser.displayName}\nالهاتف: ${phone}\nالعنوان: ${address}\nالمنتجات:\n${cart.map(i=>`• ${i.name} (x${i.qty})`).join('\n')}\nالخريطة: ${mapsUrl}`;
+            const msg = `*طلب جديد*\nالاسم: ${currentUserData.displayName}\nالهاتف: ${phone}\nالمنتجات:\n${cart.map(i=>`• ${i.name} (x${i.qty})`).join('\n')}\nالخريطة: ${mapsUrl}`;
             window.location.href = `https://wa.me/${MY_PHONE}?text=${encodeURIComponent(msg)}`;
             
             cart = []; updateUI();
@@ -224,7 +244,6 @@
                 if(order) {
                     document.getElementById('checkout-area').style.display = 'none';
                     document.getElementById('tracking-area').style.display = 'block';
-                    
                     const badge = document.getElementById('status-badge');
                     if(order.status === "processing") {
                         badge.innerText = "جاري التجهيز 📦"; badge.style.background = "#ffc107";
@@ -234,6 +253,9 @@
                         badge.innerText = "تم التسليم ✅"; badge.style.background = "#28a745";
                         document.getElementById('post-delivery').style.display = 'block';
                     }
+                } else {
+                    document.getElementById('checkout-area').style.display = 'block';
+                    document.getElementById('tracking-area').style.display = 'none';
                 }
             });
         }
@@ -247,12 +269,11 @@
         async function sendReview() {
             if(userRating === 0) return alert("قيم بالنجوم أولاً");
             await db.ref('reviews').push({
-                user: auth.currentUser.displayName,
+                user: currentUserData.displayName,
                 rating: userRating,
                 text: document.getElementById('rate-comment').value || "تقييم ممتاز"
             });
-            // حذف الطلب من التتبع بعد التقييم لفتح السلة مرة أخرى
-            await db.ref('orders/' + auth.currentUser.uid).remove();
+            await db.ref('orders/' + currentUserData.uid).remove();
             alert("شكراً لتقييمك!");
             location.reload();
         }
