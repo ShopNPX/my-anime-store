@@ -1,60 +1,27 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <title>NPX Admin Dashboard</title>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <style>
-        body { font-family: sans-serif; background: #f0f2f5; padding: 20px; direction: rtl; }
-        .card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .btn { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; color: white; margin: 2px; }
-        input { padding: 8px; margin: 5px; border: 1px solid #ddd; }
-    </style>
-</head>
-<body>
-    <h1>إدارة NPX 2026</h1>
-    <div class="card">
-        <h3>إضافة منتج</h3>
-        <input id="n" placeholder="الاسم"> <input id="p" placeholder="السعر"> <input id="q" placeholder="الكمية"> <input id="i" placeholder="رابط الصورة">
-        <button onclick="add()" class="btn" style="background:blue">إضافة</button>
-    </div>
-
-    <h3>الطلبات الواردة</h3>
-    <div id="ords"></div>
-
 <script>
-    const firebaseConfig = { databaseURL: "https://authen-36a1f-default-rtdb.firebaseio.com/" };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    function add() {
-        const n=document.getElementById('n').value, p=document.getElementById('p').value, q=document.getElementById('q').value, i=document.getElementById('i').value;
-        db.ref('inventory').push({ name:n, price:p, qty:parseInt(q), img:i });
-        alert("تم!");
-    }
-
+    // ... داخل دالة عرض الطلبات في ملف الأدمن ...
     db.ref('orders').on('value', snap => {
         const div = document.getElementById('ords');
         div.innerHTML = '';
         snap.forEach(c => {
             const o = c.val();
             div.innerHTML += `
-                <div class="card">
-                    <b>العميل: ${o.name}</b> (${o.status === 'delivered' ? '✅ تم' : '⏳ معلق'})<br>
-                    <p>الأصناف: ${o.items.map(i=>i.name).join(' - ')}</p>
-                    <a href="${o.location}" target="_blank">📍 عرض الموقع</a><br><br>
-                    <button onclick="mark('${c.key}')" class="btn" style="background:green">تم التوصيل (فتح التقييم)</button>
-                    <button onclick="db.ref('orders/${c.key}').remove()" class="btn" style="background:red">حذف نهائي</button>
+                <div class="card" style="border-left: 5px solid ${o.status === 'delivered' ? 'green' : 'orange'}">
+                    <b>العميل: ${o.name} (${o.phone})</b><br>
+                    <p>المنتجات: ${o.items.map(i=>i.name).join(' + ')}</p>
+                    <p>الإجمالي: $${o.total}</p>
+                    <a href="${o.location}" target="_blank">📍 موقع العميل GPS</a><br><br>
+                    ${o.status !== 'delivered' ? 
+                        `<button onclick="markDelivered('${c.key}')" style="background:green; color:white; padding:10px; border:none; border-radius:5px; cursor:pointer;">✅ تم التوصيل (تفعيل التقييم)</button>` 
+                        : '<span>تم التوصيل بنجاح</span>'}
+                    <button onclick="db.ref('orders/${c.key}').remove()" style="background:red; color:white; padding:10px; border:none; border-radius:5px; cursor:pointer;">حذف الطلب</button>
                 </div>
             `;
         });
     });
 
-    function mark(id) {
+    function markDelivered(id) {
         db.ref('orders/' + id).update({ status: "delivered" });
-        alert("تم! سيظهر نظام التقييم للعميل الآن.");
+        alert("تم تحديث الحالة، سيظهر التقييم للعميل فوراً.");
     }
 </script>
-</body>
-</html>
