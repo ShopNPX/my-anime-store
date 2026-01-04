@@ -3,46 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NPX Global Store - Egypt</title>
+    <title>NPX Global Store 2026</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --p: #6366f1; --dark: #0f172a; --card: #1e293b; --text: #f8fafc; --red: #ef4444; --green: #22c55e; --gold: #fbbf24; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--dark); color: var(--text); margin: 0; padding-bottom: 60px; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--dark); color: var(--text); margin: 0; padding-bottom: 70px; overflow-x: hidden; }
         
-        /* Navigation & Categories */
+        /* Navigation & Search */
         nav { background: #111827; padding: 15px 5%; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; border-bottom: 2px solid var(--p); }
-        .cat-bar { background: #1e293b; padding: 10px 5%; overflow-x: auto; white-space: nowrap; border-bottom: 1px solid #334155; }
-        .cat-chip { display: inline-block; padding: 6px 15px; background: #0f172a; border-radius: 20px; margin-left: 10px; cursor: pointer; font-size: 0.85rem; border: 1px solid #334155; }
-        .cat-chip.active { background: var(--p); border-color: var(--p); }
+        .search-bar { flex: 1; margin: 0 20px; position: relative; }
+        .search-bar input { width: 100%; padding: 10px 15px; border-radius: 10px; border: none; background: #1e293b; color: white; outline: none; border: 1px solid #334155; }
+        
+        /* Category Chips */
+        .cat-scroll { background: #111827; padding: 10px 5%; overflow-x: auto; white-space: nowrap; display: flex; gap: 10px; border-bottom: 1px solid #334155; }
+        .cat-chip { padding: 8px 20px; background: var(--card); border-radius: 20px; cursor: pointer; border: 1px solid #334155; font-size: 0.9rem; }
+        .cat-chip.active { background: var(--p); border-color: var(--p); font-weight: bold; }
 
-        /* Lock Bar (Timer) */
-        #lockBar { display: none; background: #1e293b; color: white; padding: 15px; text-align: center; border-bottom: 2px solid var(--red); }
+        /* Order Tracker Bar (The 60 min Cancel System) */
+        #lockBar { display: none; background: #1e293b; border-bottom: 2px solid var(--red); padding: 15px; text-align: center; }
 
-        /* Grid & Cards */
+        /* Product Grid */
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 20px 5%; }
-        .card { background: var(--card); border-radius: 15px; overflow: hidden; border: 1px solid #334155; position: relative; transition: 0.3s; }
-        .card:hover { transform: translateY(-5px); }
+        .card { background: var(--card); border-radius: 15px; overflow: hidden; border: 1px solid #334155; transition: 0.3s; }
+        .card:hover { transform: translateY(-5px); border-color: var(--p); }
         .card img { width: 100%; height: 260px; object-fit: cover; }
         .p-body { padding: 15px; }
-        .price-tag { color: var(--green); font-size: 1.2rem; font-weight: bold; }
-        
-        /* Sizes */
-        .size-box { display: flex; gap: 5px; margin: 12px 0; }
-        .size-btn { flex: 1; background: #0f172a; border: 1px solid var(--p); color: white; padding: 7px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; }
-        .size-btn:disabled { opacity: 0.15; cursor: not-allowed; border-color: #475569; }
-        .size-btn.active { background: var(--p); box-shadow: 0 0 10px rgba(99, 102, 241, 0.5); }
 
-        .buy-btn { width: 100%; padding: 12px; background: var(--p); border: none; color: white; font-weight: bold; border-radius: 10px; cursor: pointer; }
-        .buy-btn:disabled { background: #475569; cursor: not-allowed; }
+        /* Size System */
+        .size-box { display: flex; gap: 5px; margin: 12px 0; }
+        .size-btn { flex: 1; background: #0f172a; border: 1px solid var(--p); color: white; padding: 8px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; }
+        .size-btn:disabled { opacity: 0.1; cursor: not-allowed; filter: grayscale(1); }
+        .size-btn.active { background: var(--p); box-shadow: 0 0 10px var(--p); }
+
+        .buy-btn { width: 100%; padding: 15px; background: var(--p); border: none; color: white; font-weight: bold; border-radius: 12px; cursor: pointer; }
+        .buy-btn:disabled { background: #475569; }
 
         /* Modals */
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 2000; display: none; justify-content: center; align-items: center; padding: 20px; }
-        .box { background: var(--card); padding: 25px; border-radius: 20px; width: 100%; max-width: 450px; position: relative; }
-        input, textarea { width: 100%; padding: 12px; margin: 8px 0; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 10px; box-sizing: border-box; }
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: none; justify-content: center; align-items: center; padding: 20px; }
+        .box { background: var(--card); padding: 25px; border-radius: 20px; width: 100%; max-width: 450px; }
+        input, textarea { width: 100%; padding: 12px; margin: 8px 0; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 10px; }
         
-        .cart-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #334155; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #334155; }
         .star { font-size: 1.8rem; color: #475569; cursor: pointer; margin: 0 5px; }
         .star.active { color: var(--gold); }
     </style>
@@ -50,20 +53,21 @@
 <body>
 
 <div id="lockBar">
-    <strong id="statusTxt">⏳ طلبك قيد المراجعة</strong><br>
-    <small id="timerMsg"></small><br>
-    <button id="cancelBtn" onclick="cancelOrder()" style="display:none; background:var(--red); color:white; border:none; padding:8px 15px; border-radius:8px; margin-top:5px; cursor:pointer;">إلغاء الطلب ↩️</button>
+    <b id="statusMsg">🛒 طلبك قيد المعالجة</b><br>
+    <small id="timerMsg"></small>
+    <button id="cancelBtn" onclick="cancelOrder()" style="display:none; background:var(--red); color:white; border:none; padding:8px 15px; border-radius:8px; margin-top:8px; cursor:pointer;">إلغاء الطلب واسترجاع المخزون ↩️</button>
 </div>
 
 <nav>
     <div style="font-weight: 900; color: var(--p); font-size: 1.5rem;">NPX STORE</div>
+    <div class="search-bar"><input type="text" id="srch" placeholder="ابحث باسم المنتج..." onkeyup="render()"></div>
     <div onclick="toggleCart(true)" style="cursor:pointer; position:relative;">
-        <i class="fas fa-shopping-basket fa-lg"></i>
+        <i class="fas fa-shopping-bag fa-lg"></i>
         <span id="cartCount" style="position:absolute; top:-10px; right:-10px; background:var(--red); padding:2px 6px; border-radius:50%; font-size:0.7rem;">0</span>
     </div>
 </nav>
 
-<div class="cat-bar" id="catBar">
+<div class="cat-scroll" id="catBar">
     <div class="cat-chip active" onclick="filterCat('الكل')">الكل</div>
 </div>
 
@@ -71,29 +75,29 @@
 
 <div id="cartUI" class="modal">
     <div class="box">
-        <h2 style="text-align:center;">سلة المشتريات</h2>
-        <div id="cartItemsList" style="max-height: 250px; overflow-y: auto;"></div>
-        <div style="text-align:center; font-weight:bold; margin:20px 0; font-size: 1.3rem;">الإجمالي: <span id="totalSum">0</span> ج.م</div>
+        <h2 style="text-align:center;">تفاصيل السلة</h2>
+        <div id="cartList" style="max-height: 200px; overflow-y: auto;"></div>
+        <div style="text-align:center; font-weight:bold; margin:20px 0; font-size: 1.3rem;">الإجمالي: <span id="total">0</span> ج.م</div>
         
-        <input id="uName" type="text" placeholder="الاسم الكامل">
-        <input id="uPhone" type="text" placeholder="رقم الواتساب">
+        <input id="uName" placeholder="الاسم الكامل">
+        <input id="uPhone" placeholder="رقم الواتساب">
         <button onclick="getGPS()" style="width:100%; padding:10px; background:#3b82f6; color:white; border:none; border-radius:8px; margin-bottom:5px;"><i class="fas fa-location-arrow"></i> تحديد موقعي GPS</button>
         <textarea id="uAddr" placeholder="العنوان بالتفصيل"></textarea>
         
-        <button onclick="finalSubmit()" style="width:100%; padding:15px; background:var(--green); color:white; border:none; border-radius:10px; font-weight:bold;">تأكيد وطلب عبر واتساب</button>
-        <button onclick="toggleCart(false)" style="display:block; margin:10px auto; background:none; border:none; color:#94a3b8; cursor:pointer;">إغلاق</button>
+        <button onclick="submitOrder()" style="width:100%; padding:15px; background:var(--green); color:white; border:none; border-radius:12px; font-weight:bold;">إرسال الطلب واتساب ✅</button>
+        <button onclick="toggleCart(false)" style="display:block; margin:10px auto; color:#94a3b8; background:none; border:none; cursor:pointer;">إغلاق</button>
     </div>
 </div>
 
-<div id="ratingUI" class="modal">
+<div id="rateUI" class="modal">
     <div class="box" style="text-align:center;">
-        <h2 style="color:var(--gold);">تم التوصيل بنجاح! 🎉</h2>
-        <p>يسعدنا تقييمك للمنتجات:</p>
+        <h2 style="color:var(--gold);">وصل طلبك! 🎉</h2>
+        <p>قيم تجربتك مع المنتجات لمساعدتنا:</p>
         <div style="margin: 20px 0;">
             <i class="fas fa-star star" onclick="setRate(1)"></i><i class="fas fa-star star" onclick="setRate(2)"></i><i class="fas fa-star star" onclick="setRate(3)"></i><i class="fas fa-star star" onclick="setRate(4)"></i><i class="fas fa-star star" onclick="setRate(5)"></i>
         </div>
-        <textarea id="revComm" placeholder="رأيك يهمنا..."></textarea>
-        <button onclick="submitReview()" style="width:100%; padding:15px; background:var(--p); color:white; border:none; border-radius:10px; font-weight:bold;">إرسال التقييم</button>
+        <textarea id="rateComm" placeholder="تعليقك (اختياري)..."></textarea>
+        <button onclick="sendReview()" style="width:100%; padding:15px; background:var(--p); color:white; border:none; border-radius:10px;">نشر التقييم</button>
     </div>
 </div>
 
@@ -102,49 +106,50 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let products = [], cart = [], gpsLink = "غير محدد", currentRate = 0, selectedCat = "الكل";
+    let products = [], cart = [], currentCat = "الكل", gps = "غير محدد", myRate = 0;
 
-    // 1. Fetch Data
+    // Load Data
     db.ref('inventory').on('value', snap => {
         products = [];
         const cats = new Set(['الكل']);
         snap.forEach(c => {
-            const data = c.val();
-            products.push({id: c.key, ...data, reviews: data.reviews ? Object.values(data.reviews) : []});
-            if(data.category) cats.add(data.category);
+            const p = {id: c.key, ...c.val(), reviews: c.val().reviews ? Object.values(c.val().reviews) : []};
+            products.push(p);
+            if(p.category) cats.add(p.category);
         });
         renderCats(Array.from(cats));
-        renderGrid();
+        render();
     });
 
     function renderCats(cats) {
         document.getElementById('catBar').innerHTML = cats.map(c => 
-            `<div class="cat-chip ${selectedCat === c ? 'active' : ''}" onclick="filterCat('${c}')">${c}</div>`
+            `<div class="cat-chip ${currentCat === c ? 'active' : ''}" onclick="filterCat('${c}')">${c}</div>`
         ).join('');
     }
 
-    function filterCat(c) { selectedCat = c; renderGrid(); }
+    function filterCat(c) { currentCat = c; render(); }
 
-    function renderGrid() {
-        const list = selectedCat === 'الكل' ? products : products.filter(p => p.category === selectedCat);
-        const isLocked = localStorage.getItem('npx_active_oid');
+    function render() {
+        const q = document.getElementById('srch').value.toLowerCase();
+        const isLocked = localStorage.getItem('active_order');
+        const filtered = products.filter(p => (currentCat === 'الكل' || p.category === currentCat) && p.name.toLowerCase().includes(q));
         
-        document.getElementById('mainGrid').innerHTML = list.map(p => {
+        document.getElementById('mainGrid').innerHTML = filtered.map(p => {
             const avg = p.reviews.length ? (p.reviews.reduce((a,b)=>a+b.rate,0)/p.reviews.length).toFixed(1) : "جديد";
             return `
             <div class="card">
                 <img src="${p.img}">
                 <div class="p-body">
-                    <small style="color:var(--p)">${p.category}</small>
+                    <small style="color:var(--p)">${p.category || 'عام'}</small>
                     <h3 style="margin:5px 0">${p.name} <span style="color:var(--gold); font-size:0.8rem;">⭐ ${avg}</span></h3>
                     <div class="size-box" id="sizes-${p.id}">
-                        <button class="size-btn" ${p.s <= 0 ? 'disabled' : ''} onclick="selSize(this, 's')">S</button>
-                        <button class="size-btn" ${p.m <= 0 ? 'disabled' : ''} onclick="selSize(this, 'm')">M</button>
-                        <button class="size-btn" ${p.l <= 0 ? 'disabled' : ''} onclick="selSize(this, 'l')">L</button>
-                        <button class="size-btn" ${p.xl <= 0 ? 'disabled' : ''} onclick="selSize(this, 'xl')">XL</button>
+                        <button class="size-btn" ${p.s <= 0 ? 'disabled' : ''} onclick="selSz(this, 's')">S</button>
+                        <button class="size-btn" ${p.m <= 0 ? 'disabled' : ''} onclick="selSz(this, 'm')">M</button>
+                        <button class="size-btn" ${p.l <= 0 ? 'disabled' : ''} onclick="selSz(this, 'l')">L</button>
+                        <button class="size-btn" ${p.xl <= 0 ? 'disabled' : ''} onclick="selSz(this, 'xl')">XL</button>
                     </div>
-                    <div class="price-tag">${p.price} ج.م</div>
-                    <button class="buy-btn" ${isLocked ? 'disabled' : ''} onclick="addToCart('${p.id}')">
+                    <b style="color:var(--green); font-size:1.2rem;">${p.price} ج.م</b>
+                    <button class="buy-btn" ${isLocked ? 'disabled' : ''} onclick="add('${p.id}')">
                         ${isLocked ? 'لديك طلب نشط' : 'إضافة للسلة +'}
                     </button>
                 </div>
@@ -152,95 +157,85 @@
         }).join('');
     }
 
-    // 2. Cart System (Grouping 2x, 3x)
-    function selSize(btn, sz) {
+    function selSz(btn, s) {
         btn.parentElement.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active'); btn.dataset.selected = sz;
+        btn.classList.add('active'); btn.dataset.sz = s;
     }
 
-    function addToCart(id) {
+    function add(id) {
         const p = products.find(x => x.id === id);
-        const activeBtn = document.querySelector(`#sizes-${id} .active`);
-        if(!activeBtn) return alert("اختر المقاس أولاً");
-        
-        const sz = activeBtn.dataset.selected;
-        const existing = cart.find(i => i.id === id && i.sz === sz);
-        
-        if(existing) {
-            if(existing.qty >= p[sz]) return alert("نفدت الكمية المتاحة");
-            existing.qty++;
+        const btn = document.querySelector(`#sizes-${id} .active`);
+        if(!btn) return alert("اختر المقاس أولاً");
+        const sz = btn.dataset.sz;
+        const exist = cart.find(i => i.id === id && i.sz === sz);
+        if(exist) {
+            if(exist.qty >= p[sz]) return alert("نفدت الكمية");
+            exist.qty++;
         } else {
             cart.push({ id, name: p.name, price: p.price, sz, qty: 1 });
         }
-        updateCartUI();
-        toggleCart(true);
+        updateCart();
     }
 
-    function updateCartUI() {
+    function updateCart() {
         let total = 0, count = 0;
-        document.getElementById('cartItemsList').innerHTML = cart.map((i, idx) => {
+        document.getElementById('cartList').innerHTML = cart.map((i, idx) => {
             total += (i.price * i.qty); count += i.qty;
-            return `
-            <div class="cart-item">
-                <span><b>${i.qty}x</b> ${i.name} (${i.sz.toUpperCase()})</span>
-                <span>${i.price * i.qty} ج.م <i class="fas fa-trash" style="color:var(--red); margin-right:10px; cursor:pointer;" onclick="cart.splice(${idx},1); updateCartUI();"></i></span>
-            </div>`;
+            return `<div class="cart-item"><span><b>${i.qty}x</b> ${i.name} [${i.sz}]</span><span>${i.price*i.qty} ج.م <i class="fas fa-trash" style="color:var(--red); cursor:pointer;" onclick="cart.splice(${idx},1);updateCart()"></i></span></div>`;
         }).join('');
         document.getElementById('cartCount').innerText = count;
-        document.getElementById('totalSum').innerText = total;
+        document.getElementById('total').innerText = total;
     }
 
     function toggleCart(s) { document.getElementById('cartUI').style.display = s ? 'flex' : 'none'; }
 
     function getGPS() {
-        navigator.geolocation.getCurrentPosition(pos => {
-            gpsLink = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
-            document.getElementById('uAddr').value = "✅ تم تحديد موقعك بدقة";
-        }, () => alert("يرجى تفعيل الـ GPS"));
+        navigator.geolocation.getCurrentPosition(p => {
+            gps = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
+            document.getElementById('uAddr').value = "✅ تم تحديد موقعك (GPS)";
+        });
     }
 
-    // 3. Submit & Order Management
-    async function finalSubmit() {
-        const n = document.getElementById('uName').value, ph = document.getElementById('uPhone').value, addr = document.getElementById('uAddr').value;
-        if(!n || !ph || !addr || cart.length === 0) return alert("أكمل البيانات");
+    async function submitOrder() {
+        const n = document.getElementById('uName').value, ph = document.getElementById('uPhone').value, ad = document.getElementById('uAddr').value;
+        if(!n || !ph || !ad || cart.length === 0) return alert("أكمل البيانات");
 
         // Discount Inventory
-        for(let item of cart) {
-            const ref = db.ref(`inventory/${item.id}/${item.sz}`);
-            const s = await ref.get(); await ref.set(Math.max(0, s.val() - item.qty));
+        for(let i of cart) {
+            const r = db.ref(`inventory/${i.id}/${i.sz}`);
+            const s = await r.get(); await r.set(s.val() - i.qty);
         }
 
-        const total = document.getElementById('totalSum').innerText;
         const oRef = db.ref('orders').push({ 
-            name:n, phone:ph, items:cart, total, status:"pending", 
-            timestamp:Date.now(), gps: gpsLink, addr: addr 
+            name:n, phone:ph, items:cart, total:document.getElementById('total').innerText, 
+            status:'pending', ts:Date.now(), gps, addr:ad 
         });
         
-        localStorage.setItem('npx_active_oid', oRef.key);
-        localStorage.setItem('npx_active_odata', JSON.stringify(cart));
-
-        const msg = `*طلب جديد من NPX*%0A*الاسم:* ${n}%0A*المنتجات:*%0A${cart.map(i => `- ${i.name} [${i.sz}] (${i.qty}x)`).join('%0A')}%0A*الإجمالي:* ${total} ج.م%0A*الموقع:* ${gpsLink}`;
+        localStorage.setItem('active_order', oRef.key);
+        localStorage.setItem('active_data', JSON.stringify(cart));
+        
+        const msg = `*طلب جديد NPX*%0A*الاسم:* ${n}%0A*الطلبات:*%0A${cart.map(i=>`- ${i.name} [${i.sz}] (${i.qty}x)`).join('%0A')}%0A*الإجمالي:* ${document.getElementById('total').innerText} ج.م%0A*الموقع:* ${gps}`;
         window.location.href = `https://wa.me/201221060599?text=${msg}`;
     }
 
-    // Timer & Cancel Logic
-    const activeId = localStorage.getItem('npx_active_oid');
+    // Active Order Logic (60 min & Rate)
+    const activeId = localStorage.getItem('active_order');
     if(activeId) {
         db.ref('orders/' + activeId).on('value', snap => {
             const o = snap.val(); if(!o) return;
             if(o.status === 'delivered') {
-                document.getElementById('ratingUI').style.display = 'flex';
+                document.getElementById('rateUI').style.display = 'flex';
                 document.getElementById('lockBar').style.display = 'none';
             } else {
                 document.getElementById('lockBar').style.display = 'block';
                 setInterval(() => {
-                    const diff = (Date.now() - o.timestamp) / 1000 / 60;
+                    const diff = (Date.now() - o.ts) / 1000 / 60;
                     if(diff < 60) {
                         document.getElementById('cancelBtn').style.display = 'inline-block';
-                        document.getElementById('timerMsg').innerText = `متبقي ${Math.floor(60-diff)} دقيقة للإلغاء`;
+                        document.getElementById('timerMsg').innerText = `يمكنك الإلغاء خلال ${Math.floor(60-diff)} دقيقة`;
                     } else {
                         document.getElementById('cancelBtn').style.display = 'none';
-                        document.getElementById('timerMsg').innerText = "تم تأكيد الطلب نهائياً";
+                        document.getElementById('timerMsg').innerText = "تم تأكيد طلبك نهائياً";
                     }
                 }, 1000);
             }
@@ -248,24 +243,21 @@
     }
 
     async function cancelOrder() {
-        const id = localStorage.getItem('npx_active_oid'), data = JSON.parse(localStorage.getItem('npx_active_odata'));
-        if(confirm("هل تريد إلغاء الطلب واسترجاع المنتجات للمخزن؟")) {
-            for(let i of data) {
-                const r = db.ref(`inventory/${i.id}/${i.sz}`);
-                const s = await r.get(); await r.set(s.val() + i.qty);
-            }
-            db.ref('orders/' + id).remove(); localStorage.clear(); location.reload();
+        if(!confirm("إلغاء الطلب؟")) return;
+        const data = JSON.parse(localStorage.getItem('active_data'));
+        for(let i of data) {
+            const r = db.ref(`inventory/${i.id}/${i.sz}`);
+            const s = await r.get(); await r.set(s.val() + i.qty);
         }
+        db.ref('orders/' + activeId).remove(); localStorage.clear(); location.reload();
     }
 
-    function setRate(n) { currentRate = n; document.querySelectorAll('.star').forEach((s,i) => s.classList.toggle('active', i < n)); }
+    function setRate(n) { myRate = n; document.querySelectorAll('.star').forEach((s,i) => s.classList.toggle('active', i < n)); }
     
-    async function submitReview() {
-        const data = JSON.parse(localStorage.getItem('npx_active_odata'));
-        if(currentRate === 0) return alert("قيم بالنجوم أولاً");
-        for(let item of data) {
-            await db.ref(`inventory/${item.id}/reviews`).push({ rate: currentRate, text: document.getElementById('revComm').value });
-        }
+    async function sendReview() {
+        const data = JSON.parse(localStorage.getItem('active_data'));
+        if(!myRate) return alert("قيم بالنجوم");
+        for(let i of data) await db.ref(`inventory/${i.id}/reviews`).push({ rate: myRate, comm: document.getElementById('rateComm').value });
         localStorage.clear(); location.reload();
     }
 </script>
