@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NPX Admin - Ultimate Dashboard</title>
+    <title>NPX Admin - المركز الرئيسي لإدارة المتجر</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -11,53 +11,74 @@
         :root { --p: #6366f1; --dark: #0f172a; --bg: #f1f5f9; --white: #ffffff; --red: #ef4444; --green: #22c55e; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 20px; direction: rtl; }
         
-        /* Dashboard Stats */
+        /* Dashboard Stats Bar */
         .stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .stat-box { background: var(--white); padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-bottom: 4px solid var(--p); }
+        .stat-box { background: var(--white); padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-bottom: 4px solid var(--p); transition: 0.3s; }
+        .stat-box:hover { transform: translateY(-5px); }
         .stat-box h2 { margin: 10px 0; font-size: 2rem; color: var(--dark); }
+        .stat-box i { color: var(--p); font-size: 1.5rem; }
 
         .main-container { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
         @media (max-width: 1100px) { .main-container { grid-template-columns: 1fr; } }
 
         .box { background: var(--white); padding: 25px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        
-        /* Forms */
+        h2 { margin-top: 0; color: var(--dark); border-bottom: 2px solid var(--bg); padding-bottom: 10px; }
+
+        /* Form Styling */
         input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; outline: none; box-sizing: border-box; }
-        .size-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-        .btn-p { background: var(--p); color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .size-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
+        .btn-p { background: var(--p); color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 1rem; }
         .btn-p:hover { background: #4f46e5; }
 
-        /* Drag & Drop */
-        #drop-zone { border: 2px dashed var(--p); padding: 25px; text-align: center; border-radius: 12px; cursor: pointer; background: #f8fafc; color: #64748b; }
-        #preview { max-width: 100%; height: 150px; object-fit: contain; display: none; margin: 10px auto; border-radius: 8px; }
+        /* Drag & Drop Image Area */
+        #drop-zone { border: 2px dashed var(--p); padding: 30px; text-align: center; border-radius: 12px; cursor: pointer; background: #f8fafc; color: #64748b; margin: 15px 0; }
+        #drop-zone i { font-size: 2.5rem; color: var(--p); margin-bottom: 10px; display: block; }
+        #preview { max-width: 100%; height: 180px; object-fit: contain; display: none; margin: 10px auto; border-radius: 10px; border: 1px solid #ddd; }
 
-        /* Orders Card */
-        .order-card { background: var(--white); padding: 20px; border-radius: 12px; margin-bottom: 15px; border-right: 6px solid var(--p); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .item-row { background: #f8fafc; padding: 8px 12px; border-radius: 8px; margin: 5px 0; display: flex; justify-content: space-between; font-size: 0.95rem; }
-        .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+        /* Orders Card View */
+        .order-card { background: var(--white); padding: 20px; border-radius: 12px; margin-bottom: 20px; border-right: 6px solid var(--p); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .item-line { background: #f8fafc; padding: 10px; border-radius: 8px; margin: 5px 0; display: flex; justify-content: space-between; border: 1px solid #e2e8f0; }
+        .badge { padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
         .badge-pending { background: #fef3c7; color: #92400e; }
         .badge-done { background: #dcfce7; color: #166534; }
         
         .actions { display: flex; gap: 10px; margin-top: 15px; }
-        .btn-success { background: var(--green); flex: 2; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; }
-        .btn-danger { background: var(--red); flex: 1; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; }
+        .btn-success { background: var(--green); flex: 2; color: white; border: none; border-radius: 8px; padding: 10px; cursor: pointer; font-weight: bold; }
+        .btn-danger { background: var(--red); flex: 1; color: white; border: none; border-radius: 8px; padding: 10px; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div class="stats-bar">
-        <div class="stat-box"><h3>المبيعات</h3><h2 id="totalMoney">$0</h2></div>
-        <div class="stat-box"><h3>الطلبات</h3><h2 id="totalOrders">0</h2></div>
-        <div class="stat-box"><h3>القطع المباعة</h3><h2 id="totalItems">0</h2></div>
+        <div class="stat-box">
+            <i class="fas fa-coins"></i>
+            <h3>إجمالي المبيعات</h3>
+            <h2 id="stMoney">0 ج.م</h2>
+        </div>
+        <div class="stat-box">
+            <i class="fas fa-shopping-basket"></i>
+            <h3>عدد الطلبات</h3>
+            <h2 id="stOrders">0</h2>
+        </div>
+        <div class="stat-box">
+            <i class="fas fa-box-open"></i>
+            <h3>قطع تم بيعها</h3>
+            <h2 id="stItems">0</h2>
+        </div>
     </div>
 
     <div class="main-container">
         <div class="box">
-            <h2><i class="fas fa-plus-circle"></i> إضافة منتج</h2>
-            <input id="n" type="text" placeholder="اسم المنتج">
-            <input id="pr" type="number" placeholder="السعر بالدولار $">
+            <h2><i class="fas fa-plus-circle"></i> إضافة منتج جديد</h2>
+            <input id="prodName" type="text" placeholder="اسم المنتج">
+            <input id="prodPrice" type="number" placeholder="السعر بالجنيه المصري ج.م">
             
-            <p style="margin: 10px 0 5px; font-weight: bold; font-size: 0.9rem;">الكمية المتوفرة لكل مقاس:</p>
+            <select id="prodCat">
+                <option value="تيشيرت">تيشيرت</option>
+                <option value="هودي">هودي</option>
+                <option value="إكسسوارات">إكسسوارات</option>
+            </select>
+
             <div class="size-grid">
                 <input id="qs" type="number" placeholder="كمية S">
                 <input id="qm" type="number" placeholder="كمية M">
@@ -66,66 +87,76 @@
             </div>
 
             <div id="drop-zone" onclick="document.getElementById('fileInp').click()">
-                <i class="fas fa-image fa-2x"></i><br>اسحب الصورة هنا أو اضغط للاختيار
+                <i class="fas fa-cloud-upload-alt"></i>
+                <span id="drop-text">اسحب صورة المنتج هنا أو اضغط للاختيار</span>
                 <input type="file" id="fileInp" hidden onchange="handleFile(this.files[0])">
                 <img id="preview">
             </div>
             
-            <button class="btn-p" style="margin-top:15px;" onclick="uploadProduct()">نشر المنتج في المتجر</button>
+            <button class="btn-p" onclick="uploadProduct()">حفظ ونشر المنتج <i class="fas fa-check-circle"></i></button>
         </div>
 
         <div class="box">
-            <h2><i class="fas fa-shopping-cart"></i> الطلبات الحية</h2>
-            <div id="ordersArea"></div>
+            <h2><i class="fas fa-truck-loading"></i> الطلبات الواردة</h2>
+            <div id="ordersArea">
+                <p style="text-align: center; color: #94a3b8; margin-top: 20px;">جاري مزامنة الطلبات من السيرفر...</p>
+            </div>
         </div>
     </div>
 
 <script>
+    // Firebase Configuration
     const firebaseConfig = { databaseURL: "https://authen-36a1f-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let b64 = "";
+    let base64Img = "";
 
-    // Image Handling
-    function handleFile(f) {
-        if(!f) return;
+    // Image Upload Logic (Base64)
+    function handleFile(file) {
+        if(!file) return;
         const reader = new FileReader();
         reader.onload = e => { 
-            b64 = e.target.result; 
-            document.getElementById('preview').src = b64; 
-            document.getElementById('preview').style.display = "block"; 
+            base64Img = e.target.result; 
+            const preview = document.getElementById('preview');
+            preview.src = base64Img; 
+            preview.style.display = "block"; 
+            document.getElementById('drop-text').style.display = "none";
         };
-        reader.readAsDataURL(f);
+        reader.readAsDataURL(file);
     }
 
-    // Add Product
+    // Upload Product to Database
     function uploadProduct() {
-        const name = document.getElementById('n').value;
-        const price = document.getElementById('pr').value;
+        const name = document.getElementById('prodName').value;
+        const price = document.getElementById('prodPrice').value;
+        const cat = document.getElementById('prodCat').value;
         const s = parseInt(document.getElementById('qs').value || 0);
         const m = parseInt(document.getElementById('qm').value || 0);
         const l = parseInt(document.getElementById('ql').value || 0);
         const xl = parseInt(document.getElementById('qxl').value || 0);
 
-        if(!name || !price || !b64) return alert("يرجى إكمال البيانات والصورة");
+        if(!name || !price || !base64Img) return alert("يرجى إكمال الاسم والسعر والصورة!");
 
         db.ref('inventory').push({
-            name, price, s, m, l, xl, img: b64, timestamp: Date.now()
+            name, price, category: cat, s, m, l, xl, img: base64Img, timestamp: Date.now()
         }).then(() => {
-            alert("تم إضافة المنتج!");
+            alert("✅ تم إضافة المنتج ونشره بنجاح!");
             location.reload();
         });
     }
 
-    // Load Orders & Stats
+    // Real-time Dashboard Sync
     db.ref('orders').on('value', snap => {
         const area = document.getElementById('ordersArea');
-        let income = 0, count = 0, itemsCount = 0;
+        let income = 0, count = 0, itemsSold = 0;
+        
+        if(!snap.exists()) {
+            area.innerHTML = "<p style='text-align:center; color:#94a3b8; margin-top:20px;'>لا توجد طلبات جديدة حالياً</p>";
+            return;
+        }
+
         area.innerHTML = '';
-
-        if(!snap.exists()) area.innerHTML = "<p style='text-align:center; color:#94a3b8;'>لا توجد طلبات حالياً</p>";
-
         snap.forEach(child => {
             const order = child.val();
             const id = child.key;
@@ -133,13 +164,13 @@
             income += parseFloat(order.total);
             count++;
             
-            let orderItemsHtml = "";
+            let orderLines = "";
             order.items.forEach(item => {
-                itemsCount += item.qty;
-                orderItemsHtml += `
-                    <div class="item-row">
-                        <span>${item.name} <b>[${item.sz.toUpperCase()}]</b></span>
-                        <span style="color:var(--p)">${item.qty}x</span>
+                itemsSold += item.qty;
+                orderLines += `
+                    <div class="item-line">
+                        <span>${item.name} <b style="color:var(--p)">[${item.sz.toUpperCase()}]</b></span>
+                        <span>${item.qty}x</span>
                     </div>`;
             });
 
@@ -147,53 +178,55 @@
                 <div class="order-card">
                     <div style="display:flex; justify-content:space-between; align-items:start;">
                         <div>
-                            <b style="font-size:1.1rem;">${order.name}</b><br>
-                            <small>${order.phone}</small>
+                            <b style="font-size:1.2rem;">${order.name}</b><br>
+                            <small style="color:#64748b;"><i class="fab fa-whatsapp"></i> ${order.phone}</small>
                         </div>
                         <span class="badge ${order.status === 'pending' ? 'badge-pending' : 'badge-done'}">
-                            ${order.status === 'pending' ? 'قيد الانتظار' : 'تم التوصيل'}
+                            ${order.status === 'pending' ? 'بانتظار التوصيل' : 'تم التوصيل'}
                         </span>
                     </div>
                     
-                    <div style="margin:15px 0;">${orderItemsHtml}</div>
+                    <div style="margin:15px 0;">${orderLines}</div>
                     
-                    <div style="font-size:0.9rem; color:#475569; margin-bottom:10px;">
-                        <i class="fas fa-map-marker-alt"></i> ${order.addr}
+                    <div style="font-size:0.9rem; color:#475569; margin-bottom:12px;">
+                        <i class="fas fa-map-marked-alt"></i> العنوان: ${order.addr}
                     </div>
 
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <b style="color:var(--green); font-size:1.2rem;">$${order.total}</b>
-                        <a href="${order.gps}" target="_blank" style="color:var(--p); text-decoration:none; font-size:0.9rem;">📍 فتح الخريطة</a>
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #eee; padding-top:10px;">
+                        <b style="color:var(--green); font-size:1.3rem;">${order.total} ج.م</b>
+                        <a href="${order.gps}" target="_blank" style="color:var(--p); text-decoration:none; font-weight:bold;"><i class="fas fa-directions"></i> GPS</a>
                     </div>
 
                     <div class="actions">
                         ${order.status === 'pending' ? 
-                            `<button class="btn-success" onclick="markDone('${id}')">تأكيد التوصيل (فتح التقييم)</button>` : 
-                            `<button class="btn-success" style="opacity:0.5" disabled>تم التسليم بنجاح</button>`
+                            `<button class="btn-success" onclick="markDelivered('${id}')">تأكيد التوصيل (فتح التقييم)</button>` : 
+                            `<button class="btn-success" style="opacity:0.6; cursor:default" disabled>مكتمل ✅</button>`
                         }
                         <button class="btn-danger" onclick="deleteOrder('${id}')"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>`;
         });
 
-        document.getElementById('totalMoney').innerText = `$${income.toFixed(2)}`;
-        document.getElementById('totalOrders').innerText = count;
-        document.getElementById('totalItems').innerText = itemsCount;
+        // Update Stats Bar UI
+        document.getElementById('stMoney').innerText = income.toLocaleString() + " ج.م";
+        document.getElementById('stOrders').innerText = count;
+        document.getElementById('stItems').innerText = itemsSold;
     });
 
-    function markDone(id) {
-        if(confirm("هل تريد تأكيد التوصيل؟ هذا سيسمح للعميل بتقييم المنتج.")) {
+    // Actions
+    function markDelivered(id) {
+        if(confirm("هل تم تسليم الطلب للعميل؟ سيؤدي هذا لفتح نافذة التقييم له فوراً.")) {
             db.ref('orders/' + id).update({ status: 'delivered' });
         }
     }
 
     function deleteOrder(id) {
-        if(confirm("حذف الطلب نهائياً؟")) {
+        if(confirm("هل تريد حذف هذا الطلب نهائياً من الأرشيف؟")) {
             db.ref('orders/' + id).remove();
         }
     }
 
-    // Drag & Drop Support
+    // Support Drag & Drop visuals
     const dz = document.getElementById('drop-zone');
     dz.ondragover = e => { e.preventDefault(); dz.style.background = "#e0e7ff"; };
     dz.ondragleave = () => dz.style.background = "#f8fafc";
