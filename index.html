@@ -3,38 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NPX STORE | المتجر الرسمي</title>
-    <!-- Firebase SDKs -->
+    <title>NPX STORE | Premium Fashion</title>
+    
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <!-- Styles & Fonts -->
+    
+    <!-- Fonts & Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            --p: #6366f1;
-            --dark: #0f172a;
-            --card: #1e293b;
-            --text: #f8fafc;
-            --red: #ef4444;
-            --green: #10b981;
-            --border: rgba(255,255,255,0.1);
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --dark-bg: #030712;
+            --glass: rgba(17, 24, 39, 0.8);
+            --card-bg: #111827;
+            --text-white: #f9fafb;
+            --text-dim: #9ca3af;
+            --success: #10b981;
+            --danger: #ef4444;
+            --border: rgba(255, 255, 255, 0.08);
         }
+
+        * { box-sizing: border-box; transition: all 0.3s ease; }
 
         body {
             font-family: 'Cairo', sans-serif;
-            background-color: var(--dark);
-            color: var(--text);
+            background-color: var(--dark-bg);
+            color: var(--text-white);
             margin: 0;
-            padding-bottom: 80px;
-            user-select: none;
+            padding-bottom: 40px;
+            overflow-x: hidden;
         }
 
-        /* Navigation */
+        /* Modern Navbar */
         nav {
-            background: rgba(15, 23, 42, 0.9);
-            backdrop-filter: blur(10px);
-            padding: 15px 5%;
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            padding: 15px 6%;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -44,38 +52,57 @@
             border-bottom: 1px solid var(--border);
         }
 
-        .logo { font-weight: 900; color: var(--p); font-size: 1.5rem; letter-spacing: 1px; }
-
-        .search-bar {
-            flex: 1;
-            margin: 0 20px;
-            position: relative;
+        .logo { 
+            font-size: 1.6rem; 
+            font-weight: 900; 
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
         }
 
-        .search-bar input {
+        .search-container {
+            flex: 1;
+            margin: 0 30px;
+            max-width: 500px;
+        }
+
+        .search-container input {
             width: 100%;
-            padding: 10px 15px;
+            padding: 12px 20px;
             border-radius: 12px;
             border: 1px solid var(--border);
-            background: #1e293b;
+            background: rgba(255,255,255,0.05);
             color: white;
             outline: none;
+            font-family: 'Cairo';
         }
 
-        /* Order Status Bar */
+        .search-container input:focus {
+            border-color: var(--primary);
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* Status Bar (Floating Notification) */
         #status-bar {
             display: none;
-            background: linear-gradient(90deg, #1e293b, #334155);
-            padding: 15px;
+            position: fixed;
+            top: 85px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 500px;
+            background: var(--primary);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 16px;
+            z-index: 999;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
             text-align: center;
-            border-bottom: 2px solid var(--p);
-            animation: slideDown 0.5s ease;
         }
 
-        @keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
-
-        /* Grid & Cards */
-        .container { padding: 20px 5%; }
+        /* Product Grid */
+        .container { padding: 30px 6%; }
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -83,136 +110,170 @@
         }
 
         .card {
-            background: var(--card);
-            border-radius: 20px;
+            background: var(--card-bg);
+            border-radius: 24px;
             overflow: hidden;
             border: 1px solid var(--border);
-            transition: 0.3s;
+            position: relative;
         }
 
-        .card:hover { transform: translateY(-5px); border-color: var(--p); }
+        .card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
 
-        .card img { width: 100%; height: 280px; object-fit: cover; }
+        .card img {
+            width: 100%;
+            height: 320px;
+            object-fit: cover;
+        }
 
-        .p-content { padding: 15px; }
-        .p-title { font-size: 1.1rem; font-weight: 700; margin: 5px 0; }
+        .p-info { padding: 20px; }
+        .p-info h3 { margin: 0; font-size: 1.2rem; font-weight: 700; }
         
-        /* Size Buttons */
-        .sizes { display: flex; gap: 8px; margin: 15px 0; }
-        .sz-btn {
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        .price { font-size: 1.4rem; font-weight: 800; color: var(--success); }
+
+        /* Size Chips */
+        .size-container {
+            display: flex;
+            gap: 8px;
+            margin: 15px 0;
+        }
+
+        .size-chip {
             flex: 1;
             padding: 8px;
-            border: 1px solid #475569;
+            border-radius: 10px;
+            border: 1px solid #374151;
             background: transparent;
             color: white;
-            border-radius: 8px;
             cursor: pointer;
-            font-weight: bold;
-            font-size: 0.8rem;
+            font-weight: 600;
+            font-size: 0.85rem;
         }
 
-        .sz-btn.active { background: var(--p); border-color: var(--p); }
-        .sz-btn:disabled { opacity: 0.2; cursor: not-allowed; text-decoration: line-through; }
+        .size-chip.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+        }
 
-        .price-tag { font-size: 1.3rem; color: var(--green); font-weight: 900; }
+        .size-chip:disabled {
+            opacity: 0.2;
+            cursor: not-allowed;
+            border-style: dashed;
+        }
 
-        .add-to-cart {
+        .buy-btn {
             width: 100%;
-            padding: 12px;
-            background: var(--p);
+            padding: 14px;
+            border-radius: 14px;
             border: none;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
             color: white;
             font-weight: 800;
-            border-radius: 12px;
-            margin-top: 15px;
+            font-family: 'Cairo';
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
-        .add-to-cart:disabled { background: #475569; cursor: not-allowed; }
+        .buy-btn:disabled {
+            background: #374151;
+            cursor: not-allowed;
+        }
 
-        /* Modal Styles */
+        /* Cart Drawer (Modal) */
         .modal {
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
             display: none;
             justify-content: center;
             align-items: center;
             z-index: 2000;
-            padding: 15px;
         }
 
         .modal-content {
-            background: var(--card);
-            padding: 25px;
-            border-radius: 25px;
-            width: 100%;
+            background: var(--card-bg);
+            width: 95%;
             max-width: 450px;
-            max-height: 90vh;
-            overflow-y: auto;
+            border-radius: 30px;
+            padding: 30px;
+            border: 1px solid var(--border);
+            position: relative;
         }
 
         .cart-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 0;
+            padding: 15px 0;
             border-bottom: 1px solid var(--border);
         }
 
-        input, textarea {
+        .input-group input, .input-group textarea {
             width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border-radius: 10px;
+            padding: 14px;
+            background: rgba(0,0,0,0.2);
             border: 1px solid var(--border);
-            background: #0f172a;
+            border-radius: 12px;
             color: white;
+            margin-bottom: 12px;
+            font-family: 'Cairo';
         }
 
-        .btn-confirm {
-            background: var(--green);
-            color: white;
-            padding: 15px;
-            border: none;
-            border-radius: 15px;
-            width: 100%;
-            font-weight: 900;
-            font-size: 1.1rem;
-            cursor: pointer;
-            margin-top: 15px;
-        }
-
-        .cart-badge {
+        .badge {
             position: absolute;
-            top: -8px;
-            right: -8px;
-            background: var(--red);
+            top: -5px;
+            right: -10px;
+            background: var(--danger);
+            color: white;
             font-size: 0.7rem;
-            padding: 2px 6px;
+            padding: 3px 7px;
             border-radius: 50%;
+            font-weight: bold;
         }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card { animation: fadeInUp 0.5s ease backwards; }
+
     </style>
 </head>
 <body>
 
 <nav>
     <div class="logo">NPX STORE</div>
-    <div class="search-bar">
-        <input type="text" id="searchInput" placeholder="ابحث عن منتجك..." onkeyup="renderItems()">
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="ابحث عن تصميمك المفضل..." onkeyup="renderItems()">
     </div>
-    <div onclick="openCart()" style="position:relative; cursor:pointer;">
-        <i class="fas fa-shopping-cart fa-lg"></i>
-        <span id="cartCount" class="cart-badge">0</span>
+    <div onclick="openCart()" style="position:relative; cursor:pointer; padding: 10px;">
+        <i class="fas fa-shopping-bag fa-xl"></i>
+        <span id="cartCount" class="badge">0</span>
     </div>
 </nav>
 
-<!-- Live Status Section -->
 <div id="status-bar">
-    <div id="statusContent">
-        <b style="color:var(--p)">📦 طلبك قيد المراجعة</b><br>
-        <small id="statusTimer"></small><br>
-        <button id="cancelBtn" onclick="cancelActiveOrder()" style="display:none; background:var(--red); color:white; border:none; padding:5px 15px; border-radius:8px; margin-top:10px; cursor:pointer; font-weight:bold;">إلغاء الطلب</button>
+    <div id="statusInfo">
+        <span id="statusTitle" style="font-weight:900;">⚡ طلبك قيد المراجعة الآن</span><br>
+        <small id="statusTimer" style="opacity:0.9"></small><br>
+        <button id="cancelBtn" onclick="cancelOrder()" style="background:white; color:var(--danger); border:none; padding:5px 15px; border-radius:8px; margin-top:8px; font-weight:900; cursor:pointer;">إلغاء الطلب</button>
     </div>
 </div>
 
@@ -223,19 +284,28 @@
 <!-- Cart Modal -->
 <div id="cartModal" class="modal">
     <div class="modal-content">
-        <h2 style="margin-top:0"><i class="fas fa-shopping-basket"></i> حقيبة التسوق</h2>
-        <div id="itemsList"></div>
-        <div style="text-align:center; font-size:1.4rem; font-weight:900; margin:20px 0; color:var(--green);">
-            الإجمالي: <span id="totalPrice">0</span> ج.م
+        <h2 style="margin-top:0"><i class="fas fa-shopping-cart" style="color:var(--primary)"></i> حقيبة التسوق</h2>
+        <div id="cartItems" style="max-height: 200px; overflow-y: auto; margin-bottom: 20px;"></div>
+        
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <span style="font-weight:600; color:var(--text-dim)">الإجمالي:</span>
+            <span id="totalPrice" style="font-size:1.5rem; font-weight:900; color:var(--success)">0</span>
         </div>
 
-        <input type="text" id="custName" placeholder="الاسم الثنائي">
-        <input type="tel" id="custPhone" placeholder="رقم الموبايل">
-        <button onclick="getGPS()" style="width:100%; padding:10px; background:#3b82f6; color:white; border:none; border-radius:10px; cursor:pointer;"><i class="fas fa-location-dot"></i> تحديد الموقع GPS</button>
-        <textarea id="custAddr" placeholder="العنوان بالتفصيل (الشارع، الدور، علامة مميزة)"></textarea>
+        <div class="input-group">
+            <input type="text" id="custName" placeholder="الاسم الكامل">
+            <input type="tel" id="custPhone" placeholder="رقم الهاتف">
+            <button onclick="getGPS()" style="width:100%; padding:12px; background:#1e293b; color:white; border:none; border-radius:12px; margin-bottom:12px; cursor:pointer; font-weight:600;">
+                <i class="fas fa-location-arrow" style="color:var(--primary)"></i> تحديد الموقع GPS
+            </button>
+            <textarea id="custAddr" rows="3" placeholder="العنوان بالتفصيل (المنطقة، الشارع، علامة مميزة)"></textarea>
+        </div>
 
-        <button class="btn-confirm" onclick="checkout()"><i class="fab fa-whatsapp"></i> تأكيد الطلب وإرسال</button>
-        <button onclick="closeCart()" style="width:100%; background:none; border:none; color:var(--text-dim); margin-top:15px; cursor:pointer;">إغلاق</button>
+        <button class="buy-btn" onclick="submitOrder()">
+            <i class="fab fa-whatsapp"></i> إرسال الطلب الآن
+        </button>
+        
+        <button onclick="closeCart()" style="width:100%; background:none; border:none; color:var(--text-dim); margin-top:15px; cursor:pointer; font-weight:600;">إغلاق</button>
     </div>
 </div>
 
@@ -245,37 +315,37 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let products = [], cart = [], gpsLink = "غير محدد";
+    let products = [], cart = [], gpsLink = "لم يحدد";
 
-    // 1. Listen to Products (Live Inventory)
+    // 1. Load Data
     db.ref('inventory').on('value', snap => {
         products = [];
         snap.forEach(c => products.push({id: c.key, ...c.val()}));
         renderItems();
     });
 
-    // 2. Render Products to UI
+    // 2. Render Products
     function renderItems() {
         const q = document.getElementById('searchInput').value.toLowerCase();
         const grid = document.getElementById('mainGrid');
-        const activeOrder = localStorage.getItem('order_id');
+        const hasActiveOrder = localStorage.getItem('order_id');
 
-        grid.innerHTML = products.filter(p => p.name.toLowerCase().includes(q)).map(p => `
-            <div class="card">
-                <img src="${p.img}">
-                <div class="p-content">
-                    <div class="p-title">${p.name}</div>
-                    <div class="sizes" id="sizes-${p.id}">
-                        <button class="sz-btn" ${p.s<=0?'disabled':''} onclick="selectSize(this,'s')">S</button>
-                        <button class="sz-btn" ${p.m<=0?'disabled':''} onclick="selectSize(this,'m')">M</button>
-                        <button class="sz-btn" ${p.l<=0?'disabled':''} onclick="selectSize(this,'l')">L</button>
-                        <button class="sz-btn" ${p.xl<=0?'disabled':''} onclick="selectSize(this,'xl')">XL</button>
+        grid.innerHTML = products.filter(p => p.name.toLowerCase().includes(q)).map((p, index) => `
+            <div class="card" style="animation-delay: ${index * 0.1}s">
+                <img src="${p.img}" alt="${p.name}">
+                <div class="p-info">
+                    <h3>${p.name}</h3>
+                    <div class="size-container" id="sizes-${p.id}">
+                        <button class="size-chip" ${p.s<=0?'disabled':''} onclick="selectSize(this,'s')">S</button>
+                        <button class="size-chip" ${p.m<=0?'disabled':''} onclick="selectSize(this,'m')">M</button>
+                        <button class="size-chip" ${p.l<=0?'disabled':''} onclick="selectSize(this,'l')">L</button>
+                        <button class="size-chip" ${p.xl<=0?'disabled':''} onclick="selectSize(this,'xl')">XL</button>
                     </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span class="price-tag">${p.price} ج.م</span>
-                        <button class="add-to-cart" style="width:auto; padding:8px 15px;" 
-                            ${activeOrder ? 'disabled' : ''} onclick="addToCart('${p.id}')">
-                            ${activeOrder ? 'لديك طلب' : 'إضافة +'}
+                    <div class="price-row">
+                        <span class="price">${p.price} ج.م</span>
+                        <button class="buy-btn" style="width:auto; padding:10px 20px" 
+                            ${hasActiveOrder ? 'disabled' : ''} onclick="addToCart('${p.id}')">
+                            ${hasActiveOrder ? 'طلب معلق' : '<i class="fas fa-plus"></i> أضف'}
                         </button>
                     </div>
                 </div>
@@ -284,167 +354,142 @@
     }
 
     function selectSize(btn, s) {
-        btn.parentElement.querySelectorAll('.sz-btn').forEach(b => b.classList.remove('active'));
+        btn.parentElement.querySelectorAll('.size-chip').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         btn.dataset.selected = s;
     }
 
-    // 3. Stock Validation Logic
+    // 3. Cart Functions
     function addToCart(id) {
         const product = products.find(p => p.id === id);
         const sizeBtn = document.querySelector(`#sizes-${id} .active`);
-        
-        if(!sizeBtn) return alert("الرجاء اختيار المقاس أولاً");
-        
+        if(!sizeBtn) return alert("اختر المقاس أولاً");
+
         const size = sizeBtn.dataset.selected;
         const stockLimit = parseInt(product[size]);
-        const itemInCart = cart.find(i => i.id === id && i.sz === size);
-        
-        // Validation: Check if user exceeded stock
-        if(itemInCart) {
-            if(itemInCart.qty + 1 > stockLimit) {
-                return alert(`عذراً، هذا هو أقصى حد متاح في المخزن لهذا المقاس (${stockLimit})`);
-            }
-            itemInCart.qty++;
+        const inCart = cart.find(i => i.id === id && i.sz === size);
+
+        if(inCart) {
+            if(inCart.qty + 1 > stockLimit) return alert("نفدت الكمية من هذا المقاس!");
+            inCart.qty++;
         } else {
             cart.push({ id, name: product.name, price: product.price, sz: size, qty: 1 });
         }
-        
-        updateCartCount();
-        alert("تمت الإضافة للسلة ✅");
+        updateCartBadge();
     }
 
-    function updateCartCount() {
-        const count = cart.reduce((acc, item) => acc + item.qty, 0);
-        document.getElementById('cartCount').innerText = count;
+    function updateCartBadge() {
+        const total = cart.reduce((acc, i) => acc + i.qty, 0);
+        document.getElementById('cartCount').innerText = total;
     }
 
     function openCart() {
         document.getElementById('cartModal').style.display = 'flex';
-        renderCartItems();
+        renderCart();
     }
-
     function closeCart() { document.getElementById('cartModal').style.display = 'none'; }
 
-    function renderCartItems() {
-        const area = document.getElementById('itemsList');
+    function renderCart() {
+        const area = document.getElementById('cartItems');
         let total = 0;
         area.innerHTML = cart.map((item, idx) => {
             total += (item.price * item.qty);
             return `
                 <div class="cart-item">
                     <div>
-                        <b>${item.name}</b> <small>(${item.sz.toUpperCase()})</small><br>
-                        <span>${item.qty} × ${item.price} ج.م</span>
+                        <span style="font-weight:700">${item.name}</span><br>
+                        <small style="color:var(--text-dim)">مقاس: ${item.sz.toUpperCase()} | ${item.qty} قطعة</small>
                     </div>
-                    <i class="fas fa-trash" style="color:var(--red); cursor:pointer;" onclick="removeItem(${idx})"></i>
+                    <div style="text-align:left">
+                        <span style="font-weight:700">${item.price * item.qty} ج.م</span>
+                        <i class="fas fa-trash" style="color:var(--danger); cursor:pointer; margin-right:10px" onclick="cart.splice(${idx},1);renderCart();updateCartBadge();"></i>
+                    </div>
                 </div>
             `;
         }).join('');
-        document.getElementById('totalPrice').innerText = total;
-    }
-
-    function removeItem(idx) {
-        cart.splice(idx, 1);
-        updateCartCount();
-        renderCartItems();
+        document.getElementById('totalPrice').innerText = total + " ج.م";
     }
 
     function getGPS() {
         navigator.geolocation.getCurrentPosition(pos => {
             gpsLink = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
-            document.getElementById('custAddr').value = "✅ تم التقاط الموقع بنجاح";
-        }, err => alert("يرجى تفعيل الـ GPS لتوصيل أسرع"));
+            document.getElementById('custAddr').value = "✅ الموقع محدد بنجاح عبر الـ GPS";
+        }, () => alert("برجاء تفعيل الـ GPS لتحديد موقعك"));
     }
 
-    // 4. Checkout & WhatsApp Formatting
-    async function checkout() {
+    // 4. Order Logic
+    async function submitOrder() {
         const name = document.getElementById('custName').value;
         const phone = document.getElementById('custPhone').value;
         const addr = document.getElementById('custAddr').value;
+        if(!name || !phone || !addr || cart.length === 0) return alert("أكمل كافة البيانات");
+
         const total = document.getElementById('totalPrice').innerText;
-
-        if(!name || !phone || !addr || cart.length === 0) return alert("يرجى إكمال البيانات");
-
-        // Format WhatsApp Message
-        let itemsText = cart.map(i => `• ${i.name} (${i.sz.toUpperCase()}) x${i.qty}`).join('%0A');
-        let waMsg = `*طلب جديد من NPX STORE*%0A` +
+        let itemsList = cart.map(i => `• ${i.name} (${i.sz.toUpperCase()}) x ${i.qty}`).join('%0A');
+        
+        let waMsg = `*طلب جديد - NPX STORE*%0A` +
                     `--------------------------%0A` +
                     `*الاسم:* ${name}%0A` +
-                    `*الهاتف:* ${phone}%0A` +
+                    `*الموبايل:* ${phone}%0A` +
                     `*العنوان:* ${addr}%0A` +
                     `--------------------------%0A` +
-                    `*الطلبات:*%0A${itemsText}%0A` +
+                    `*الطلبات:*%0A${itemsList}%0A` +
                     `--------------------------%0A` +
-                    `*الإجمالي:* ${total} ج.م%0A` +
+                    `*الإجمالي:* ${total}%0A` +
                     `*الموقع:* ${gpsLink}`;
 
-        // Update Stock in DB
+        // Stock Update
         for(let item of cart) {
             const ref = db.ref(`inventory/${item.id}/${item.sz}`);
-            const currentStock = await ref.get();
-            await ref.set(currentStock.val() - item.qty);
+            const snap = await ref.get();
+            await ref.set(snap.val() - item.qty);
         }
 
-        // Push Order to Admin
-        const orderRef = db.ref('orders').push({
+        const oRef = db.ref('orders').push({
             name, phone, addr, total, gps: gpsLink, 
             items: cart, ts: Date.now()
         });
 
-        // Store Order locally to watch status
-        localStorage.setItem('order_id', orderRef.key);
+        localStorage.setItem('order_id', oRef.key);
         localStorage.setItem('order_items', JSON.stringify(cart));
-
-        // Redirect to WA
         window.location.href = `https://wa.me/201221060599?text=${waMsg}`;
     }
 
-    // 5. Active Order Tracking (Auto-Delete Listener)
-    const activeOrderID = localStorage.getItem('order_id');
-    if(activeOrderID) {
-        db.ref('orders/' + activeOrderID).on('value', snap => {
+    // 5. Active Order Tracker
+    const activeID = localStorage.getItem('order_id');
+    if(activeID) {
+        db.ref('orders/' + activeID).on('value', snap => {
             const bar = document.getElementById('status-bar');
-            
-            // If the order node is gone (Admin finished or canceled it)
             if(!snap.exists()) {
                 if(localStorage.getItem('order_id')) {
                     localStorage.clear();
-                    alert("تمت معالجة طلبك بنجاح! شكراً لك.");
+                    alert("شكراً لثقتك بنا! تم تسليم طلبك.");
                     location.reload();
                 }
                 return;
             }
-
-            // If order exists, show the bar
-            const orderData = snap.val();
+            const order = snap.val();
             bar.style.display = 'block';
-            
-            const minutesPassed = (Date.now() - orderData.ts) / 1000 / 60;
-            if(minutesPassed < 60) {
+            const diff = (Date.now() - order.ts) / 1000 / 60;
+            if(diff < 60) {
                 document.getElementById('cancelBtn').style.display = 'inline-block';
-                document.getElementById('statusTimer').innerText = `يمكنك الإلغاء خلال ${Math.floor(60 - minutesPassed)} دقيقة`;
+                document.getElementById('statusTimer').innerText = `يمكنك الإلغاء لـ ${Math.floor(60 - diff)} دقيقة أخرى`;
             } else {
                 document.getElementById('cancelBtn').style.display = 'none';
-                document.getElementById('statusTimer').innerText = "جاري تحضير طلبك الآن";
+                document.getElementById('statusTimer').innerText = "الطلب مؤكد وجاري التجهيز";
             }
         });
     }
 
-    async function cancelActiveOrder() {
-        if(!confirm("هل أنت متأكد من إلغاء الطلب؟ سيتم إرجاع المنتجات للمخزن.")) return;
-        
+    async function cancelOrder() {
+        if(!confirm("إلغاء الطلب وإرجاع المخزن؟")) return;
         const id = localStorage.getItem('order_id');
         const items = JSON.parse(localStorage.getItem('order_items'));
-
-        // Restore Stock
         for(let i of items) {
             const ref = db.ref(`inventory/${i.id}/${i.sz}`);
-            const current = await ref.get();
-            await ref.set(current.val() + i.qty);
+            const snap = await ref.get();
+            await ref.set(snap.val() + i.qty);
         }
-
-        // Remove Order
         db.ref('orders/' + id).remove();
         localStorage.clear();
         location.reload();
