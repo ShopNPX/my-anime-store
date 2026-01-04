@@ -2,168 +2,227 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>NPX Admin - نظام التحكم الشامل</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NPX Admin - المركز الرئيسي للإدارة</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --p: #6366f1; --bg: #f1f5f9; --white: #ffffff; --red: #ef4444; --green: #22c55e; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 20px; direction: rtl; }
+        :root { --p: #6366f1; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --red: #ef4444; --green: #10b981; --border: #334155; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; box-sizing: border-box; }
         
-        /* Stats & Layout */
-        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .stat-card { background: var(--p); color: white; padding: 20px; border-radius: 15px; text-align: center; }
-        .layout { display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
-        @media (max-width: 1100px) { .layout { grid-template-columns: 1fr; } }
+        /* Stats Section */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 20px; }
+        .stat-card { background: var(--card); padding: 15px; border-radius: 12px; text-align: center; border: 1px solid var(--border); }
+        .stat-card h3 { margin: 5px 0; color: var(--p); font-size: 1.4rem; }
+        .stat-card small { color: #94a3b8; font-weight: bold; }
+
+        /* Main Layout */
+        .admin-main { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+        .box { background: var(--card); border-radius: 15px; padding: 20px; border: 1px solid var(--border); height: fit-content; }
         
-        .box { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        input, select, button { width: 100%; padding: 10px; margin: 5px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
-        
-        /* Inventory Table */
-        .inv-card { display: flex; align-items: center; gap: 15px; background: #fff; padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; }
-        .inv-card img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; }
-        .inv-details { flex: 1; }
-        .qty-input { width: 60px !important; text-align: center; margin: 0 2px !important; padding: 5px !important; border: 1px solid var(--p) !important; }
-        
-        /* Tabs */
-        .tabs { display: flex; gap: 10px; margin-bottom: 15px; }
-        .tab-btn { flex: 1; padding: 10px; background: #e2e8f0; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        /* Form Styling */
+        input, select, textarea, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid var(--border); background: #0f172a; color: white; outline: none; box-sizing: border-box; }
+        .btn-add { background: var(--p); border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-add:hover { filter: brightness(1.2); }
+
+        /* Tabs Logic */
+        .tab-nav { display: flex; gap: 8px; margin-bottom: 20px; background: #111827; padding: 5px; border-radius: 12px; }
+        .tab-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; background: transparent; color: #94a3b8; font-weight: bold; }
         .tab-btn.active { background: var(--p); color: white; }
+
+        /* Inventory Items */
+        .inv-item { display: flex; align-items: center; gap: 12px; background: #111827; padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--border); }
+        .inv-item img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; }
+        .inv-info { flex: 1; }
+        .inv-info b { font-size: 0.9rem; display: block; margin-bottom: 5px; }
+        .qty-controls { display: flex; gap: 5px; }
+        .qty-inp { width: 45px !important; padding: 4px !important; text-align: center; margin: 0 !important; font-size: 0.75rem; border: 1px solid var(--p) !important; }
+
+        /* Order Cards */
+        .order-card { background: #111827; padding: 15px; border-radius: 12px; margin-bottom: 15px; border-right: 5px solid var(--p); position: relative; }
+        .order-card.declined { border-color: var(--red); opacity: 0.8; }
+        .order-card.delivered { border-color: var(--green); }
+        .order-actions { display: flex; gap: 8px; margin-top: 12px; }
+        .btn-action { padding: 8px; border-radius: 8px; border: none; cursor: pointer; color: white; font-size: 0.8rem; flex: 1; }
         
         .hidden { display: none; }
-        .btn-save { background: var(--green); color: white; border: none; cursor: pointer; }
-        .btn-del { background: var(--red); color: white; border: none; cursor: pointer; width: auto; padding: 8px 15px; }
+        .badge { padding: 2px 8px; border-radius: 5px; font-size: 0.7rem; float: left; }
     </style>
 </head>
 <body>
 
-    <div class="stats">
-        <div class="stat-card"><h3>المبيعات</h3><h2 id="stMoney">0</h2> ج.م</div>
-        <div class="stat-card"><h3>الطلبات</h3><h2 id="stOrders">0</h2></div>
+    <div class="stats-grid">
+        <div class="stat-card"><small>الأرباح</small><h3 id="stMoney">0</h3></div>
+        <div class="stat-card"><small>الطلبات</small><h3 id="stOrders">0</h3></div>
+        <div class="stat-card"><small>المخزن</small><h3 id="stStock">0</h3></div>
     </div>
 
-    <div class="layout">
-        <div class="side">
-            <div class="box">
-                <h3><i class="fas fa-plus"></i> إضافة منتج</h3>
-                <input id="n" placeholder="اسم المنتج">
-                <input id="pr" type="number" placeholder="السعر">
-                <select id="cat">
-                    <option value="تيشيرتات">تيشيرتات</option>
-                    <option value="هوديز">هوديز</option>
-                    <option value="بنطلونات">بنطلونات</option>
-                </select>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
-                    <input id="qs" type="number" placeholder="S"> <input id="qm" type="number" placeholder="M">
-                    <input id="ql" type="number" placeholder="L"> <input id="qxl" type="number" placeholder="XL">
-                </div>
-                <input type="file" id="f" onchange="handleImg(this.files[0])">
-                <button onclick="upload()" style="background:var(--p); color:white;">نشر المنتج 🚀</button>
+    <div class="admin-main">
+        <div class="box">
+            <h3 style="margin-top:0"><i class="fas fa-plus-circle"></i> إضافة منتج جديد</h3>
+            <input type="text" id="pName" placeholder="اسم المنتج">
+            <input type="number" id="pPrice" placeholder="السعر بالجنيه">
+            <select id="pCat">
+                <option value="تيشيرتات">تيشيرتات</option>
+                <option value="هوديز">هوديز</option>
+                <option value="بنطلونات">بنطلونات</option>
+                <option value="إكسسوارات">إكسسوارات</option>
+            </select>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                <input type="number" id="pS" placeholder="كمية S">
+                <input type="number" id="pM" placeholder="كمية M">
+                <input type="number" id="pL" placeholder="كمية L">
+                <input type="number" id="pXL" placeholder="كمية XL">
             </div>
+            <input type="file" id="pImage" accept="image/*" onchange="processImage(this.files[0])">
+            <button class="btn-add" onclick="uploadToStore()">نشر المنتج في المتجر</button>
         </div>
 
-        <div class="main">
-            <div class="tabs">
-                <button class="tab-btn active" onclick="showTab('ordersTab', this)">الطلبات الواردة</button>
-                <button class="tab-btn" onclick="showTab('inventoryTab', this)">إدارة المخزون (Items)</button>
+        <div class="box">
+            <div class="tab-nav">
+                <button class="tab-btn active" onclick="toggleTab('ordersTab', this)">الطلبات الحية</button>
+                <button class="tab-btn" onclick="toggleTab('stockTab', this)">تعديل المخزن</button>
             </div>
 
             <div id="ordersTab">
-                <div id="orderList"></div>
+                <input type="text" id="orderSearch" placeholder="بحث باسم العميل أو المنتج..." onkeyup="renderOrders()">
+                <div id="orderListArea"></div>
             </div>
 
-            <div id="inventoryTab" class="hidden">
-                <div class="box">
-                    <h3><i class="fas fa-boxes"></i> المنتجات في متجرك</h3>
-                    <div id="inventoryList"></div>
-                </div>
+            <div id="stockTab" class="hidden">
+                <div id="stockListArea"></div>
             </div>
         </div>
     </div>
 
 <script>
+    // Configuration
     const firebaseConfig = { databaseURL: "https://authen-36a1f-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    let b64 = "";
 
-    function handleImg(f) {
-        const r = new FileReader();
-        r.onload = e => b64 = e.target.result;
-        r.readAsDataURL(f);
+    let imgBase64 = "";
+    let localOrders = [];
+
+    // Image Processor
+    function processImage(file) {
+        const reader = new FileReader();
+        reader.onload = e => imgBase64 = e.target.result;
+        reader.readAsDataURL(file);
     }
 
-    function upload() {
-        const data = {
-            name: document.getElementById('n').value, price: document.getElementById('pr').value,
-            category: document.getElementById('cat').value,
-            s: parseInt(document.getElementById('qs').value || 0),
-            m: parseInt(document.getElementById('qm').value || 0),
-            l: parseInt(document.getElementById('ql').value || 0),
-            xl: parseInt(document.getElementById('qxl').value || 0),
-            img: b64, ts: Date.now()
-        };
-        db.ref('inventory').push(data).then(() => location.reload());
+    // Upload Product
+    function uploadToStore() {
+        const name = document.getElementById('pName').value;
+        const price = document.getElementById('pPrice').value;
+        if(!name || !price || !imgBase64) return alert("أكمل بيانات المنتج والصورة!");
+
+        db.ref('inventory').push({
+            name, price, category: document.getElementById('pCat').value,
+            s: parseInt(document.getElementById('pS').value || 0),
+            m: parseInt(document.getElementById('pM').value || 0),
+            l: parseInt(document.getElementById('pL').value || 0),
+            xl: parseInt(document.getElementById('pXL').value || 0),
+            img: imgBase64
+        }).then(() => { alert("تم النشر!"); location.reload(); });
     }
 
-    // Toggle Tabs
-    function showTab(tabId, btn) {
+    // Tabs Switcher
+    function toggleTab(id, btn) {
         document.getElementById('ordersTab').classList.add('hidden');
-        document.getElementById('inventoryTab').classList.add('hidden');
-        document.getElementById(tabId).classList.remove('hidden');
+        document.getElementById('stockTab').classList.add('hidden');
+        document.getElementById(id).classList.remove('hidden');
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
     }
 
-    // Sync Inventory (Items)
+    // Listen to Orders
+    db.ref('orders').on('value', snap => {
+        localOrders = [];
+        let cash = 0;
+        snap.forEach(child => {
+            const data = { id: child.key, ...child.val() };
+            localOrders.push(data);
+            if(data.status !== 'declined') cash += parseFloat(data.total);
+        });
+        document.getElementById('stMoney').innerText = cash + " ج.م";
+        document.getElementById('stOrders').innerText = localOrders.length;
+        renderOrders();
+    });
+
+    function renderOrders() {
+        const q = document.getElementById('orderSearch').value.toLowerCase();
+        const area = document.getElementById('orderListArea');
+        area.innerHTML = '';
+
+        localOrders.filter(o => o.name.toLowerCase().includes(q)).reverse().forEach(o => {
+            area.innerHTML += `
+                <div class="order-card ${o.status}">
+                    <span class="badge" style="background:${o.status==='declined'?'red':'#334155'}">${o.status}</span>
+                    <b>${o.name}</b> <br>
+                    <small><i class="fas fa-phone"></i> ${o.phone}</small><br>
+                    <div style="margin:8px 0; font-size:0.85rem; color:#94a3b8;">
+                        ${o.items.map(i => i.name + ' [' + i.sz + ']').join(' , ')}
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <b style="color:var(--green)">${o.total} ج.م</b>
+                        <a href="${o.gps}" target="_blank" style="color:var(--p); text-decoration:none;"><i class="fas fa-map-marker-alt"></i> GPS</a>
+                    </div>
+                    <div class="order-actions">
+                        <button class="btn-action" style="background:var(--green)" onclick="updateStatus('${o.id}', 'delivered')">توصيل ✅</button>
+                        <button class="btn-action" style="background:var(--red)" onclick="declineOrder('${o.id}')">رفض ❌</button>
+                        <button class="btn-action" style="background:#334155; flex:0.3" onclick="deleteOrder('${o.id}')"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>`;
+        });
+    }
+
+    // Listen to Inventory
     db.ref('inventory').on('value', snap => {
-        const list = document.getElementById('inventoryList');
-        list.innerHTML = '';
+        const area = document.getElementById('stockListArea');
+        let total = 0;
+        area.innerHTML = '';
         snap.forEach(child => {
             const p = child.val();
-            list.innerHTML += `
-                <div class="inv-card">
-                    <img src="${p.img}">
-                    <div class="inv-details">
-                        <b>${p.name}</b> | <span style="color:green">${p.price} ج.م</span><br>
-                        <small>S: <input class="qty-input" type="number" value="${p.s}" onchange="updateQty('${child.key}', 's', this.value)"> | </small>
-                        <small>M: <input class="qty-input" type="number" value="${p.m}" onchange="updateQty('${child.key}', 'm', this.value)"> | </small>
-                        <small>L: <input class="qty-input" type="number" value="${p.l}" onchange="updateQty('${child.key}', 'l', this.value)"> | </small>
-                        <small>XL: <input class="qty-input" type="number" value="${p.xl}" onchange="updateQty('${child.key}', 'xl', this.value)"></small>
-                    </div>
-                    <button class="btn-del" onclick="deleteProd('${child.key}')"><i class="fas fa-trash"></i></button>
-                </div>`;
-        });
-    });
-
-    // Update Qty Directly
-    function updateQty(id, size, val) {
-        db.ref(`inventory/${id}`).update({ [size]: parseInt(val) });
-    }
-
-    // Delete Product
-    function deleteProd(id) {
-        if(confirm("حذف المنتج نهائياً؟")) db.ref(`inventory/${id}`).remove();
-    }
-
-    // Sync Orders
-    db.ref('orders').on('value', snap => {
-        const area = document.getElementById('orderList');
-        let money = 0, count = 0;
-        area.innerHTML = '';
-        snap.forEach(c => {
-            const o = c.val(); money += parseFloat(o.total); count++;
+            total += (p.s + p.m + p.l + p.xl);
             area.innerHTML += `
-                <div class="box" style="border-right: 5px solid var(--p)">
-                    <b>${o.name}</b> (${o.phone}) - <b>${o.total} ج.م</b><br>
-                    <small>${o.items.map(i => i.name + ' [' + i.sz + ']').join(', ')}</small><br>
-                    <button class="btn-del" style="margin-top:10px" onclick="db.ref('orders/${c.key}').remove()">حذف الطلب</button>
-                    ${o.status === 'pending' ? `<button class="btn-save" style="width:auto; padding:5px 15px;" onclick="db.ref('orders/${c.key}').update({status:'delivered'})">تأكيد التوصيل</button>` : '✅ تم'}
+                <div class="inv-item">
+                    <img src="${p.img}">
+                    <div class="inv-info">
+                        <b>${p.name}</b>
+                        <div class="qty-controls">
+                            S:<input class="qty-inp" type="number" value="${p.s}" onchange="editQty('${child.key}','s',this.value)">
+                            M:<input class="qty-inp" type="number" value="${p.m}" onchange="editQty('${child.key}','m',this.value)">
+                            L:<input class="qty-inp" type="number" value="${p.l}" onchange="editQty('${child.key}','l',this.value)">
+                            XL:<input class="qty-inp" type="number" value="${p.xl}" onchange="editQty('${child.key}','xl',this.value)">
+                        </div>
+                    </div>
+                    <i class="fas fa-trash-alt" style="color:var(--red); cursor:pointer" onclick="deleteProduct('${child.key}')"></i>
                 </div>`;
         });
-        document.getElementById('stMoney').innerText = money;
-        document.getElementById('stOrders').innerText = count;
+        document.getElementById('stStock').innerText = total;
     });
+
+    // Control Functions
+    function updateStatus(id, s) { db.ref(`orders/${id}`).update({ status: s }); }
+    
+    async function declineOrder(id) {
+        if(!confirm("هل تريد رفض الطلب وإعادة المنتجات للمخزن؟")) return;
+        const snap = await db.ref(`orders/${id}`).get();
+        const order = snap.val();
+        // Return items to stock
+        for(let item of order.items) {
+            const ref = db.ref(`inventory/${item.id}/${item.sz}`);
+            const current = await ref.get();
+            await ref.set(current.val() + item.qty);
+        }
+        db.ref(`orders/${id}`).update({ status: 'declined' });
+    }
+
+    function editQty(id, size, val) { db.ref(`inventory/${id}`).update({ [size]: parseInt(val) }); }
+    function deleteOrder(id) { if(confirm("حذف الطلب من السجلات؟")) db.ref(`orders/${id}`).remove(); }
+    function deleteProduct(id) { if(confirm("حذف المنتج نهائياً من المتجر؟")) db.ref(`inventory/${id}`).remove(); }
 </script>
 </body>
 </html>
