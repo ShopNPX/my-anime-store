@@ -3,201 +3,239 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NPX Admin - إدارة العمليات</title>
+    <title>NPX Store - المتجر الذكي</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --p: #6366f1; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --red: #ef4444; --green: #10b981; --border: #334155; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 20px; }
-        .stat-card { background: var(--card); padding: 15px; border-radius: 12px; text-align: center; border: 1px solid var(--border); }
-        .stat-card h3 { margin: 5px 0; color: var(--p); font-size: 1.4rem; }
-        .box { background: var(--card); border-radius: 15px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; }
-        .admin-main { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
-        input, select, textarea, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid var(--border); background: #0f172a; color: white; outline: none; }
-        .btn-add { background: var(--p); border: none; font-weight: bold; cursor: pointer; }
-        .order-card { background: #111827; padding: 15px; border-radius: 12px; margin-bottom: 15px; border-right: 5px solid var(--p); }
-        .order-actions { display: flex; gap: 8px; margin-top: 15px; }
-        .btn-action { padding: 12px; border-radius: 8px; border: none; cursor: pointer; color: white; flex: 1; font-weight: bold; }
-        .inv-item { display: flex; align-items: center; gap: 12px; background: #111827; padding: 12px; border-radius: 12px; margin-bottom: 10px; }
-        .inv-item img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; }
-        .qty-inp { width: 45px !important; padding: 5px !important; text-align: center; margin: 0 !important; border: 1px solid var(--p) !important; font-size: 0.8rem; }
-        .hidden { display: none; }
-        .tab-nav { display: flex; gap: 10px; margin-bottom: 15px; }
-        .tab-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; background: var(--card); color: #94a3b8; font-weight: bold; }
-        .tab-btn.active { background: var(--p); color: white; }
+        :root { --p: #6366f1; --dark: #0f172a; --card: #1e293b; --text: #f8fafc; --red: #ef4444; --green: #10b981; --gold: #fbbf24; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--dark); color: var(--text); margin: 0; padding-bottom: 90px; overflow-x: hidden; }
+        nav { background: #111827; padding: 12px 5%; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; border-bottom: 2px solid var(--p); }
+        .srch-box { flex: 1; margin: 0 15px; }
+        .srch-box input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; outline: none; }
+        #status-bar { display: none; background: var(--card); border-bottom: 3px solid var(--p); padding: 15px; text-align: center; position: sticky; top: 62px; z-index: 999; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; padding: 20px 5%; }
+        .card { background: var(--card); border-radius: 15px; overflow: hidden; border: 1px solid #334155; transition: 0.3s; }
+        .card:hover { transform: translateY(-5px); border-color: var(--p); }
+        .card img { width: 100%; height: 250px; object-fit: cover; }
+        .p-info { padding: 15px; }
+        .sizes { display: flex; gap: 5px; margin: 12px 0; }
+        .sz-btn { flex: 1; background: #0f172a; border: 1px solid #334155; color: white; padding: 8px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .sz-btn.active { background: var(--p); border-color: var(--p); box-shadow: 0 0 10px rgba(99, 102, 241, 0.4); }
+        .sz-btn:disabled { opacity: 0.2; cursor: not-allowed; border-color: #ff4444; }
+        .add-btn { width: 100%; padding: 14px; background: var(--p); border: none; color: white; font-weight: bold; border-radius: 12px; cursor: pointer; transition: 0.3s; }
+        .add-btn:active { transform: scale(0.95); }
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: none; justify-content: center; align-items: center; padding: 15px; backdrop-filter: blur(5px); }
+        .modal-content { background: var(--card); padding: 25px; border-radius: 20px; width: 100%; max-width: 450px; max-height: 90vh; overflow-y: auto; }
+        input, textarea { width: 100%; padding: 12px; margin: 8px 0; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 10px; box-sizing: border-box; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #334155; }
     </style>
 </head>
 <body>
 
-    <div class="stats-grid">
-        <div class="stat-card"><small>قيمة المبيعات الحالية</small><h3 id="stMoney">0</h3></div>
-        <div class="stat-card"><small>طلبات نشطة</small><h3 id="stOrders">0</h3></div>
-        <div class="stat-card"><small>إجمالي المخزن</small><h3 id="stStock">0</h3></div>
+<nav>
+    <div style="font-weight: 900; color: var(--p); font-size: 1.4rem; letter-spacing: 1px;">NPX STORE</div>
+    <div class="srch-box"><input type="text" id="searchInput" placeholder="ابحث عن منتج..." onkeyup="renderItems()"></div>
+    <div onclick="openCart()" style="cursor:pointer; position:relative;">
+        <i class="fas fa-shopping-bag fa-lg"></i>
+        <span id="cartCount" style="position:absolute; top:-8px; right:-8px; background:var(--red); color:white; padding:2px 6px; border-radius:50%; font-size:0.7rem; font-weight:bold;">0</span>
     </div>
+</nav>
 
-    <div class="admin-main">
-        <div class="box">
-            <h3 style="margin-top:0">📦 إضافة منتج جديد</h3>
-            <input type="text" id="pName" placeholder="اسم المنتج">
-            <input type="number" id="pPrice" placeholder="السعر">
-            <select id="pCat">
-                <option value="تيشيرتات">تيشيرتات</option>
-                <option value="هوديز">هوديز</option>
-                <option value="بنطلونات">بنطلونات</option>
-                <option value="إكسسوارات">إكسسوارات</option>
-            </select>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
-                <input type="number" id="pS" placeholder="كمية S">
-                <input type="number" id="pM" placeholder="كمية M">
-                <input type="number" id="pL" placeholder="كمية L">
-                <input type="number" id="pXL" placeholder="كمية XL">
-            </div>
-            <input type="file" id="pImage" accept="image/*" onchange="processImage(this.files[0])">
-            <button class="btn-add" onclick="uploadToStore()">نشر المنتج</button>
-        </div>
+<div id="status-bar">
+    <b id="statusTitle" style="color:var(--green)">📦 طلبك قيد المراجعة</b><br>
+    <small id="statusTimer"></small><br>
+    <button id="cancelOrderBtn" onclick="handleCancel()" style="display:none; background:var(--red); color:white; border:none; padding:8px 15px; border-radius:8px; margin-top:10px; cursor:pointer; font-weight:bold;">إلغاء الطلب وإرجاع المخزن</button>
+</div>
 
-        <div class="box">
-            <div class="tab-nav">
-                <button class="tab-btn active" onclick="toggleTab('ordersTab', this)">الطلبات</button>
-                <button class="tab-btn" onclick="toggleTab('stockTab', this)">تعديل المخزن</button>
-            </div>
+<div class="grid" id="mainGrid"></div>
 
-            <div id="ordersTab">
-                <input type="text" id="orderSearch" placeholder="بحث بالاسم أو الهاتف..." onkeyup="renderOrders()">
-                <div id="orderListArea"></div>
-            </div>
-
-            <div id="stockTab" class="hidden">
-                <div id="stockListArea"></div>
-            </div>
-        </div>
+<div id="cartModal" class="modal">
+    <div class="modal-content">
+        <h2 style="margin-top:0; color:var(--p)"><i class="fas fa-shopping-cart"></i> سلتك</h2>
+        <div id="itemsInCart"></div>
+        <div style="text-align:center; font-size:1.2rem; font-weight:bold; margin:20px 0; color:var(--green);">الإجمالي الحسابي: <span id="totalPrice">0</span> ج.م</div>
+        
+        <input id="custName" placeholder="الاسم الكامل">
+        <input id="custPhone" type="tel" placeholder="رقم الموبايل">
+        <button onclick="getLocation()" style="width:100%; padding:12px; background:#3b82f6; color:white; border:none; border-radius:10px; margin-bottom:8px; font-weight:bold;"><i class="fas fa-map-marker-alt"></i> تحديد موقع التوصيل GPS</button>
+        <textarea id="custAddr" rows="3" placeholder="العنوان بالتفصيل (المنطقة، الشارع، رقم المنزل)"></textarea>
+        
+        <button onclick="sendOrder()" style="width:100%; padding:16px; background:var(--green); color:white; border:none; border-radius:15px; font-weight:bold; font-size:1.1rem;"><i class="fab fa-whatsapp"></i> تأكيد الطلب عبر واتساب</button>
+        <button onclick="closeCart()" style="display:block; margin:15px auto; color:#94a3b8; background:none; border:none; cursor:pointer;">إغلاق السلة</button>
     </div>
+</div>
 
 <script>
     const firebaseConfig = { databaseURL: "https://authen-36a1f-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let imgBase64 = "";
-    let localOrders = [];
+    let products = [], cart = [], gpsData = "لم يحدد";
 
-    function processImage(file) {
-        const reader = new FileReader();
-        reader.onload = e => imgBase64 = e.target.result;
-        reader.readAsDataURL(file);
-    }
-
-    function uploadToStore() {
-        const name = document.getElementById('pName').value;
-        const price = document.getElementById('pPrice').value;
-        if(!name || !price || !imgBase64) return alert("أكمل البيانات!");
-        db.ref('inventory').push({
-            name, price, category: document.getElementById('pCat').value,
-            s: parseInt(document.getElementById('pS').value || 0),
-            m: parseInt(document.getElementById('pM').value || 0),
-            l: parseInt(document.getElementById('pL').value || 0),
-            xl: parseInt(document.getElementById('pXL').value || 0),
-            img: imgBase64
-        }).then(() => { alert("تم الحفظ!"); location.reload(); });
-    }
-
-    function toggleTab(id, btn) {
-        document.getElementById('ordersTab').classList.add('hidden');
-        document.getElementById('stockTab').classList.add('hidden');
-        document.getElementById(id).classList.remove('hidden');
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-    }
-
-    db.ref('orders').on('value', snap => {
-        localOrders = [];
-        let total = 0;
-        snap.forEach(child => {
-            localOrders.push({ id: child.key, ...child.val() });
-            total += parseFloat(child.val().total);
-        });
-        document.getElementById('stMoney').innerText = total + " ج.م";
-        document.getElementById('stOrders').innerText = localOrders.length;
-        renderOrders();
-    });
-
-    function renderOrders() {
-        const q = document.getElementById('orderSearch').value.toLowerCase();
-        const area = document.getElementById('orderListArea');
-        area.innerHTML = '';
-
-        localOrders.filter(o => o.name.toLowerCase().includes(q) || o.phone.includes(q)).reverse().forEach(o => {
-            area.innerHTML += `
-                <div class="order-card">
-                    <b>${o.name}</b> <small style="float:left; color:#94a3b8">${new Date(o.ts).toLocaleTimeString('ar-EG')}</small><br>
-                    <small><i class="fas fa-phone"></i> ${o.phone}</small><br>
-                    <small><i class="fas fa-map-marker-alt"></i> ${o.addr}</small>
-                    <div style="margin:10px 0; padding:10px; background:#0f172a; border-radius:8px; font-size:0.85rem;">
-                        ${o.items.map(i => `• ${i.name} (${i.sz.toUpperCase()}) × ${i.qty}`).join('<br>')}
-                    </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <b style="color:var(--green)">${o.total} ج.م</b>
-                        <a href="${o.gps}" target="_blank" style="color:var(--p); text-decoration:none;"><i class="fas fa-location-arrow"></i> فتح الخريطة</a>
-                    </div>
-                    <div class="order-actions">
-                        <button class="btn-action" style="background:var(--green)" onclick="finishOrder('${o.id}')">توصيل ✅</button>
-                        <button class="btn-action" style="background:var(--red)" onclick="cancelAndRestore('${o.id}')">إلغاء ❌</button>
-                    </div>
-                </div>`;
-        });
-    }
-
-    // الحذف عند التوصيل
-    function finishOrder(id) {
-        if(confirm("هل تم تسليم الطلب؟ سيتم حذفه من القائمة.")) {
-            db.ref(`orders/${id}`).remove();
-        }
-    }
-
-    // الحذف مع استرجاع المخزن
-    async function cancelAndRestore(id) {
-        if(!confirm("هل تريد إلغاء الطلب؟ سيتم إعادة الكميات للمخزن أوتوماتيكياً.")) return;
-        const snap = await db.ref(`orders/${id}`).get();
-        if(snap.exists()) {
-            const order = snap.val();
-            for(let item of order.items) {
-                const ref = db.ref(`inventory/${item.id}/${item.sz}`);
-                const current = await ref.get();
-                await ref.set((current.val() || 0) + item.qty);
-            }
-            db.ref(`orders/${id}`).remove();
-        }
-    }
-
+    // مزامنة المخزن لحظياً
     db.ref('inventory').on('value', snap => {
-        const area = document.getElementById('stockListArea');
-        let total = 0;
-        area.innerHTML = '';
-        snap.forEach(child => {
-            const p = child.val();
-            total += (p.s + p.m + p.l + p.xl);
-            area.innerHTML += `
-                <div class="inv-item">
-                    <img src="${p.img}">
-                    <div style="flex:1">
-                        <b>${p.name}</b><br>
-                        <div style="display:flex; gap:5px; margin-top:5px;">
-                            S:<input class="qty-inp" type="number" value="${p.s}" onchange="editQty('${child.key}','s',this.value)">
-                            M:<input class="qty-inp" type="number" value="${p.m}" onchange="editQty('${child.key}','m',this.value)">
-                            L:<input class="qty-inp" type="number" value="${p.l}" onchange="editQty('${child.key}','l',this.value)">
-                            XL:<input class="qty-inp" type="number" value="${p.xl}" onchange="editQty('${child.key}','xl',this.value)">
-                        </div>
-                    </div>
-                    <i class="fas fa-trash" style="color:var(--red); cursor:pointer" onclick="deleteProduct('${child.key}')"></i>
-                </div>`;
-        });
-        document.getElementById('stStock').innerText = total;
+        products = [];
+        snap.forEach(c => products.push({id: c.key, ...c.val()}));
+        renderItems();
     });
 
-    function editQty(id, size, val) { db.ref(`inventory/${id}`).update({ [size]: parseInt(val) }); }
-    function deleteProduct(id) { if(confirm("حذف المنتج؟")) db.ref(`inventory/${id}`).remove(); }
+    function renderItems() {
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        const activeID = localStorage.getItem('order_id');
+        
+        document.getElementById('mainGrid').innerHTML = products.filter(p => p.name.toLowerCase().includes(q)).map(p => `
+            <div class="card">
+                <img src="${p.img}" loading="lazy">
+                <div class="p-info">
+                    <h3 style="margin:0 0 10px 0">${p.name}</h3>
+                    <div class="sizes" id="sz-${p.id}">
+                        <button class="sz-btn" ${p.s<=0?'disabled':''} onclick="selectSize(this,'s')">S</button>
+                        <button class="sz-btn" ${p.m<=0?'disabled':''} onclick="selectSize(this,'m')">M</button>
+                        <button class="sz-btn" ${p.l<=0?'disabled':''} onclick="selectSize(this,'l')">L</button>
+                        <button class="sz-btn" ${p.xl<=0?'disabled':''} onclick="selectSize(this,'xl')">XL</button>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:15px;">
+                        <b style="color:var(--green); font-size:1.3rem;">${p.price} ج.م</b>
+                        <button class="add-btn" style="width:auto; padding:10px 20px" ${activeID?'disabled':''} onclick="addToCart('${p.id}')">
+                            ${activeID ? 'انتظر طلبك' : 'إضافة +'}
+                        </button>
+                    </div>
+                </div>
+            </div>`).join('');
+    }
+
+    function selectSize(btn, s) { 
+        btn.parentElement.querySelectorAll('.sz-btn').forEach(b=>b.classList.remove('active')); 
+        btn.classList.add('active'); 
+        btn.dataset.sz = s; 
+    }
+
+    function addToCart(id) {
+        const p = products.find(x => x.id === id);
+        const btn = document.querySelector(`#sz-${id} .active`);
+        if(!btn) return alert("من فضلك اختر المقاس أولاً");
+        
+        const sz = btn.dataset.sz;
+        const stockAvailable = parseInt(p[sz]); // الكمية المتاحة في المخزن
+        const inCart = cart.find(i => i.id === id && i.sz === sz);
+        const currentQtyInCart = inCart ? inCart.qty : 0;
+
+        // فحص المخزن قبل الإضافة
+        if (currentQtyInCart + 1 > stockAvailable) {
+            alert(`نعتذر! لا يوجد سوى ${stockAvailable} قطع فقط من هذا المقاس.`);
+            return;
+        }
+
+        if(inCart) {
+            inCart.qty++;
+        } else {
+            cart.push({ id, name: p.name, price: p.price, sz, qty: 1 });
+        }
+        updateCartUI();
+    }
+
+    function updateCartUI() {
+        let t = 0, c = 0;
+        document.getElementById('itemsInCart').innerHTML = cart.map((i,idx) => {
+            t += (i.price*i.qty); c += i.qty;
+            return `<div class="cart-item">
+                <div>
+                    <b>${i.name}</b> <small>(${i.sz.toUpperCase()})</small><br>
+                    <span style="color:var(--p)">${i.qty} قطعة × ${i.price} ج.م</span>
+                </div>
+                <i class="fas fa-trash-alt" style="color:var(--red); cursor:pointer" onclick="cart.splice(${idx},1);updateCartUI()"></i>
+            </div>`;
+        }).join('');
+        document.getElementById('cartCount').innerText = c;
+        document.getElementById('totalPrice').innerText = t;
+    }
+
+    function openCart() { document.getElementById('cartModal').style.display='flex'; }
+    function closeCart() { document.getElementById('cartModal').style.display='none'; }
+    
+    function getLocation() { 
+        navigator.geolocation.getCurrentPosition(p => { 
+            gpsData = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`; 
+            document.getElementById('custAddr').value = "✅ تم تحديد موقعك الجغرافي بنجاح"; 
+        }, () => alert("برجاء تفعيل الـ GPS لتحديد موقعك")); 
+    }
+
+    async function sendOrder() {
+        const n = document.getElementById('custName').value, ph = document.getElementById('custPhone').value, ad = document.getElementById('custAddr').value;
+        if(!n || !ph || !ad || cart.length === 0) return alert("برجاء ملء جميع البيانات الجورهرية");
+
+        let total = document.getElementById('totalPrice').innerText;
+        let itemsMsg = cart.map(i => `• *${i.name}* (مقاس ${i.sz.toUpperCase()}) × ${i.qty}`).join('%0A');
+        
+        // بناء رسالة الواتساب الاحترافية
+        let finalMsg = `*طلب شراء جديد - NPX STORE*%0A` +
+                       `------------------------------%0A` +
+                       `*العميل:* ${n}%0A` +
+                       `*الموبايل:* ${ph}%0A` +
+                       `*العنوان:* ${ad}%0A` +
+                       `------------------------------%0A` +
+                       `*الطلبات:*%0A${itemsMsg}%0A` +
+                       `------------------------------%0A` +
+                       `*الإجمالي النهائي:* ${total} ج.م%0A` +
+                       `*رابط الموقع:* ${gpsData}`;
+
+        // خصم الكميات من المخزن في قاعدة البيانات
+        for(let i of cart) { 
+            const ref = db.ref(`inventory/${i.id}/${i.sz}`); 
+            const snap = await ref.get(); 
+            await ref.set(snap.val() - i.qty); 
+        }
+
+        // رفع الطلب للإدارة
+        const oRef = db.ref('orders').push({ 
+            name:n, phone:ph, items:cart, total:total, ts:Date.now(), gps:gpsData, addr:ad 
+        });
+        
+        localStorage.setItem('order_id', oRef.key);
+        localStorage.setItem('order_items', JSON.stringify(cart));
+        
+        window.location.href = `https://wa.me/201221060599?text=${finalMsg}`;
+    }
+
+    // نظام المتابعة الذكي
+    const activeOID = localStorage.getItem('order_id');
+    if(activeOID) {
+        db.ref('orders/' + activeOID).on('value', snap => {
+            const bar = document.getElementById('status-bar');
+            if(!snap.exists()) {
+                if(localStorage.getItem('order_id')) {
+                    localStorage.clear();
+                    alert("تم الانتهاء من طلبك! شكراً لتعاملك معنا.");
+                    location.reload();
+                }
+                return;
+            }
+            bar.style.display = 'block';
+            const o = snap.val();
+            const diff = (Date.now() - o.ts) / 1000 / 60;
+            if(diff < 60) {
+                document.getElementById('cancelOrderBtn').style.display = "inline-block";
+                document.getElementById('statusTimer').innerText = `يمكنك الإلغاء خلال ${Math.floor(60-diff)} دقيقة`;
+            } else {
+                document.getElementById('cancelOrderBtn').style.display = "none";
+                document.getElementById('statusTimer').innerText = "تم تأكيد طلبك وجاري الشحن";
+            }
+        });
+    }
+
+    async function handleCancel() {
+        if(!confirm("هل أنت متأكد من إلغاء الطلب؟ سيتم إعادة المنتجات للمخزن فوراً.")) return;
+        const id = localStorage.getItem('order_id'), items = JSON.parse(localStorage.getItem('order_items'));
+        for(let i of items) { 
+            const ref = db.ref(`inventory/${i.id}/${i.sz}`); 
+            const snap = await ref.get(); 
+            await ref.set(snap.val() + i.qty); 
+        }
+        db.ref('orders/'+id).remove();
+        localStorage.clear(); 
+        location.reload();
+    }
 </script>
 </body>
 </html>
