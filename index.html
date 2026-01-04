@@ -3,96 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NPX Ultimate Store</title>
+    <title>NPX Store - المتجر الرسمي</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --p: #6366f1; --dark: #0f172a; --card: #1e293b; --text: #f8fafc; --red: #ef4444; --green: #10b981; --gold: #fbbf24; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--dark); color: var(--text); margin: 0; padding-bottom: 90px; overflow-x: hidden; }
-        
-        /* Nav & Search */
+        body { font-family: 'Segoe UI', sans-serif; background: var(--dark); color: var(--text); margin: 0; padding-bottom: 90px; }
         nav { background: #111827; padding: 12px 5%; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; border-bottom: 2px solid var(--p); }
         .srch-box { flex: 1; margin: 0 15px; }
         .srch-box input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; outline: none; }
-        
-        /* Status Bar (The Multi-System Bar) */
-        #status-bar { display: none; background: var(--card); border-bottom: 3px solid var(--p); padding: 15px; text-align: center; position: sticky; top: 62px; z-index: 999; transition: 0.3s; }
-        
-        /* Categories */
-        .cats { display: flex; gap: 10px; overflow-x: auto; padding: 10px 5%; background: #111827; border-bottom: 1px solid #334155; }
-        .cat-btn { padding: 6px 15px; background: var(--card); border-radius: 20px; border: 1px solid #334155; white-space: nowrap; cursor: pointer; font-size: 0.85rem; }
-        .cat-btn.active { background: var(--p); border-color: var(--p); }
-
-        /* Grid */
+        #status-bar { display: none; background: var(--card); border-bottom: 3px solid var(--p); padding: 15px; text-align: center; position: sticky; top: 62px; z-index: 999; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; padding: 20px 5%; }
         .card { background: var(--card); border-radius: 15px; overflow: hidden; border: 1px solid #334155; position: relative; }
         .card img { width: 100%; height: 230px; object-fit: cover; }
         .p-info { padding: 15px; }
-        
-        /* Sizes */
         .sizes { display: flex; gap: 4px; margin: 10px 0; }
         .sz-btn { flex: 1; background: #0f172a; border: 1px solid var(--p); color: white; padding: 7px; border-radius: 6px; cursor: pointer; font-size: 0.7rem; }
-        .sz-btn:disabled { opacity: 0.1; cursor: not-allowed; }
-        .sz-btn.active { background: var(--p); box-shadow: 0 0 8px var(--p); }
-
+        .sz-btn.active { background: var(--p); }
         .add-btn { width: 100%; padding: 12px; background: var(--p); border: none; color: white; font-weight: bold; border-radius: 10px; cursor: pointer; }
-        .add-btn:disabled { background: #475569; }
-
-        /* Modals */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: none; justify-content: center; align-items: center; padding: 15px; }
-        .modal-content { background: var(--card); padding: 20px; border-radius: 20px; width: 100%; max-width: 400px; max-height: 90vh; overflow-y: auto; }
+        .modal-content { background: var(--card); padding: 20px; border-radius: 20px; width: 100%; max-width: 400px; }
         input, textarea { width: 100%; padding: 12px; margin: 8px 0; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 10px; box-sizing: border-box; }
-        .star { font-size: 1.8rem; color: #475569; cursor: pointer; margin: 0 4px; }
-        .star.active { color: var(--gold); }
     </style>
 </head>
 <body>
 
 <nav>
     <div style="font-weight: 900; color: var(--p); font-size: 1.2rem;">NPX STORE</div>
-    <div class="srch-box"><input type="text" id="searchInput" placeholder="ابحث هنا..." onkeyup="renderItems()"></div>
-    <div onclick="openCart()" style="cursor:pointer; position:relative;">
-        <i class="fas fa-shopping-cart fa-lg"></i>
-        <span id="cartCount" style="position:absolute; top:-8px; right:-8px; background:var(--red); padding:2px 5px; border-radius:50%; font-size:0.65rem;">0</span>
-    </div>
+    <div class="srch-box"><input type="text" id="searchInput" placeholder="ابحث..." onkeyup="renderItems()"></div>
+    <div onclick="openCart()" style="cursor:pointer; position:relative;"><i class="fas fa-shopping-cart fa-lg"></i><span id="cartCount" style="position:absolute; top:-8px; right:-8px; background:var(--red); padding:2px 5px; border-radius:50%; font-size:0.65rem;">0</span></div>
 </nav>
 
 <div id="status-bar">
     <b id="statusTitle">⌛ جاري معالجة طلبك</b><br>
     <small id="statusTimer"></small><br>
-    <button id="cancelOrderBtn" onclick="handleCancel()" style="display:none; background:var(--red); color:white; border:none; padding:6px 12px; border-radius:6px; margin-top:8px; cursor:pointer;">إلغاء الطلب</button>
-</div>
-
-<div class="cats" id="catList">
-    <div class="cat-btn active" onclick="filterCat('الكل')">الكل</div>
+    <button id="cancelOrderBtn" onclick="handleCancel()" style="display:none; background:var(--red); color:white; border:none; padding:6px 12px; border-radius:6px; margin-top:8px;">إلغاء الطلب</button>
 </div>
 
 <div class="grid" id="mainGrid"></div>
 
 <div id="cartModal" class="modal">
     <div class="modal-content">
-        <h3>سلتك الحالية</h3>
+        <h3>سلة المشتريات</h3>
         <div id="itemsInCart"></div>
         <div style="text-align:center; font-weight:bold; margin:15px 0; color:var(--green);">الإجمالي: <span id="totalPrice">0</span> ج.م</div>
-        <input id="custName" placeholder="الاسم الثنائي">
-        <input id="custPhone" placeholder="رقم الموبايل">
+        <input id="custName" placeholder="الاسم">
+        <input id="custPhone" placeholder="الموبايل">
         <button onclick="getLocation()" style="width:100%; padding:10px; background:#3b82f6; color:white; border:none; border-radius:8px; margin-bottom:5px;">تحديد موقعي GPS 📍</button>
         <textarea id="custAddr" placeholder="العنوان بالتفصيل"></textarea>
-        <button onclick="sendOrder()" style="width:100%; padding:15px; background:var(--green); color:white; border:none; border-radius:12px; font-weight:bold;">إرسال الطلب عبر واتساب</button>
+        <button onclick="sendOrder()" style="width:100%; padding:15px; background:var(--green); color:white; border:none; border-radius:12px; font-weight:bold;">إرسال عبر واتساب ✅</button>
         <button onclick="closeCart()" style="display:block; margin:10px auto; color:#94a3b8; background:none; border:none;">رجوع</button>
-    </div>
-</div>
-
-<div id="rateModal" class="modal">
-    <div class="modal-content" style="text-align:center;">
-        <h2 style="color:var(--gold);">وصل طلبك! ⭐</h2>
-        <p>قيم المنتجات التي استلمتها:</p>
-        <div id="starContainer" style="margin:15px 0;">
-            <i class="fas fa-star star" onclick="setStars(1)"></i><i class="fas fa-star star" onclick="setStars(2)"></i><i class="fas fa-star star" onclick="setStars(3)"></i><i class="fas fa-star star" onclick="setStars(4)"></i><i class="fas fa-star star" onclick="setStars(5)"></i>
-        </div>
-        <textarea id="rateText" placeholder="اكتب رأيك هنا..."></textarea>
-        <button onclick="pushReview()" style="width:100%; padding:15px; background:var(--p); color:white; border:none; border-radius:10px;">إرسال التقييم</button>
     </div>
 </div>
 
@@ -101,45 +62,32 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let products = [], cart = [], selectedCat = "الكل", gpsData = "لم يحدد", currentStars = 0;
+    let products = [], cart = [], gpsData = "لم يحدد";
 
-    // Load Data
     db.ref('inventory').on('value', snap => {
-        products = []; const cats = new Set(['الكل']);
-        snap.forEach(c => {
-            const p = {id: c.key, ...c.val(), revs: c.val().reviews ? Object.values(c.val().reviews) : []};
-            products.push(p); if(p.category) cats.add(p.category);
-        });
-        document.getElementById('catList').innerHTML = Array.from(cats).map(c => `<div class="cat-btn ${selectedCat===c?'active':''}" onclick="filterCat('${c}')">${c}</div>`).join('');
+        products = [];
+        snap.forEach(c => products.push({id: c.key, ...c.val()}));
         renderItems();
     });
-
-    function filterCat(c) { selectedCat = c; renderItems(); }
 
     function renderItems() {
         const q = document.getElementById('searchInput').value.toLowerCase();
         const activeID = localStorage.getItem('order_id');
-        const filtered = products.filter(p => (selectedCat === 'الكل' || p.category === selectedCat) && p.name.toLowerCase().includes(q));
-        
-        document.getElementById('mainGrid').innerHTML = filtered.map(p => {
-            const avg = p.revs.length ? (p.revs.reduce((a,b)=>a+b.rate,0)/p.revs.length).toFixed(1) : "جديد";
-            return `
+        document.getElementById('mainGrid').innerHTML = products.filter(p => p.name.toLowerCase().includes(q)).map(p => `
             <div class="card">
                 <img src="${p.img}">
                 <div class="p-info">
-                    <small style="color:var(--p)">${p.category || 'عام'}</small>
-                    <h3 style="margin:5px 0">${p.name} <span style="color:var(--gold); font-size:0.8rem;">⭐ ${avg}</span></h3>
+                    <h3>${p.name}</h3>
                     <div class="sizes" id="sz-${p.id}">
                         <button class="sz-btn" ${p.s<=0?'disabled':''} onclick="selectSize(this,'s')">S</button>
                         <button class="sz-btn" ${p.m<=0?'disabled':''} onclick="selectSize(this,'m')">M</button>
                         <button class="sz-btn" ${p.l<=0?'disabled':''} onclick="selectSize(this,'l')">L</button>
                         <button class="sz-btn" ${p.xl<=0?'disabled':''} onclick="selectSize(this,'xl')">XL</button>
                     </div>
-                    <b style="color:var(--green); font-size:1.1rem;">${p.price} ج.م</b>
+                    <b style="color:var(--green)">${p.price} ج.م</b>
                     <button class="add-btn" ${activeID?'disabled':''} onclick="addToCart('${p.id}')">${activeID?'لديك طلب قيد التنفيذ':'أضف للسلة +'}</button>
                 </div>
-            </div>`;
-        }).join('');
+            </div>`).join('');
     }
 
     function selectSize(btn, s) { btn.parentElement.querySelectorAll('.sz-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); btn.dataset.sz = s; }
@@ -147,11 +95,11 @@
     function addToCart(id) {
         const p = products.find(x => x.id === id);
         const btn = document.querySelector(`#sz-${id} .active`);
-        if(!btn) return alert("اختر المقاس أولاً");
+        if(!btn) return alert("اختر المقاس");
         const sz = btn.dataset.sz;
         const existing = cart.find(i => i.id === id && i.sz === sz);
-        if(existing) { if(existing.qty >= p[sz]) return alert("المخزن لا يكفي"); existing.qty++; }
-        else { cart.push({ id, name: p.name, price: p.price, sz, qty: 1 }); }
+        if(existing) existing.qty++;
+        else cart.push({ id, name: p.name, price: p.price, sz, qty: 1 });
         updateCartUI();
     }
 
@@ -161,7 +109,7 @@
             t += (i.price*i.qty); c += i.qty;
             return `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #334155;">
                 <span>${i.qty}x ${i.name} [${i.sz}]</span>
-                <span>${i.price*i.qty} ج.م <i class="fas fa-trash" style="color:var(--red); cursor:pointer; margin-right:10px" onclick="cart.splice(${idx},1);updateCartUI()"></i></span>
+                <i class="fas fa-trash" style="color:var(--red); cursor:pointer" onclick="cart.splice(${idx},1);updateCartUI()"></i>
             </div>`;
         }).join('');
         document.getElementById('cartCount').innerText = c;
@@ -170,63 +118,56 @@
 
     function openCart() { document.getElementById('cartModal').style.display='flex'; }
     function closeCart() { document.getElementById('cartModal').style.display='none'; }
-    function getLocation() { navigator.geolocation.getCurrentPosition(p => { gpsData = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`; document.getElementById('custAddr').value = "✅ تم التقاط الموقع بنجاح"; }); }
+    function getLocation() { navigator.geolocation.getCurrentPosition(p => { gpsData = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`; document.getElementById('custAddr').value = "✅ الموقع محدد"; }); }
 
     async function sendOrder() {
         const n = document.getElementById('custName').value, ph = document.getElementById('custPhone').value, ad = document.getElementById('custAddr').value;
-        if(!n || !ph || !ad || cart.length === 0) return alert("يرجى إكمال جميع الخانات");
+        if(!n || !ph || !ad || cart.length === 0) return alert("أكمل البيانات");
 
+        // 1. تحضير رسالة واتساب
+        let itemsSummary = cart.map(i => `- ${i.name} (${i.sz}) x${i.qty}`).join('%0A');
+        let msg = `*طلب جديد من NPX STORE*%0A%0A*الاسم:* ${n}%0A*الموبايل:* ${ph}%0A*العنوان:* ${ad}%0A%0A*المنتجات:*%0A${itemsSummary}%0A%0A*الإجمالي:* ${document.getElementById('totalPrice').innerText} ج.م%0A*الموقع:* ${gpsData}`;
+
+        // 2. تحديث المخزن ورفع الطلب
         for(let i of cart) { const r = db.ref(`inventory/${i.id}/${i.sz}`); const s = await r.get(); await r.set(s.val() - i.qty); }
-        const oRef = db.ref('orders').push({ name:n, phone:ph, items:cart, total:document.getElementById('totalPrice').innerText, status:'pending', ts:Date.now(), gps:gpsData, addr:ad });
-        localStorage.setItem('order_id', oRef.key); localStorage.setItem('order_items', JSON.stringify(cart));
-        window.location.href = `https://wa.me/201221060599?text=*طلب جديد NPX*%0A*الاسم:* ${n}%0A*الإجمالي:* ${document.getElementById('totalPrice').innerText} ج.م`;
+        const oRef = db.ref('orders').push({ name:n, phone:ph, items:cart, total:document.getElementById('totalPrice').innerText, ts:Date.now(), gps:gpsData, addr:ad });
+        
+        localStorage.setItem('order_id', oRef.key);
+        localStorage.setItem('order_items', JSON.stringify(cart));
+        
+        window.location.href = `https://wa.me/201221060599?text=${msg}`;
     }
 
-    // STATUS SYSTEM
+    // نظام المتابعة: يختفي الشريط تلقائياً إذا حذف الإدمن الطلب
     const activeOID = localStorage.getItem('order_id');
     if(activeOID) {
         db.ref('orders/' + activeOID).on('value', snap => {
-            const o = snap.val(); if(!o) return;
-            const bar = document.getElementById('status-bar'); bar.style.display = 'block';
-            
-            if(o.status === 'declined') {
-                bar.style.backgroundColor = "var(--red)";
-                document.getElementById('statusTitle').innerHTML = "❌ تم رفض طلبك من الإدارة";
-                document.getElementById('statusTimer').innerText = "يمكنك حذف التنبيه والمحاولة لاحقاً";
-                document.getElementById('cancelOrderBtn').style.display = "inline-block";
-                document.getElementById('cancelOrderBtn').innerText = "فهمت (مسح)";
-            } else if(o.status === 'delivered') {
-                document.getElementById('rateModal').style.display = 'flex';
-                bar.style.display = 'none';
-            } else {
-                const diff = (Date.now() - o.ts) / 1000 / 60;
-                if(diff < 60) {
-                    document.getElementById('cancelOrderBtn').style.display = "inline-block";
-                    document.getElementById('statusTimer').innerText = `يمكنك الإلغاء خلال ${Math.floor(60-diff)} دقيقة`;
-                } else {
-                    document.getElementById('cancelOrderBtn').style.display = "none";
-                    document.getElementById('statusTimer').innerText = "تم تأكيد طلبك ولا يمكن الإلغاء";
+            const bar = document.getElementById('status-bar');
+            if(!snap.exists()) {
+                if(localStorage.getItem('order_id')) {
+                    localStorage.clear();
+                    location.reload();
                 }
+                return;
+            }
+            bar.style.display = 'block';
+            const o = snap.val();
+            const diff = (Date.now() - o.ts) / 1000 / 60;
+            if(diff < 60) {
+                document.getElementById('cancelOrderBtn').style.display = "inline-block";
+                document.getElementById('statusTimer').innerText = `متاح الإلغاء لـ ${Math.floor(60-diff)} دقيقة`;
+            } else {
+                document.getElementById('cancelOrderBtn').style.display = "none";
+                document.getElementById('statusTimer').innerText = "جاري تحضير طلبك الآن";
             }
         });
     }
 
     async function handleCancel() {
+        if(!confirm("إلغاء الطلب؟")) return;
         const id = localStorage.getItem('order_id'), items = JSON.parse(localStorage.getItem('order_items'));
-        const snap = await db.ref('orders/'+id).get();
-        if(snap.exists() && snap.val().status !== 'declined') {
-            if(!confirm("هل تريد إلغاء الطلب؟")) return;
-            for(let i of items) { const r = db.ref(`inventory/${i.id}/${i.sz}`); const s = await r.get(); await r.set(s.val() + i.qty); }
-            db.ref('orders/'+id).remove();
-        }
-        localStorage.clear(); location.reload();
-    }
-
-    function setStars(n) { currentStars = n; document.querySelectorAll('.star').forEach((s,i) => s.classList.toggle('active', i<n)); }
-    async function pushReview() {
-        const items = JSON.parse(localStorage.getItem('order_items'));
-        if(!currentStars) return alert("من فضلك اختر التقييم");
-        for(let i of items) await db.ref(`inventory/${i.id}/reviews`).push({ rate: currentStars, comm: document.getElementById('rateText').value });
+        for(let i of items) { const r = db.ref(`inventory/${i.id}/${i.sz}`); const s = await r.get(); await r.set(s.val() + i.qty); }
+        db.ref('orders/'+id).remove();
         localStorage.clear(); location.reload();
     }
 </script>
