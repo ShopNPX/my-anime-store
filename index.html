@@ -19,6 +19,10 @@
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; padding: 0 5%; }
         .card { background: var(--card); border-radius: 15px; overflow: hidden; border: 1px solid #334155; position: relative; }
         .card img { width: 100%; height: 260px; object-fit: cover; }
+        .size-box { display: flex; gap: 5px; margin: 10px 0; justify-content: center; }
+        .size-btn { background: #0f172a; border: 1px solid var(--p); color: white; padding: 4px 8px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; }
+        .size-btn.active { background: var(--p); }
+        .reviews-stream { font-size: 0.75rem; color: #94a3b8; margin-top: 10px; padding-top: 10px; border-top: 1px solid #334155; text-align: right; }
         .buy-btn { width: 100%; padding: 12px; background: var(--p); border: none; color: white; font-weight: bold; border-radius: 10px; cursor: pointer; margin-top: 10px; }
         .buy-btn:disabled { background: #475569; opacity: 0.5; cursor: not-allowed; }
         #lockBar { display: none; background: #1e293b; color: white; padding: 20px; text-align: center; margin: 15px 5%; border-radius: 12px; border: 1px solid var(--red); }
@@ -46,7 +50,7 @@
 <div id="lockBar">
     <strong id="statusText">⏳ طلبك قيد المراجعة</strong>
     <p id="timerMsg" style="font-size: 0.85rem; color: #94a3b8; margin: 10px 0;"></p>
-    <button id="cancelBtn" onclick="cancelOrder()" style="display:none; background:var(--red); color:white; border:none; padding:10px 20px; border-radius:10px; cursor:pointer; font-weight:bold;">إلغاء الطلب واسترجاع المخزون ↩️</button>
+    <button id="cancelBtn" onclick="cancelOrder()" style="display:none; background:var(--red); color:white; border:none; padding:10px 20px; border-radius:10px; cursor:pointer; font-weight:bold;">إلغاء واسترجاع المخزون ↩️</button>
 </div>
 
 <div class="grid" id="mainGrid"></div>
@@ -67,12 +71,12 @@
 
 <div id="ratingUI">
     <div class="box">
-        <h2 style="color:var(--gold);">تم التوصيل! 🎉</h2>
-        <p>قيم تجربتك مع المنتجات:</p>
+        <h2 style="color:var(--gold);">وصل طلبك! 🎉</h2>
+        <p>قيم المنتجات التي اشتريتها:</p>
         <div style="margin: 20px 0;">
             <i class="fas fa-star star" onclick="setRating(1)"></i><i class="fas fa-star star" onclick="setRating(2)"></i><i class="fas fa-star star" onclick="setRating(3)"></i><i class="fas fa-star star" onclick="setRating(4)"></i><i class="fas fa-star star" onclick="setRating(5)"></i>
         </div>
-        <textarea id="revText" placeholder="رأيك يهمنا..."></textarea>
+        <textarea id="revText" placeholder="اكتب رأيك هنا..."></textarea>
         <button onclick="submitReview()" style="width:100%; padding:15px; background:var(--p); color:white; border:none; font-weight:bold; border-radius:10px;">إرسال التقييم</button>
     </div>
 </div>
@@ -85,7 +89,12 @@
     let products = [], cart = [], currentCat = "الكل", gpsLink = "غير محدد", userRating = 0;
 
     db.ref('inventory').on('value', snap => {
-        products = []; snap.forEach(c => products.push({id: c.key, ...c.val()}));
+        products = []; 
+        snap.forEach(c => {
+            let data = c.val();
+            let revs = data.reviews ? Object.values(data.reviews) : [];
+            products.push({id: c.key, ...data, reviewsList: revs});
+        });
         filterAndRender();
     });
 
@@ -117,23 +126,44 @@
         const query = document.getElementById('searchInp').value.toLowerCase();
         const isLocked = localStorage.getItem('npx_active_id');
         const filtered = products.filter(p => (currentCat === "الكل" || p.category === currentCat) && p.name.toLowerCase().includes(query));
-        document.getElementById('mainGrid').innerHTML = filtered.map(p => `
+        
+        document.getElementById('mainGrid').innerHTML = filtered.map(p => {
+            const avg = p.reviewsList.length ? (p.reviewsList.reduce((a,b)=>a+b.rate,0)/p.reviewsList.length).toFixed(1) : "جديد";
+            return `
             <div class="card">
                 <img src="${p.img}">
                 <div style="padding:15px;">
-                    <h3 style="margin:0">${p.name}</h3>
+                    <h3 style="margin:0">${p.name} <span style="color:var(--gold); font-size:0.8rem;">⭐ ${avg}</span></h3>
+                    <div class="size-box" id="size-${p.id}">
+                        <button class="size-btn active" onclick="selSize(this)">S</button>
+                        <button class="size-btn" onclick="selSize(this)">M</button>
+                        <button class="size-btn" onclick="selSize(this)">L</button>
+                        <button class="size-btn" onclick="selSize(this)">XL</button>
+                    </div>
                     <b style="color:var(--p);">$${p.price} <small style="color:#94a3b8">(متاح: ${p.qty})</small></b>
                     <button class="buy-btn" ${isLocked || p.qty <= 0 ? 'disabled' : ''} onclick="addToCart('${p.id}')">
                         ${isLocked ? 'طلب نشط' : (p.qty <= 0 ? 'نفد' : 'إضافة للسلة +')}
                     </button>
+                    <div class="reviews-stream">
+                        <b>آخر التعليقات:</b><br>
+                        ${p.reviewsList.slice(-2).map(r => `• ${r.text}`).join('<br>') || 'لا توجد تعليقات'}
+                    </div>
                 </div>
-            </div>`).join('');
+            </div>`;
+        }).join('');
+    }
+
+    function selSize(btn) {
+        btn.parentElement.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
     }
 
     function addToCart(id) {
         const p = products.find(x => x.id === id);
-        cart.push({...p, cartId: Date.now(), originalId: id});
+        const sz = document.querySelector(`#size-${id} .active`).innerText;
+        cart.push({...p, selectedSize: sz, originalId: id});
         updateCartUI();
+        toggleCart(true);
     }
 
     function updateCartUI() {
@@ -141,7 +171,9 @@
         let total = 0;
         document.getElementById('cartItemsList').innerHTML = cart.map(i => {
             total += parseFloat(i.price);
-            return `<div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>${i.name}</span><span>$${i.price}</span></div>`;
+            return `<div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                <span>${i.name} (${i.selectedSize})</span><span>$${i.price}</span>
+            </div>`;
         }).join('');
         document.getElementById('totalSum').innerText = total;
     }
@@ -166,12 +198,14 @@
         }
 
         const total = document.getElementById('totalSum').innerText;
-        const oData = { name:n, phone:ph, items:cart, location:gpsLink, addr:addr, total, status:"pending", timestamp:Date.now() };
-        const oRef = db.ref('orders').push(oData);
+        const oRef = db.ref('orders').push({ name:n, phone:ph, items:cart, location:gpsLink, addr:addr, total, status:"pending", timestamp:Date.now() });
+        
         localStorage.setItem('npx_active_id', oRef.key);
         localStorage.setItem('npx_active_data', JSON.stringify(cart));
 
-        window.location.href = `https://wa.me/201221060599?text=طلب جديد من: ${n}%0Aالأصناف: ${cart.map(i=>i.name).join(', ')}%0Aالإجمالي: $${total}%0Aالموقع: ${gpsLink}`;
+        const itemsDetails = cart.map(i => `- ${i.name} (مقاس: ${i.selectedSize})`).join('%0A');
+        const waUrl = `https://wa.me/201221060599?text=*طلب جديد من NPX Store*%0A*الاسم:* ${n}%0A*الأصناف:*%0A${itemsDetails}%0A*الإجمالي:* $${total}%0A*العنوان:* ${addr}%0A*الموقع:* ${gpsLink}`;
+        window.location.href = waUrl;
     }
 
     async function cancelOrder() {
@@ -186,7 +220,20 @@
     }
 
     function setRating(n) { userRating = n; document.querySelectorAll('.star').forEach((s, i) => s.classList.toggle('active', i < n)); }
-    function submitReview() { localStorage.clear(); location.reload(); }
+
+    async function submitReview() {
+        const data = JSON.parse(localStorage.getItem('npx_active_data'));
+        const text = document.getElementById('revText').value;
+        if(userRating === 0) return alert("اختر النجوم أولاً");
+
+        for(let item of data) {
+            await db.ref(`inventory/${item.originalId}/reviews`).push({ rate: userRating, text: text });
+        }
+        localStorage.clear();
+        alert("شكراً لتقييمك!");
+        location.reload();
+    }
+
     function setCat(c, b) { currentCat = c; document.querySelectorAll('.cat-btn').forEach(x => x.classList.remove('active')); b.classList.add('active'); filterAndRender(); }
 </script>
 </body>
