@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>NPX Panel | لوحة التحكم</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #6366f1; --bg: #0b0f1a; --card: #1e293b; }
+        body { font-family: 'Cairo'; background: var(--bg); color: white; margin: 0; display: flex; height: 100vh; }
+        .sidebar { width: 250px; background: #111827; padding: 20px; border-left: 1px solid rgba(255,255,255,0.1); }
+        .main { flex: 1; padding: 30px; overflow-y: auto; }
+        .nav-link { padding: 15px; cursor: pointer; border-radius: 10px; margin-bottom: 5px; }
+        .nav-link.active { background: var(--primary); }
+        .card { background: var(--card); padding: 20px; border-radius: 15px; margin-bottom: 20px; }
+        input, select { width: 100%; padding: 10px; margin: 10px 0; background: #0b0f1a; border: 1px solid #374151; color: white; border-radius: 8px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .btn-add { background: var(--primary); color: white; width: 100%; }
+        .order-row { background: #0f172a; padding: 15px; border-radius: 10px; margin-bottom: 10px; border-right: 4px solid var(--primary); }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h2 style="color:var(--primary)">NPX Admin</h2>
+    <div class="nav-link active" onclick="switchTab('products')">إدارة المنتجات</div>
+    <div class="nav-link" onclick="switchTab('orders')">إدارة الطلبات</div>
+    <hr style="opacity:0.1; margin:20px 0">
+    <div class="nav-link" onclick="firebase.auth().signOut()">تسجيل الخروج</div>
+</div>
+
+<div class="main">
+    <div id="productsTab">
+        <div class="card">
+            <h3>إضافة منتج جديد</h3>
+            <input type="text" id="pName" placeholder="اسم المنتج">
+            <input type="number" id="pPrice" placeholder="السعر">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
+                <input type="number" id="pS" placeholder="كمية S">
+                <input type="number" id="pM" placeholder="كمية M">
+                <input type="number" id="pL" placeholder="كمية L">
+                <input type="number" id="pXL" placeholder="كمية XL">
+            </div>
+            <input type="file" id="pImage" accept="image/*" onchange="encodeImg(this)">
+            <button class="btn btn-add" onclick="uploadProduct()">نشر المنتج</button>
+        </div>
+        <div id="inventoryList"></div>
+    </div>
+
+    <div id="ordersTab" style="display:none">
+        <h3>الطلبات الواردة</h3>
+        <div id="ordersList"></div>
+    </div>
+</div>
+
+<script>
+    const firebaseConfig = { databaseURL: "https://authen-36a1f-default-rtdb.firebaseio.com/" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // الأمن: التأكد من أن المستخدم هو المسؤول
+    firebase.auth().onAuthStateChanged(user => {
+        if(!user || user.email !== "admin@npx.com") { // غير البريد لبريدك الخاص
+            alert("غير مسموح لك بالدخول");
+            location.href = "auth.html";
+        }
+    });
+
+    let imgBase64 = "";
+    function encodeImg(el) {
+        const reader = new FileReader();
+        reader.onload = e => imgBase64 = e.target.result;
+        reader.readAsDataURL(el.files[0]);
+    }
+
+    function uploadProduct() {
+        const data = {
+            name: document.getElementById('pName').value,
+            price: document.getElementById('pPrice').value,
+            s: parseInt(document.getElementById('pS').value || 0),
+            m: parseInt(document.getElementById('pM').value || 0),
+            l: parseInt(document.getElementById('pL').value || 0),
+            xl: parseInt(document.getElementById('pXL').value || 0),
+            img: imgBase64
+        };
+        db.ref('inventory').push(data).then(() => {
+            alert("تم الإضافة");
+            location.reload();
+        });
+    }
+
+    function switchTab(tab) {
+        document.getElementById('productsTab').style.display = tab === 'products' ? 'block' : 'none';
+        document.getElementById('ordersTab').style.display = tab === 'orders' ? 'block' : 'none';
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        event.target.classList.add('active');
+    }
+
+    // Load Orders
+    db.ref('orders').on('value', snap => {
+        const area = document.getElementById('ordersList');
+        area.innerHTML = '';
+        snap.forEach(child => {
+            const o = child.val();
+            area.innerHTML += `
+                <div class="order-row">
+                    <b>${o.name}</b> (${o.phone}) <br>
+                    <small>${o.addr}</small> <br>
+                    <div style="background:rgba(255,255,255,0.05); padding:5px; margin:5px 0">
+                        ${o.items.map(i => `• ${i.name} (${i.selectedSize})`).join('<br>')}
+                    </div>
+                    <b>المجموع: ${o.total}</b>
+                    <button class="btn" style="background:red; color:white; margin-right:10px" onclick="deleteOrder('${child.key}')">حذف</button>
+                </div>
+            `;
+        });
+    });
+
+    function deleteOrder(id) {
+        if(confirm("تم التوصيل؟ سيتم حذف الطلب")) db.ref('orders/' + id).remove();
+    }
+</script>
+</body>
+</html>
