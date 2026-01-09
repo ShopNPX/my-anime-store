@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NPX STORE | المتجر الرسمي</title>
+    <title>NPX STORE | المتجر المتكامل</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -14,26 +14,18 @@
     <style>
         :root {
             --primary: #6366f1;
-            --primary-dark: #4f46e5;
             --bg: #030712;
             --card: #111827;
-            --text-main: #ffffff;
-            --text-dim: #94a3b8;
+            --text: #ffffff;
+            --dim: #94a3b8;
             --danger: #ef4444;
+            --success: #10b981;
         }
 
-        * { box-sizing: border-box; transition: all 0.3s ease; }
+        * { box-sizing: border-box; transition: 0.3s ease; }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-top: 80px; }
 
-        body {
-            font-family: 'Cairo', sans-serif;
-            background: var(--bg);
-            color: var(--text-main);
-            margin: 0;
-            padding-top: 80px;
-            overflow-x: hidden;
-        }
-
-        /* --- Navbar --- */
+        /* Navbar */
         .navbar {
             position: fixed; top: 0; width: 100%; background: rgba(3, 7, 18, 0.9);
             backdrop-filter: blur(15px); z-index: 1000; padding: 15px 5%;
@@ -41,9 +33,7 @@
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
-        .logo { font-weight: 900; font-size: 1.8rem; letter-spacing: 1px; }
-        
-        .cart-trigger {
+        .cart-btn-nav {
             position: relative; cursor: pointer; background: var(--card);
             width: 50px; height: 50px; border-radius: 15px;
             display: flex; align-items: center; justify-content: center;
@@ -51,282 +41,235 @@
         }
 
         #cartCount {
-            position: absolute; top: -5px; right: -5px; background: var(--danger);
+            position: absolute; top: -5px; right: -5px; background: var(--primary);
             color: white; font-size: 0.7rem; padding: 3px 7px; border-radius: 50%;
-            font-weight: bold; border: 2px solid var(--bg);
         }
 
-        /* --- Category Bar --- */
-        .category-container {
-            display: flex; justify-content: center; gap: 10px; padding: 20px;
-            overflow-x: auto; white-space: nowrap; position: sticky; top: 80px;
-            background: var(--bg); z-index: 900;
+        /* Categories */
+        .categories {
+            display: flex; justify-content: center; gap: 10px; padding: 15px;
+            overflow-x: auto; position: sticky; top: 80px; background: var(--bg); z-index: 900;
         }
 
         .cat-btn {
-            padding: 10px 25px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.1);
-            background: var(--card); color: var(--text-dim); cursor: pointer;
-            font-family: 'Cairo'; font-weight: 700;
+            padding: 8px 20px; border-radius: 50px; border: 1px solid var(--primary);
+            background: transparent; color: white; cursor: pointer; white-space: nowrap;
         }
 
-        .cat-btn.active {
-            background: var(--primary); color: white; border-color: var(--primary);
-            box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
-        }
+        .cat-btn.active { background: var(--primary); box-shadow: 0 0 15px var(--primary); }
 
-        /* --- Product Grid --- */
+        /* Grid */
         .product-grid {
             display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 30px; padding: 20px 5%;
+            gap: 25px; padding: 20px 5%;
         }
 
-        .card {
+        .product-card {
             background: var(--card); border-radius: 25px; overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.05); position: relative;
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
-        .card img { width: 100%; height: 350px; object-fit: cover; }
-        .card-body { padding: 20px; text-align: center; }
-        .price { color: var(--primary); font-size: 1.4rem; font-weight: 900; margin: 10px 0; }
+        .product-card img { width: 100%; height: 350px; object-fit: cover; }
+        .p-info { padding: 20px; text-align: center; }
 
-        .add-btn {
-            width: 100%; padding: 12px; border-radius: 15px; border: none;
-            background: var(--primary); color: white; font-weight: bold;
-            cursor: pointer; font-family: 'Cairo';
-        }
-
-        /* --- SCALABLE CART SIDEBAR --- */
-        .cart-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); z-index: 1999; display: none;
-        }
-
+        /* Scalable Cart */
         .cart-sidebar {
             position: fixed; top: 0; left: -100%; width: 100%; max-width: 450px;
             height: 100%; background: var(--card); z-index: 2000;
-            display: flex; flex-direction: column; box-shadow: 20px 0 50px rgba(0,0,0,0.8);
+            display: flex; flex-direction: column; box-shadow: 20px 0 50px #000;
         }
 
-        .cart-sidebar.active { left: 0; }
+        .cart-sidebar.open { left: 0; }
+        .close-x { font-size: 2rem; color: var(--danger); cursor: pointer; }
 
-        .cart-header {
-            padding: 30px; border-bottom: 1px solid rgba(255,255,255,0.1);
-            display: flex; justify-content: space-between; align-items: center;
+        .cart-body { flex: 1; overflow-y: auto; padding: 20px; }
+        .cart-footer { padding: 25px; background: #070b14; border-top: 1px solid #222; }
+
+        .btn-order {
+            width: 100%; padding: 15px; border-radius: 12px; border: none;
+            background: var(--primary); color: white; font-weight: 900; cursor: pointer;
         }
 
-        .close-btn {
-            width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.05);
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
-            font-size: 1.5rem; color: var(--danger);
-        }
-
-        .cart-content { flex: 1; overflow-y: auto; padding: 20px; }
-        
-        .cart-item {
-            display: flex; gap: 15px; background: rgba(255,255,255,0.03);
-            padding: 15px; border-radius: 20px; margin-bottom: 15px; align-items: center;
-        }
-        .cart-item img { width: 70px; height: 70px; border-radius: 12px; object-fit: cover; }
-
-        .cart-footer { padding: 30px; background: #0a0f1d; border-radius: 30px 30px 0 0; }
-
-        /* --- Order Modal --- */
+        /* Modal */
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); z-index: 3000; display: none;
             align-items: center; justify-content: center; padding: 20px;
         }
-        .modal-content {
-            background: var(--card); padding: 30px; border-radius: 25px;
-            width: 100%; max-width: 500px; border: 1px solid var(--primary);
-        }
+        .modal-box { background: var(--card); padding: 30px; border-radius: 20px; width: 100%; max-width: 400px; }
 
-        input, select {
-            width: 100%; padding: 15px; margin: 10px 0; background: #000;
-            border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 12px;
-            font-family: 'Cairo';
-        }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #333; background: #000; color: white; }
 
         @media (max-width: 500px) {
-            .cart-sidebar { max-width: 100%; } /* Fixed visibility on mobile */
+            .cart-sidebar { max-width: 100%; }
             .product-grid { grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
-            .card img { height: 200px; }
-            .logo { font-size: 1.2rem; }
+            .product-card img { height: 220px; }
         }
     </style>
 </head>
 <body>
 
-    <nav class="navbar">
-        <div class="logo">NPX STORE</div>
-        <div class="cart-trigger" onclick="toggleCart(true)">
-            <i class="fas fa-shopping-bag"></i>
+    <div class="navbar">
+        <div style="font-weight: 900; font-size: 1.5rem;">NPX STORE</div>
+        <div class="cart-btn-nav" onclick="toggleCart(true)">
+            <i class="fas fa-shopping-cart"></i>
             <span id="cartCount">0</span>
         </div>
-    </nav>
-
-    <div class="category-container">
-        <button class="cat-btn active" onclick="setCategory('الكل', this)">الكل</button>
-        <button class="cat-btn" onclick="setCategory('تيشيرتات', this)">تيشيرتات</button>
-        <button class="cat-btn" onclick="setCategory('هوديز', this)">هوديز</button>
-        <button class="cat-btn" onclick="setCategory('بنطلونات', this)">بنطلونات</button>
-        <button class="cat-btn" onclick="setCategory('إكسسوارات', this)">إكسسوارات</button>
     </div>
 
-    <div class="product-grid" id="productGrid">
-        </div>
+    <div class="categories" id="catBar">
+        <button class="cat-btn active" onclick="filterBy('الكل', this)">الكل</button>
+        <button class="cat-btn" onclick="filterBy('تيشيرتات', this)">تيشيرتات</button>
+        <button class="cat-btn" onclick="filterBy('هوديز', this)">هوديز</button>
+        <button class="cat-btn" onclick="filterBy('بنطلونات', this)">بنطلونات</button>
+    </div>
 
-    <div class="cart-overlay" id="overlay" onclick="toggleCart(false)"></div>
-    <div class="cart-sidebar" id="sidebar">
-        <div class="cart-header">
-            <h2 style="margin:0">سلة التسوق</h2>
-            <div class="close-btn" onclick="toggleCart(false)"><i class="fas fa-times"></i></div>
+    <div class="product-grid" id="productGrid"></div>
+
+    <div class="cart-sidebar" id="cartSidebar">
+        <div style="padding: 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222;">
+            <h2 style="margin:0">سلتك</h2>
+            <div class="close-x" onclick="toggleCart(false)">&times;</div>
         </div>
-        <div class="cart-content" id="cartList"></div>
+        <div class="cart-body" id="cartList"></div>
         <div class="cart-footer">
-            <div style="display:flex; justify-content:space-between; margin-bottom:20px; font-size:1.2rem;">
-                <span>إجمالي الحساب:</span>
-                <span id="totalPrice" style="font-weight:900; color:var(--primary)">0 ج.م</span>
-            </div>
-            <button class="add-btn" style="padding:18px" onclick="showOrderForm()">إتمام الطلب الآن</button>
+            <h3 id="totalLabel">الإجمالي: 0 ج.م</h3>
+            <button class="btn-order" onclick="openOrderModal()">طلب المنتجات الآن</button>
         </div>
     </div>
 
     <div class="modal" id="orderModal">
-        <div class="modal-content">
-            <h2 style="text-align:center">بيانات الشحن</h2>
-            <input type="text" id="custName" placeholder="الاسم بالكامل">
-            <input type="tel" id="custPhone" placeholder="رقم الموبايل">
-            <input type="text" id="custAddr" placeholder="العنوان بالتفصيل">
-            <button class="add-btn" onclick="submitOrder()">تأكيد وإرسال الطلب</button>
-            <button class="add-btn" style="background:transparent; color:var(--text-dim)" onclick="document.getElementById('orderModal').style.display='none'">إلغاء</button>
+        <div class="modal-box">
+            <h3 style="text-align:center">بيانات الشحن</h3>
+            <input type="text" id="uName" placeholder="الاسم الثنائي">
+            <input type="tel" id="uPhone" placeholder="رقم الهاتف">
+            <input type="text" id="uAddr" placeholder="العنوان (المنطقة والشارع)">
+            <button class="btn-order" onclick="processFinalOrder()">تأكيد وفتح واتساب</button>
+            <button class="btn-order" style="background:transparent; color:var(--dim)" onclick="document.getElementById('orderModal').style.display='none'">إلغاء</button>
         </div>
     </div>
 
     <script>
-        // --- Firebase Config ---
         const firebaseConfig = { databaseURL: "https://authen-36a1f-default-rtdb.firebaseio.com/" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        let products = [];
+        let allProducts = [];
         let cart = [];
         let currentCat = "الكل";
+        let userLocation = "غير محدد";
 
-        // --- Fetch Data ---
+        // --- System 1: Auto-Location ---
+        window.onload = () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(pos => {
+                    userLocation = `${pos.coords.latitude},${pos.coords.longitude}`;
+                });
+            }
+        };
+
+        // --- System 2: Fetch & Stock Sync ---
         db.ref('inventory').on('value', snap => {
-            products = [];
-            snap.forEach(c => products.push({id: c.key, ...c.val()}));
+            allProducts = [];
+            snap.forEach(c => allProducts.push({id: c.key, ...c.val()}));
             render();
         });
 
         function render() {
             const grid = document.getElementById('productGrid');
             grid.innerHTML = '';
-            
-            const filtered = products.filter(p => currentCat === "الكل" || p.category === currentCat);
-            
+            const filtered = allProducts.filter(p => currentCat === "الكل" || p.category === currentCat);
+
             filtered.forEach(p => {
                 grid.innerHTML += `
-                    <div class="card">
+                    <div class="product-card">
                         <img src="${p.img}">
-                        <div class="card-body">
-                            <div style="font-weight:bold; height:50px">${p.name}</div>
-                            <div class="price">${p.price} ج.م</div>
-                            <select id="size-${p.id}" style="margin-bottom:10px">
-                                ${p.s > 0 ? `<option value="s">مقاس S (متاح: ${p.s})</option>` : ''}
-                                ${p.m > 0 ? `<option value="m">مقاس M (متاح: ${p.m})</option>` : ''}
-                                ${p.l > 0 ? `<option value="l">مقاس L (متاح: ${p.l})</option>` : ''}
-                                ${p.xl > 0 ? `<option value="xl">مقاس XL (متاح: ${p.xl})</option>` : ''}
+                        <div class="p-info">
+                            <h4 style="margin:10px 0">${p.name}</h4>
+                            <div style="color:var(--primary); font-weight:bold; margin-bottom:10px">${p.price} ج.م</div>
+                            <select id="sz-${p.id}">
+                                ${p.s > 0 ? `<option value="s">S</option>` : ''}
+                                ${p.m > 0 ? `<option value="m">M</option>` : ''}
+                                ${p.l > 0 ? `<option value="l">L</option>` : ''}
+                                ${p.xl > 0 ? `<option value="xl">XL</option>` : ''}
                             </select>
-                            <button class="add-btn" onclick="addToCart('${p.id}')">إضافة للسلة</button>
+                            <button class="cat-btn" style="width:100%; margin-top:10px" onclick="addToCart('${p.id}')">إضافة للسلة</button>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             });
         }
 
-        // --- Core Logic ---
-        function setCategory(cat, btn) {
+        // --- System 3: Cart Logic ---
+        function filterBy(cat, btn) {
             document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            currentCat = cat;
-            render();
+            currentCat = cat; render();
         }
 
-        function toggleCart(open) {
-            document.getElementById('sidebar').classList.toggle('active', open);
-            document.getElementById('overlay').style.display = open ? 'block' : 'none';
-        }
+        function toggleCart(show) { document.getElementById('cartSidebar').classList.toggle('open', show); }
 
         function addToCart(id) {
-            const p = products.find(i => i.id === id);
-            const sz = document.getElementById(`size-${id}`).value;
-            
-            cart.push({ id: p.id, name: p.name, price: p.price, img: p.img, sz: sz, qty: 1 });
-            updateCart();
+            const p = allProducts.find(x => x.id === id);
+            const sz = document.getElementById(`sz-${id}`).value;
+            cart.push({...p, selectedSize: sz});
+            updateUI();
             toggleCart(true);
         }
 
-        function updateCart() {
+        function updateUI() {
             const list = document.getElementById('cartList');
             let total = 0;
             list.innerHTML = '';
-            
-            cart.forEach((item, index) => {
+            cart.forEach((item, i) => {
                 total += parseFloat(item.price);
-                list.innerHTML += `
-                    <div class="cart-item">
-                        <img src="${item.img}">
-                        <div style="flex:1">
-                            <div style="font-weight:bold">${item.name}</div>
-                            <small>المقاس: ${item.sz.toUpperCase()}</small>
-                            <div style="color:var(--primary)">${item.price} ج.م</div>
-                        </div>
-                        <i class="fas fa-trash-alt" style="color:var(--danger); cursor:pointer" onclick="removeItem(${index})"></i>
+                list.innerHTML += `<div style="display:flex; gap:10px; margin-bottom:10px; background:#1e293b; padding:10px; border-radius:15px;">
+                    <img src="${item.img}" style="width:50px; height:50px; border-radius:8px">
+                    <div style="flex:1; font-size:0.8rem">
+                        <b>${item.name}</b><br>مقاس: ${item.selectedSize.toUpperCase()}
                     </div>
-                `;
+                    <i class="fas fa-trash" style="color:var(--danger)" onclick="cart.splice(${i},1); updateUI()"></i>
+                </div>`;
             });
-
             document.getElementById('cartCount').innerText = cart.length;
-            document.getElementById('totalPrice').innerText = total + " ج.م";
+            document.getElementById('totalLabel').innerText = `الإجمالي: ${total} ج.م`;
         }
 
-        function removeItem(i) { cart.splice(i, 1); updateCart(); }
+        function openOrderModal() { if(cart.length > 0) document.getElementById('orderModal').style.display = 'flex'; }
 
-        function showOrderForm() {
-            if(cart.length === 0) return alert("السلة فارغة!");
-            document.getElementById('orderModal').style.display = 'flex';
-        }
+        // --- System 4: Final Order & WhatsApp ---
+        async function processFinalOrder() {
+            const name = document.getElementById('uName').value;
+            const phone = document.getElementById('uPhone').value;
+            const addr = document.getElementById('uAddr').value;
+            const total = document.getElementById('totalLabel').innerText;
 
-        async function submitOrder() {
-            const name = document.getElementById('custName').value;
-            const phone = document.getElementById('custPhone').value;
-            const addr = document.getElementById('custAddr').value;
+            if(!name || !phone || !addr) return alert("اكمل البيانات");
 
-            if(!name || !phone || !addr) return alert("برجاء ملء البيانات");
+            const mapsLink = userLocation !== "غير محدد" 
+                ? `https://www.google.com/maps?q=${userLocation}` 
+                : `https://www.google.com/maps/search/${encodeURIComponent(addr)}`;
 
-            const orderData = {
-                name, phone, addr,
-                items: cart,
-                total: document.getElementById('totalPrice').innerText,
-                date: new Date().toLocaleString('ar-EG'),
-                gps: "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(addr)
-            };
+            const orderObj = { name, phone, addr, total, items: cart, gps: mapsLink, date: new Date().toLocaleString('ar-EG') };
 
-            // 1. Send to Firebase
-            const newOrder = await db.ref('orders').push(orderData);
-            
-            // 2. Deduct from Stock
+            // 1. Send to Admin
+            await db.ref('orders').push(orderObj);
+
+            // 2. Auto-Deduct Stock
             for(let item of cart) {
-                const stockRef = db.ref(`inventory/${item.id}/${item.sz}`);
-                const current = await stockRef.get();
-                await stockRef.set(current.val() - 1);
+                const ref = db.ref(`inventory/${item.id}/${item.selectedSize}`);
+                const snap = await ref.get();
+                await ref.set(snap.val() - 1);
             }
 
-            alert("تم استلام طلبك بنجاح! رقم الطلب: " + newOrder.key.slice(-5));
-            cart = [];
-            updateCart();
+            // 3. WhatsApp Message
+            const wpNum = "201221060599"; // <--- ضع رقمك هنا
+            const text = `*طلب جديد NPX STORE*%0A` +
+                         `*الاسم:* ${name}%0A*العنوان:* ${addr}%0A` +
+                         `*الطلبات:*%0A${cart.map(i => `• ${i.name} (${i.selectedSize})`).join('%0A')}%0A` +
+                         `*الحساب:* ${total}%0A` +
+                         `*الموقع:* ${mapsLink}`;
+
+            window.open(`https://wa.me/${wpNum}?text=${text}`, '_blank');
             location.reload();
         }
     </script>
