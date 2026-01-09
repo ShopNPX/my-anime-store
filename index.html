@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NPX STORE | النسخة الشاملة</title>
+    <title>NPX STORE | النسخة النهائية الشاملة</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -15,34 +15,39 @@
         :root { --primary: #6366f1; --bg: #030712; --card: #111827; --text: #ffffff; --border: rgba(255,255,255,0.1); --success: #10b981; }
         [data-theme="light"] { --bg: #f3f4f6; --card: #ffffff; --text: #111827; --border: rgba(0,0,0,0.1); }
         * { box-sizing: border-box; transition: 0.3s ease; font-family: 'Cairo', sans-serif; }
-        body { background: var(--bg); color: var(--text); margin: 0; padding-top: 210px; overflow-x: hidden; }
+        body { background: var(--bg); color: var(--text); margin: 0; padding-top: 215px; overflow-x: hidden; }
 
+        /* Header */
         header { position: fixed; top: 0; width: 100%; background: var(--bg); z-index: 1000; border-bottom: 1px solid var(--border); }
         .nav-top { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; }
         .icon-btn { width: 45px; height: 45px; border-radius: 12px; background: var(--card); display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid var(--border); position: relative; color: var(--text); }
         #cartCount { position: absolute; top: -5px; right: -5px; background: var(--primary); color: white; font-size: 0.7rem; padding: 2px 6px; border-radius: 50%; }
 
+        /* Search & Cats */
         .search-area { padding: 0 5% 10px; }
         .search-bar { background: var(--card); border-radius: 12px; display: flex; align-items: center; padding: 5px 15px; border: 1px solid var(--border); }
         .search-bar input { background: transparent; border: none; color: var(--text); padding: 10px; width: 100%; outline: none; }
-
         .categories { display: flex; gap: 10px; padding: 12px 5%; overflow-x: auto; background: var(--bg); border-top: 1px solid var(--border); }
         .cat-btn { padding: 8px 18px; border-radius: 50px; border: 1px solid var(--border); background: var(--card); color: var(--text); cursor: pointer; white-space: nowrap; font-size: 0.85rem; }
         .cat-btn.active { background: var(--primary); color: white; }
 
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; padding: 20px 5%; }
-        .product-card { background: var(--card); border-radius: 20px; overflow: hidden; border: 1px solid var(--border); position: relative; }
-        .product-card img { width: 100%; height: 320px; object-fit: cover; }
+        /* Grid */
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; padding: 20px 5%; }
+        .product-card { background: var(--card); border-radius: 20px; overflow: hidden; border: 1px solid var(--border); position: relative; text-align: center; padding-bottom: 15px; }
+        .product-card img { width: 100%; height: 280px; object-fit: cover; }
         
-        .sidebar { position: fixed; top: 0; left: -100%; width: 100%; max-width: 450px; height: 100%; background: var(--card); z-index: 2001; display: flex; flex-direction: column; box-shadow: 20px 0 50px #000; visibility: hidden; overflow-y: auto; }
+        /* Sidebars */
+        .sidebar { position: fixed; top: 0; left: -100%; width: 100%; max-width: 450px; height: 100%; background: var(--card); z-index: 2001; display: flex; flex-direction: column; box-shadow: 20px 0 50px #000; visibility: hidden; }
         .sidebar.open { left: 0; visibility: visible; }
         .sb-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+        .sb-body { padding: 20px; flex: 1; overflow-y: auto; }
 
-        .btn-main { width: 100%; padding: 15px; border-radius: 12px; border: none; background: var(--primary); color: white; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        /* Components */
+        .btn-main { width: 100%; padding: 15px; border-radius: 12px; border: none; background: var(--primary); color: white; font-weight: bold; cursor: pointer; margin-top: 10px; display: flex; justify-content: center; align-items: center; gap: 10px; }
         .input-field { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none; }
-        .admin-card { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; margin-bottom: 10px; border-right: 4px solid var(--primary); }
+        .admin-item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 10px; border-right: 4px solid var(--primary); }
 
-        @media (max-width: 500px) { body { padding-top: 195px; } .product-grid { grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; } .product-card img { height: 220px; } }
+        @media (max-width: 500px) { body { padding-top: 195px; } .product-grid { grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; } .product-card img { height: 200px; } }
     </style>
 </head>
 <body data-theme="dark">
@@ -52,17 +57,17 @@
             <div style="font-weight: 900; font-size: 1.6rem;">NPX<span style="color:var(--primary)">STORE</span></div>
             <div class="nav-icons">
                 <div class="icon-btn" onclick="toggleSidebar('adminPanel', true)"><i class="fas fa-user-shield"></i></div>
-                <div class="icon-btn" onclick="toggleSidebar('setSide', true)"><i class="fas fa-cog"></i></div>
+                <div class="icon-btn" onclick="toggleSidebar('trackSide', true)"><i class="fas fa-truck"></i></div>
                 <div class="icon-btn" onclick="toggleSidebar('cartSide', true)">
-                    <i class="fas fa-shopping-bag"></i>
+                    <i class="fas fa-shopping-basket"></i>
                     <span id="cartCount">0</span>
                 </div>
             </div>
         </div>
         <div class="search-area">
-            <div class="search-bar"><i class="fas fa-search" style="opacity:0.5"></i><input type="text" id="srch" placeholder="بحث عن منتج..." onkeyup="render()"></div>
+            <div class="search-bar"><i class="fas fa-search"></i><input type="text" id="srch" placeholder="بحث عن موديل..." onkeyup="render()"></div>
         </div>
-        <div class="categories" id="cats">
+        <div class="categories" id="catBar">
             <button class="cat-btn active" onclick="filterBy('الكل', this)">الكل</button>
             <button class="cat-btn" onclick="filterBy('تيشيرتات', this)">تيشيرتات</button>
             <button class="cat-btn" onclick="filterBy('هوديز', this)">هوديز</button>
@@ -72,158 +77,186 @@
     <div class="product-grid" id="grid"></div>
 
     <div class="sidebar" id="cartSide">
-        <div class="sb-header"><h3>السلة</h3><div onclick="toggleSidebar('cartSide', false)"><i class="fas fa-times"></i></div></div>
-        <div id="cartList" style="padding:20px;"></div>
-        <div style="padding:20px; border-top:1px solid var(--border)">
-            <input id="promo" placeholder="كود الخصم" class="input-field" style="width:70%">
-            <button onclick="applyPromo()" style="padding:10px">تطبيق</button>
-            <h3 id="tot">الإجمالي: 0 ج.م</h3>
-            <button class="btn-main" onclick="toggleSidebar('ordSide', true)">استكمال الطلب</button>
+        <div class="sb-header"><h3>حقيبة التسوق</h3><i class="fas fa-times" onclick="toggleSidebar('cartSide', false)"></i></div>
+        <div class="sb-body" id="cartItems"></div>
+        <div style="padding: 20px; border-top: 1px solid var(--border);">
+            <div style="display:flex; gap:5px; margin-bottom:10px">
+                <input id="promo" placeholder="كود الخصم" class="input-field" style="margin:0">
+                <button onclick="applyPromo()" style="background:var(--success); color:white; border:none; border-radius:10px; padding:0 15px">تطبيق</button>
+            </div>
+            <h3 id="finalPrice">الإجمالي: 0 ج.م</h3>
+            <button class="btn-main" onclick="toggleSidebar('orderSide', true)">اتمام الشراء</button>
         </div>
     </div>
 
-    <div class="sidebar" id="setSide">
-        <div class="sb-header"><h3>الإعدادات</h3><div onclick="toggleSidebar('setSide', false)"><i class="fas fa-times"></i></div></div>
-        <div style="padding: 20px;">
-            <button class="btn-main" onclick="toggleTheme()">تغيير الوضع (ليلي/نهاري)</button>
-            <hr style="margin:20px 0; opacity:0.1;">
-            <h4>تتبع حالة طلبك</h4>
-            <input type="tel" id="trackPh" placeholder="رقم الهاتف المسجل..." class="input-field">
-            <button class="btn-main" onclick="track()">تحديث الحالة</button>
-            <div id="trackRes" style="margin-top:15px"></div>
+    <div class="sidebar" id="trackSide">
+        <div class="sb-header"><h3>تتبع طلبك</h3><i class="fas fa-times" onclick="toggleSidebar('trackSide', false)"></i></div>
+        <div class="sb-body">
+            <input type="tel" id="trackPhone" placeholder="رقم الهاتف المستخدم..." class="input-field">
+            <button class="btn-main" onclick="trackOrder()">بحث عن الحالة</button>
+            <div id="trackResult" style="margin-top:20px"></div>
         </div>
     </div>
 
-    <div class="sidebar" id="ordSide">
-        <div class="sb-header"><h3>بيانات الشحن</h3><div onclick="toggleSidebar('ordSide', false)"><i class="fas fa-times"></i></div></div>
-        <div style="padding: 20px;">
-            <button class="btn-main" style="background:var(--success)" onclick="getGPS()">
-                <i class="fas fa-location-arrow"></i> تحديد موقعي GPS الآن
+    <div class="sidebar" id="orderSide">
+        <div class="sb-header"><h3>بيانات الشحن</h3><i class="fas fa-times" onclick="toggleSidebar('orderSide', false)"></i></div>
+        <div class="sb-body">
+            <button class="btn-main" style="background:var(--success)" onclick="autoGPS()">
+                <i class="fas fa-map-marker-alt"></i> تحديد موقعي GPS تلقائياً
             </button>
-            <input id="uName" placeholder="الاسم الكامل" class="input-field">
+            <input id="uName" placeholder="الاسم الثنائي" class="input-field">
             <input id="uPhone" placeholder="رقم الموبايل" class="input-field">
-            <input id="uAddr" placeholder="العنوان بالتفصيل" class="input-field">
-            <button class="btn-main" onclick="sendOrder()">تأكيد وإرسال واتساب</button>
+            <input id="uAddr" placeholder="العنوان (أو سيظهر الـ GPS هنا)" class="input-field">
+            <p style="font-size:0.8rem; color:orange">الدفع عند الاستلام</p>
+            <button class="btn-main" onclick="confirmOrder()">تأكيد الطلب وفتح واتساب</button>
         </div>
     </div>
 
     <div class="sidebar" id="adminPanel">
-        <div class="sb-header"><h3>لوحة المسؤول</h3><div onclick="toggleSidebar('adminPanel', false)"><i class="fas fa-times"></i></div></div>
-        <div style="padding: 20px;">
-            <div id="adminAuth">
+        <div class="sb-header"><h3>لوحة التحكم</h3><i class="fas fa-times" onclick="toggleSidebar('adminPanel', false)"></i></div>
+        <div class="sb-body">
+            <div id="adminLogin">
                 <input type="password" id="adminPw" placeholder="كلمة المرور" class="input-field">
-                <button class="btn-main" onclick="authAdmin()">دخول</button>
+                <button class="btn-main" onclick="adminAuth()">دخول المسؤول</button>
             </div>
             <div id="adminContent" style="display:none">
+                <button class="btn-main" onclick="toggleTheme()">تغيير ثيم المتجر</button>
+                <hr>
                 <h4>إضافة منتج</h4>
                 <input id="pN" placeholder="الاسم" class="input-field">
                 <input id="pI" placeholder="رابط الصورة" class="input-field">
                 <input id="pP" placeholder="السعر" class="input-field" type="number">
-                <input id="pS" placeholder="كمية S" class="input-field" type="number">
-                <button class="btn-main" onclick="saveP()">حفظ المنتج</button>
+                <select id="pC" class="input-field"><option>تيشيرتات</option><option>هوديز</option></select>
+                <button class="btn-main" onclick="saveP()">إضافة للمتجر</button>
                 <hr>
-                <h4>الطلبات</h4>
+                <h4>الطلبات الجديدة</h4>
                 <div id="adminOrders"></div>
             </div>
         </div>
     </div>
 
     <script>
+        // 1. Firebase Config
         const firebaseConfig = { databaseURL: "https://authen-36a1f-default-rtdb.firebaseio.com/" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        let prods = [], cart = [], cat = "الكل", disc = 0;
+        let prods = [], cart = [], currentCat = "الكل", discount = 0;
 
-        db.ref('inventory').on('value', s => { prods = []; s.forEach(x => prods.push({id:x.key, ...x.val()})); render(); });
+        // 2. Fetch Data
+        db.ref('inventory').on('value', s => {
+            prods = []; s.forEach(x => prods.push({id: x.key, ...x.val()})); render();
+        });
 
         function render() {
             const q = document.getElementById('srch').value.toLowerCase();
             const g = document.getElementById('grid'); g.innerHTML = '';
-            prods.filter(p => (cat === "الكل" || p.category === cat) && p.name.toLowerCase().includes(q)).forEach(p => {
+            prods.filter(p => (currentCat === "الكل" || p.category === currentCat) && p.name.toLowerCase().includes(q))
+            .forEach(p => {
                 g.innerHTML += `
                 <div class="product-card">
                     <img src="${p.img}">
-                    <div style="padding:15px; text-align:center">
-                        <h4>${p.name}</h4><p style="color:var(--primary); font-weight:bold">${p.price} ج.م</p>
-                        <button class="btn-main" onclick="add('${p.id}')">إضافة للسلة</button>
+                    <h4>${p.name}</h4>
+                    <div style="color:var(--primary); font-weight:900">${p.price} ج.م</div>
+                    <button class="btn-main" style="width:80%; margin:10px auto;" onclick="addToCart('${p.id}')">أضف للسلة</button>
+                </div>`;
+            });
+        }
+
+        // 3. Cart & Logic
+        function addToCart(id) {
+            const p = prods.find(x => x.id === id);
+            const item = cart.find(i => i.id === id);
+            item ? item.qty++ : cart.push({...p, qty: 1});
+            updateCart(); toggleSidebar('cartSide', true);
+        }
+
+        function updateCart() {
+            let total = 0; const list = document.getElementById('cartItems'); list.innerHTML = '';
+            cart.forEach((i, idx) => {
+                total += (i.price * i.qty);
+                list.innerHTML += `
+                <div style="display:flex; gap:10px; margin-bottom:15px; background:rgba(0,0,0,0.05); padding:10px; border-radius:12px;">
+                    <img src="${i.img}" style="width:50px; height:50px; border-radius:8px;">
+                    <div style="flex:1"><b>${i.name}</b><br>${i.price} ج.م</div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <button onclick="changeQty(${idx},-1)">-</button>
+                        <b>${i.qty}</b>
+                        <button onclick="changeQty(${idx},1)">+</button>
                     </div>
                 </div>`;
             });
-        }
-
-        function add(id) {
-            const p = prods.find(x => x.id === id);
-            const i = cart.find(x => x.id === id);
-            i ? i.qty++ : cart.push({...p, qty:1});
-            upd(); toggleSidebar('cartSide', true);
-        }
-
-        function upd() {
-            let t = 0; document.getElementById('cartList').innerHTML = '';
-            cart.forEach((i, x) => { t += i.price * i.qty; document.getElementById('cartList').innerHTML += `
-                <div style="display:flex; justify-content:space-between; margin-bottom:10px">
-                    <span>${i.name} x${i.qty}</span>
-                    <i class="fas fa-trash" style="color:red; cursor:pointer" onclick="cart.splice(${x},1);upd()"></i>
-                </div>`;
-            });
             document.getElementById('cartCount').innerText = cart.length;
-            document.getElementById('tot').innerText = `الإجمالي: ${t - disc} ج.م`;
+            document.getElementById('finalPrice').innerText = `الإجمالي: ${total - discount} ج.م`;
         }
 
-        function getGPS() {
-            const ad = document.getElementById('uAddr'); ad.value = "جاري تحديد موقعك...";
-            navigator.geolocation.getCurrentPosition(p => {
-                ad.value = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
-            }, () => { ad.value = "فشل التحديد، اكتب العنوان يدوياً"; });
+        function changeQty(idx, val) {
+            cart[idx].qty += val;
+            if(cart[idx].qty < 1) cart.splice(idx, 1);
+            updateCart();
         }
 
-        async function sendOrder() {
+        // 4. GPS & Order
+        function autoGPS() {
+            const field = document.getElementById('uAddr'); field.value = "جاري تحديد موقعك...";
+            navigator.geolocation.getCurrentPosition(pos => {
+                field.value = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
+            }, () => { field.value = "فشل التحديد؛ يرجى الكتابة يدوياً"; });
+        }
+
+        async function confirmOrder() {
             const n = document.getElementById('uName').value, ph = document.getElementById('uPhone').value, ad = document.getElementById('uAddr').value;
-            if(!n || !ph || !ad) return alert("أكمل البيانات");
-            const o = { name:n, phone:ph, addr:ad, items:cart, total:document.getElementById('tot').innerText, status:'قيد المراجعة', date:new Date().toLocaleString() };
-            await db.ref('orders').push(o);
-            window.open(`https://wa.me/201221060599?text=طلب جديد من ${n}%0Aالعنوان: ${ad}%0Aالحساب: ${o.total}`);
+            if(!n || !ph || !ad || cart.length === 0) return alert("أكمل البيانات والسلة");
+            
+            const orderData = { name:n, phone:ph, addr:ad, items:cart, total:document.getElementById('finalPrice').innerText, status:'قيد المراجعة', date:new Date().toLocaleString('ar-EG') };
+            await db.ref('orders').push(orderData);
+            
+            // WhatsApp Message
+            const msg = `*طلب جديد NPX STORE*%0A*الاسم:* ${n}%0A*العنوان:* ${ad}%0A*الطلبات:*%0A${cart.map(i=>`• ${i.name} x${i.qty}`).join('%0A')}%0A*الحساب:* ${orderData.total}`;
+            window.open(`https://wa.me/201221060599?text=${encodeURIComponent(msg)}`);
             location.reload();
         }
 
-        function track() {
-            const ph = document.getElementById('trackPh').value;
-            db.ref('orders').orderByChild('phone').equalTo(ph).on('value', s => {
-                const r = document.getElementById('trackRes'); r.innerHTML = '';
-                s.forEach(o => { r.innerHTML += `<div class="admin-card">طلب ${o.val().date}: <br> <b>الحالة: ${o.val().status}</b></div>`; });
-            });
-        }
-
-        function authAdmin() { if(document.getElementById('adminPw').value === "123") { document.getElementById('adminAuth').style.display='none'; document.getElementById('adminContent').style.display='block'; syncAdmin(); } }
-
+        // 5. Admin & Tracking
+        function adminAuth() { if(document.getElementById('adminPw').value === "123") { document.getElementById('adminLogin').style.display='none'; document.getElementById('adminContent').style.display='block'; syncAdmin(); } }
+        
         function syncAdmin() {
             db.ref('orders').on('value', s => {
-                const a = document.getElementById('adminOrders'); a.innerHTML = '';
+                const area = document.getElementById('adminOrders'); area.innerHTML = '';
                 s.forEach(x => {
                     const o = x.val();
-                    a.innerHTML += `<div class="admin-card">
-                        <b>${o.name}</b><br>${o.total}<br>
+                    area.innerHTML += `
+                    <div class="admin-item">
+                        <b>${o.name}</b> (${o.phone})<br>
                         <select onchange="db.ref('orders/${x.key}/status').set(this.value)">
                             <option>${o.status}</option>
                             <option value="تم الشحن">تم الشحن</option>
                             <option value="تم التوصيل">تم التوصيل</option>
                         </select>
-                        <button onclick="window.open('${o.addr}')">GPS</button>
+                        <button onclick="window.open('${o.addr}')">خريطة</button>
+                        <button onclick="db.ref('orders/${x.key}').remove()" style="color:red">حذف</button>
                     </div>`;
                 });
             });
         }
 
-        function saveP() {
-            db.ref('inventory').push({ name:document.getElementById('pN').value, img:document.getElementById('pI').value, price:document.getElementById('pP').value, s:document.getElementById('pS').value });
-            alert("تم الحفظ");
+        function trackOrder() {
+            const ph = document.getElementById('trackPhone').value;
+            db.ref('orders').orderByChild('phone').equalTo(ph).on('value', s => {
+                const res = document.getElementById('trackResult'); res.innerHTML = '';
+                s.forEach(o => { res.innerHTML += `<div class="admin-item">طلب بتاريخ ${o.val().date}<br>الحالة: <b>${o.val().status}</b></div>`; });
+            });
         }
 
-        function applyPromo() { if(document.getElementById('promo').value === "NPX10") { disc = 50; alert("خصم 50ج"); upd(); } }
+        function saveP() {
+            db.ref('inventory').push({ name:document.getElementById('pN').value, img:document.getElementById('pI').value, price:document.getElementById('pP').value, category:document.getElementById('pC').value });
+            alert("تم النشر");
+        }
+
+        function applyPromo() { if(document.getElementById('promo').value === "NPX10") { discount = 50; alert("تم خصم 50 ج.م"); updateCart(); } }
         function toggleSidebar(id, s) { document.getElementById(id).classList.toggle('open', s); }
         function toggleTheme() { document.body.setAttribute('data-theme', document.body.getAttribute('data-theme')==='dark'?'light':'dark'); }
-        function filterBy(c, b) { document.querySelectorAll('.cat-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); cat=c; render(); }
+        function filterBy(c, b) { document.querySelectorAll('.cat-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); currentCat=c; render(); }
     </script>
 </body>
 </html>
